@@ -292,7 +292,7 @@ const sensorParameters = {
     }
 
 
-  // Update LIS3DH acceleration card (only for I2C LIS3DH) - 3D cube with moving ball and rotation
+ // Update LIS3DH acceleration card (only for I2C LIS3DH) - 3D cube with moving ball and rotation
 if (protocol === "I2C" && selectedSensor === "LIS3DH" && currentAccelX !== null && currentAccelY !== null && currentAccelZ !== null) {
   const accelX = parseFloat(currentAccelX);
   const accelY = parseFloat(currentAccelY);
@@ -302,7 +302,7 @@ if (protocol === "I2C" && selectedSensor === "LIS3DH" && currentAccelX !== null 
   lis3dhZValue.textContent = `Z: ${accelZ.toFixed(2)} m/s²`;
 
   // Translate the ball based on acceleration values
-  const scale = 3; // Reduced scale for smaller cube (px per m/s²; adjust as needed)
+  const scale = 75 / 12; // px per m/s², adjusted for max accel of 12 to reach cube edge
   const clamp = (val, min, max) => Math.max(min, Math.min(max, val));
   const ballX = clamp(accelX * scale, -67.5, 67.5); // Adjusted for 150px cube (75px half)
   const ballY = clamp(-accelY * scale, -67.5, 67.5); // -accelY for +Y up convention
