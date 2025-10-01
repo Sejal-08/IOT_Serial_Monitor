@@ -503,7 +503,7 @@ function selectSensor(sensor) {
 // Parse sensor data and update presence
 function parseSensorData(data) {
   const protocol = document.getElementById("sensor-select").value;
-  if (!protocol) return;
+  if (!protocol) return data; // Return original data if no protocol
 
   const lines = data.split("\n").map(line => line.trim()).filter(line => line);
   lines.forEach(line => {
@@ -531,11 +531,9 @@ function parseSensorData(data) {
             'Y': 'AccelerationY',
             'Z': 'AccelerationZ'
           };
-        }
-        else if (sensorName === "LTR390") {
+        } else if (sensorName === "LTR390") {
           keyMap = {
-            'UV Index': 'UV', // Map 'UV Index' to 'UV'
-          
+            'UV Index': 'UV'
           };
         }
         // Add similar keyMap objects for other sensors if their incoming keys differ from expected
@@ -574,14 +572,16 @@ function parseSensorData(data) {
         }
         if (sensorName === "LTR390") {
           currentUV = paramMap['UV Index'] ? parseFloat(paramMap['UV Index']) : null;
-         console.log(`LTR390 Data - UV: ${currentUV}`);
+          console.log(`LTR390 Data - UV: ${currentUV}`);
         }
         if (sensorName === "IR Sensor") {
           currentIR = paramMap['Infrared'] ? parseFloat(paramMap['Infrared']) : null;
         }
-        // if (selectedSensor === sensorName) {
-        //   // updateSensorUI();
-        // }
+
+        // Update UI only if this sensor is selected
+        if (selectedSensor === sensorName) {
+          updateSensorUI();
+        }
       }
     }
 
@@ -597,6 +597,7 @@ function parseSensorData(data) {
       }
     }
   });
+  return data; // Return original data for logging
 }
 async function listPorts() {
   const result = await window.electronAPI.listPorts();
