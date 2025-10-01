@@ -482,6 +482,73 @@ body.dark-mode .card-container h4 {
   75% { transform: translateX(0.5px); }
 }
 
+/* Cube Styles for LIS3DH (Light Mode Defaults) */
+.face {
+  background: transparent;
+  border: 1px solid #333;
+}
+
+.axis.x {
+  background: red;
+}
+
+.axis.y {
+  background: green;
+}
+
+.axis.z {
+  background: blue;
+}
+
+.axis-label.x {
+  color: red;
+}
+
+.axis-label.y {
+  color: green;
+}
+
+.axis-label.z {
+  color: blue;
+}
+
+#accel-ball {
+  background: black;
+}
+
+/* Cube Styles for Dark Mode Overrides */
+body.dark-mode .face {
+  border-color: #ccc !important;
+}
+
+body.dark-mode .axis.x {
+  background: #ff6666 !important;
+}
+
+body.dark-mode .axis.y {
+  background: #66ff66 !important;
+}
+
+body.dark-mode .axis.z {
+  background: #6666ff !important;
+}
+
+body.dark-mode .axis-label.x {
+  color: #ff6666 !important;
+}
+
+body.dark-mode .axis-label.y {
+  color: #66ff66 !important;
+}
+
+body.dark-mode .axis-label.z {
+  color: #6666ff !important;
+}
+
+body.dark-mode #accel-ball {
+  background: white !important;
+}
+
 /* Responsive Design */
 @media (max-width: 1200px) {
   .main-container {

@@ -2,7 +2,7 @@ let selectedSensor = null;
 
 // Sensor protocol to sensor mapping
 const sensorProtocolMap = {
-  "I2C": ["SHT40", "BME680", "STS30","STTS751", "LIS3DH", "Lux Sensor", "TLV493D", "TOFVL53L0X", "UVLTR390"],
+  "I2C": ["SHT40", "BME680", "STS30","STTS751", "LIS3DH", "Lux Sensor", "TLV493D", "TOFVL53L0X", "LTR390"],
   "RS485": ["MD-02"],
   "SPI": [""],
   "Analog": ["Hall Sensor", "IR Sensor"],
@@ -10,7 +10,7 @@ const sensorProtocolMap = {
 
 // Track sensor presence and data
 let sensorStatus = {
-  "I2C": { SHT40: false, BME680: false ,STS30: false,STTS751: false, LIS3DH: false, LuxSensor: false, TLV493D: false, TOFVL53L0X: false, UVLTR390: false },
+  "I2C": { SHT40: false, BME680: false ,STS30: false,STTS751: false, LIS3DH: false, LuxSensor: false, TLV493D: false, TOFVL53L0X: false, LTR390: false },
   "RS485": { MD02: false },
   "SPI": { },
   "Analog": { Hall_Sensor: false, IR_Sensor: false }
@@ -78,9 +78,6 @@ function updateSensorUI() {
   const lis3dhXValue = document.getElementById("lis3dh-x-value");
   const lis3dhYValue = document.getElementById("lis3dh-y-value");
   const lis3dhZValue = document.getElementById("lis3dh-z-value");
-  const lis3dhXBar = document.getElementById("lis3dh-x-bar");
-  const lis3dhYBar = document.getElementById("lis3dh-y-bar");
-  const lis3dhZBar = document.getElementById("lis3dh-z-bar");
   const hallValue = document.getElementById("hall-value");
   const hallIcon = document.getElementById("hall-icon");
   const tlv493dXValue = document.getElementById("tlv493d-x-value");
@@ -113,7 +110,7 @@ function updateSensorUI() {
     "Hall Sensor": ["MagneticField"],
     "TLV493D": ["MagneticX", "MagneticY", "MagneticZ"],
     "TOFVL53L0X": ["Distance"],
-    "UVLTR390": ["UV", "AmbientLight"],
+    "LTR390": ["UV", "AmbientLight"],
     "IR Sensor": ["Infrared"]
   };
 
@@ -297,37 +294,36 @@ function updateSensorUI() {
     }
 
 
-    // Update LIS3DH acceleration card (only for I2C LIS3DH)
-    if (protocol === "I2C" && selectedSensor === "LIS3DH" && currentAccelX !== null && currentAccelY !== null && currentAccelZ !== null) {
-      const accelX = parseFloat(currentAccelX);
-      const accelY = parseFloat(currentAccelY);
-      const accelZ = parseFloat(currentAccelZ);
-      const maxAccel = 16; // Assuming ±16g range for LIS3DH
-      const minAccel = -16;
-      const barColor = "#6b8af7"; // Consistent with theme color
-      const barWidthX = Math.min(Math.max(((accelX - minAccel) / (maxAccel - minAccel)) * 100, 0), 100);
-      const barWidthY = Math.min(Math.max(((accelY - minAccel) / (maxAccel - minAccel)) * 100, 0), 100);
-      const barWidthZ = Math.min(Math.max(((accelZ - minAccel) / (maxAccel - minAccel)) * 100, 0), 100);
-      lis3dhXValue.textContent = `X: ${accelX.toFixed(2)} m/s²`;
-      lis3dhYValue.textContent = `Y: ${accelY.toFixed(2)} m/s²`;
-      lis3dhZValue.textContent = `Z: ${accelZ.toFixed(2)} m/s²`;
-      lis3dhXBar.style.width = `${barWidthX}%`;
-      lis3dhYBar.style.width = `${barWidthY}%`;
-      lis3dhZBar.style.width = `${barWidthZ}%`;
-      lis3dhXBar.style.backgroundColor = barColor;
-      lis3dhYBar.style.backgroundColor = barColor;
-      lis3dhZBar.style.backgroundColor = barColor;
-    } else {
-      lis3dhXValue.textContent = "X: 0.00 m/s²";
-      lis3dhYValue.textContent = "Y: 0.00 m/s²";
-      lis3dhZValue.textContent = "Z: 0.00 m/s²";
-      lis3dhXBar.style.width = "0%";
-      lis3dhYBar.style.width = "0%";
-      lis3dhZBar.style.width = "0%";
-      lis3dhXBar.style.backgroundColor = "#6b8af7";
-      lis3dhYBar.style.backgroundColor = "#6b8af7";
-      lis3dhZBar.style.backgroundColor = "#6b8af7";
-    }
+  // Update LIS3DH acceleration card (only for I2C LIS3DH) - 3D cube with moving ball and rotation
+if (protocol === "I2C" && selectedSensor === "LIS3DH" && currentAccelX !== null && currentAccelY !== null && currentAccelZ !== null) {
+  const accelX = parseFloat(currentAccelX);
+  const accelY = parseFloat(currentAccelY);
+  const accelZ = parseFloat(currentAccelZ);
+  lis3dhXValue.textContent = `X: ${accelX.toFixed(2)} m/s²`;
+  lis3dhYValue.textContent = `Y: ${accelY.toFixed(2)} m/s²`;
+  lis3dhZValue.textContent = `Z: ${accelZ.toFixed(2)} m/s²`;
+
+  // Translate the ball based on acceleration values
+  const scale = 3; // Reduced scale for smaller cube (px per m/s²; adjust as needed)
+  const clamp = (val, min, max) => Math.max(min, Math.min(max, val));
+  const ballX = clamp(accelX * scale, -67.5, 67.5); // Adjusted for 150px cube (75px half)
+  const ballY = clamp(-accelY * scale, -67.5, 67.5); // -accelY for +Y up convention
+  const ballZ = clamp(accelZ * scale, -67.5, 67.5);
+
+  // Apply translation to the ball within the rotated cube
+  const ball = document.getElementById("accel-ball");
+  if (ball) {
+    ball.style.transform = `translate(-50%, -50%) translate3d(${ballX}px, ${ballY}px, ${ballZ}px)`;
+  }
+} else {
+  lis3dhXValue.textContent = "X: 0.00 m/s²";
+  lis3dhYValue.textContent = "Y: 0.00 m/s²";
+  lis3dhZValue.textContent = "Z: 0.00 m/s²";
+  const ball = document.getElementById("accel-ball");
+  if (ball) {
+    ball.style.transform = `translate(-50%, -50%) translate3d(0px, 0px, 0px)`;
+  }
+}
 
     // Update Hall Sensor card (for Analog Hall Sensor)
     if (protocol === "Analog" && selectedSensor === "Hall Sensor" && currentMagneticField !== null) {
@@ -387,7 +383,7 @@ function updateSensorUI() {
     }
 
     // Update UVLTR390 card (for I2C UVLTR390)
-    if (protocol === "I2C" && selectedSensor === "UVLTR390" && currentUV !== null && currentAmbient !== null) {
+    if (protocol === "I2C" && selectedSensor === "LTR390" && currentUV !== null && currentAmbient !== null) {
       const uv = parseFloat(currentUV);
       const ambient = parseFloat(currentAmbient);
       const maxUV = 100; // Arbitrary max for UV index
@@ -474,12 +470,6 @@ function updateSensorUI() {
     lis3dhXValue.textContent = "X: 0.00 m/s²";
     lis3dhYValue.textContent = "Y: 0.00 m/s²";
     lis3dhZValue.textContent = "Z: 0.00 m/s²";
-    lis3dhXBar.style.width = "0%";
-    lis3dhYBar.style.width = "0%";
-    lis3dhZBar.style.width = "0%";
-    lis3dhXBar.style.backgroundColor = "#6b8af7";
-    lis3dhYBar.style.backgroundColor = "#6b8af7";
-    lis3dhZBar.style.backgroundColor = "#6b8af7";
     hallValue.textContent = "";
     hallIcon.style.color = "#6b8af7";
     tlv493dXValue.textContent = "X: 0.00 mT";
@@ -523,82 +513,75 @@ function parseSensorData(data) {
 
   const lines = data.split("\n").map(line => line.trim()).filter(line => line);
   lines.forEach(line => {
-    // Updated regex to match format like "LIS3DH:AccelerationX:1.23,AccelerationY:0.45,AccelerationZ:-9.81"
-    const sensorMatch = line.match(/^(.+?):(.+?)(?::|,\s*)(.+?)(?:,(.+?))?(?:,(.+?))?$/);
+    const sensorMatch = line.match(/^(.+?):\s*(.*)$/);
     if (sensorMatch) {
       const sensorName = sensorMatch[1].trim();
-      const parameter1 = sensorMatch[2].trim();
-      const value1 = sensorMatch[3].trim();
-      const parameter2 = sensorMatch[4] ? sensorMatch[4].split(':')[0].trim() : null;
-      const value2 = sensorMatch[4] ? sensorMatch[4].split(':')[1].trim() : null;
-      const parameter3 = sensorMatch[5] ? sensorMatch[5].split(':')[0].trim() : null;
-      const value3 = sensorMatch[5] ? sensorMatch[5].split(':')[1].trim() : null;
+      let paramsStr = sensorMatch[2].trim();
+      const params = paramsStr.split(',').map(p => p.trim());
+      const paramMap = {};
+      params.forEach(p => {
+        const [key, value] = p.split(/[:=]/).map(part => part.trim());
+        if (key && value !== undefined) {
+          paramMap[key] = value;
+        }
+      });
 
       const sensors = sensorProtocolMap[protocol] || [];
       if (sensors.includes(sensorName)) {
         sensorStatus[protocol][sensorName.replace(" ", "")] = true;
-        // Format values to two decimal places
-        sensorData[protocol][`${sensorName} ${parameter1}`] = isNaN(parseFloat(value1)) ? value1 : parseFloat(value1).toFixed(2);
-        if (parameter2 && value2) {
-          sensorData[protocol][`${sensorName} ${parameter2}`] = isNaN(parseFloat(value2)) ? value2 : parseFloat(value2).toFixed(2);
+
+        let keyMap = {};
+        if (sensorName === "LIS3DH") {
+          keyMap = {
+            'X': 'AccelerationX',
+            'Y': 'AccelerationY',
+            'Z': 'AccelerationZ'
+          };
+        } else if (sensorName === "LTR390") {
+          keyMap = {
+            'UV Index': 'UV', // Map 'UV Index' to 'UV'
+            'Ambient': 'AmbientLight' // Map 'Ambient' to 'AmbientLight' if applicable
+          };
         }
-        if (parameter3 && value3) {
-          sensorData[protocol][`${sensorName} ${parameter3}`] = isNaN(parseFloat(value3)) ? value3 : parseFloat(value3).toFixed(2);
-        }
+
+        Object.entries(paramMap).forEach(([key, value]) => {
+          const mappedKey = keyMap[key] || key;
+          const formattedValue = isNaN(parseFloat(value)) ? value : parseFloat(value).toFixed(2);
+          sensorData[protocol][`${sensorName} ${mappedKey}`] = formattedValue;
+        });
+
         if (selectedSensor === "BME680" || sensorName === "STTS751" || sensorName === "SHT40" || sensorName === "STS30") {
-          if (parameter1 === "Temperature") {
-            currentTemperature = isNaN(parseFloat(value1)) ? null : parseFloat(value1);
-          } else if (parameter1 === "Humidity") {
-            currentHumidity = isNaN(parseFloat(value1)) ? null : parseFloat(value1);
-          }
-          if (parameter2 === "Humidity") {
-            currentHumidity = isNaN(parseFloat(value2)) ? null : parseFloat(value2);
-          }
-          if (sensorName === "BME680" && parameter1 === "Pressure") {
-            currentPressure = isNaN(parseFloat(value1)) ? null : parseFloat(value1);
+          currentTemperature = paramMap['Temperature'] ? parseFloat(paramMap['Temperature']) : null;
+          currentHumidity = paramMap['Humidity'] ? parseFloat(paramMap['Humidity']) : null;
+          if (sensorName === "BME680") {
+            currentPressure = paramMap['Pressure'] ? parseFloat(paramMap['Pressure']) : null;
           }
         }
-        if (sensorName === "Lux Sensor" && parameter1 === "LightIntensity") {
-          currentLight = isNaN(parseFloat(value1)) ? null : parseFloat(value1);
+        if (sensorName === "Lux Sensor") {
+          currentLight = paramMap['LightIntensity'] ? parseFloat(paramMap['LightIntensity']) : null;
         }
         if (sensorName === "LIS3DH") {
-          if (parameter1 === "AccelerationX") {
-            currentAccelX = isNaN(parseFloat(value1)) ? null : parseFloat(value1);
-          }
-          if (parameter2 === "AccelerationY") {
-            currentAccelY = isNaN(parseFloat(value2)) ? null : parseFloat(value2);
-          }
-          if (parameter3 === "AccelerationZ") {
-            currentAccelZ = isNaN(parseFloat(value3)) ? null : parseFloat(value3);
-          }
+          currentAccelX = paramMap['X'] ? parseFloat(paramMap['X']) : null;
+          currentAccelY = paramMap['Y'] ? parseFloat(paramMap['Y']) : null;
+          currentAccelZ = paramMap['Z'] ? parseFloat(paramMap['Z']) : null;
         }
-        if (sensorName === "Hall Sensor" && parameter1 === "MagneticField") {
-          currentMagneticField = value1;
+        if (sensorName === "Hall Sensor") {
+          currentMagneticField = paramMap['MagneticField'];
         }
         if (sensorName === "TLV493D") {
-          if (parameter1 === "MagneticX") {
-            currentMagneticX = isNaN(parseFloat(value1)) ? null : parseFloat(value1);
-          }
-          if (parameter2 === "MagneticY") {
-            currentMagneticY = isNaN(parseFloat(value2)) ? null : parseFloat(value2);
-          }
-          if (parameter3 === "MagneticZ") {
-            currentMagneticZ = isNaN(parseFloat(value3)) ? null : parseFloat(value3);
-          }
+          currentMagneticX = paramMap['MagneticX'] ? parseFloat(paramMap['MagneticX']) : null;
+          currentMagneticY = paramMap['MagneticY'] ? parseFloat(paramMap['MagneticY']) : null;
+          currentMagneticZ = paramMap['MagneticZ'] ? parseFloat(paramMap['MagneticZ']) : null;
         }
-        if (sensorName === "TOFVL53L0X" && parameter1 === "Distance") {
-          currentDistance = isNaN(parseFloat(value1)) ? null : parseFloat(value1);
+        if (sensorName === "TOFVL53L0X") {
+          currentDistance = paramMap['Distance'] ? parseFloat(paramMap['Distance']) : null;
         }
-        if (sensorName === "UVLTR390") {
-          if (parameter1 === "UV") {
-            currentUV = isNaN(parseFloat(value1)) ? null : parseFloat(value1);
-          }
-          if (parameter2 === "AmbientLight") {
-            currentAmbient = isNaN(parseFloat(value2)) ? null : parseFloat(value2);
-          }
+        if (sensorName === "LTR390") {
+          currentUV = paramMap['UV Index'] ? parseFloat(paramMap['UV Index']) : null;
+          currentAmbient = paramMap['Ambient'] ? parseFloat(paramMap['Ambient']) : null;
         }
-        if (sensorName === "IR Sensor" && parameter1 === "Infrared") {
-          currentIR = isNaN(parseFloat(value1)) ? null : parseFloat(value1);
+        if (sensorName === "IR Sensor") {
+          currentIR = paramMap['Infrared'] ? parseFloat(paramMap['Infrared']) : null;
         }
         if (selectedSensor === sensorName) {
           updateSensorUI();
@@ -618,7 +601,6 @@ function parseSensorData(data) {
     }
   });
 }
-
 async function listPorts() {
   const result = await window.electronAPI.listPorts();
   const select = document.getElementById("ports");
@@ -734,4 +716,43 @@ window.electronAPI.onSerialData((data) => {
 window.addEventListener("DOMContentLoaded", () => {
   listPorts();
   updateSensorUI();
+
+  // Cube rotation variables
+  let isDragging = false;
+  let previousX = 0;
+  let previousY = 0;
+  let rotateX = 0;
+  let rotateY = 0;
+
+  const cubeWrapper = document.getElementById('accel-cube-wrapper');
+  const cube = document.getElementById('accel-cube');
+
+  if (cubeWrapper && cube) {
+    cubeWrapper.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      previousX = e.clientX;
+      previousY = e.clientY;
+      cube.style.transition = 'none'; // Disable transition during drag
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (isDragging) {
+        const deltaX = e.clientX - previousX;
+        const deltaY = e.clientY - previousY;
+        rotateY += deltaX * 0.5; // Adjust sensitivity
+        rotateX -= deltaY * 0.5; // Adjust sensitivity
+        cube.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+        previousX = e.clientX;
+        previousY = e.clientY;
+      }
+    });
+
+    document.addEventListener('mouseup', () => {
+      isDragging = false;
+      cube.style.transition = 'transform 0.3s ease'; // Re-enable transition
+    });
+
+    // Prevent text selection while dragging
+    cubeWrapper.addEventListener('dragstart', (e) => e.preventDefault());
+  }
 });
