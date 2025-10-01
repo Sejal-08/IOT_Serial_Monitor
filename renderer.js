@@ -77,8 +77,9 @@ function updateSensorUI() {
   const lis3dhXValue = document.getElementById("lis3dh-x-value");
   const lis3dhYValue = document.getElementById("lis3dh-y-value");
   const lis3dhZValue = document.getElementById("lis3dh-z-value");
-  const hallValue = document.getElementById("hall-value");
-  const hallIcon = document.getElementById("hall-icon");
+  const hallValue = document.getElementById("hall-value"); // Fixed: Added hallValue initialization
+const hallArc = document.getElementById("hall-arc-path"); // Fixed: Correct ID for Hall Sensor SVG path
+  const hallGlow = document.getElementById("hall-glow");
   const tlv493dXValue = document.getElementById("tlv493d-x-value");
   const tlv493dYValue = document.getElementById("tlv493d-y-value");
   const tlv493dZValue = document.getElementById("tlv493d-z-value");
@@ -323,18 +324,20 @@ if (protocol === "I2C" && selectedSensor === "LIS3DH" && currentAccelX !== null 
   }
 }
 
-     // Update Hall Sensor card (for Analog Hall Sensor)
-    if (protocol === "Analog" && selectedSensor === "Hall Sensor" && currentMagneticField !== null) {
+   // Update Hall Sensor card (for Analog Hall Sensor)
+    if (protocol === "Analog" && selectedSensor === "Hall Sensor" && currentMagneticField !== null && hallValue && hallArc && hallGlow) {
       const field = parseInt(currentMagneticField);
       hallValue.textContent = field === 1 ? "High (Detected)" : "Low (Not Detected)";
       hallArc.style.stroke = field === 1 ? "#f44336" : "#34d399";
       hallGlow.setAttribute("stdDeviation", field === 1 ? 5 : 0);
       hallArc.setAttribute("filter", field === 1 ? "url(#hall-glow)" : "");
     } else {
-      hallValue.textContent = "";
-      hallArc.style.stroke = "#34d399";
-      hallGlow.setAttribute("stdDeviation", 0);
-      hallArc.removeAttribute("filter");
+      if (hallValue) hallValue.textContent = "";
+      if (hallArc && hallGlow) {
+        hallArc.style.stroke = "#34d399";
+        hallGlow.setAttribute("stdDeviation", 0);
+        hallArc.removeAttribute("filter");
+      }
     }
 
     // Update TLV493D magnetic field card (for I2C TLV493D)
@@ -463,7 +466,12 @@ if (protocol === "I2C" && selectedSensor === "LTR390" && currentUV !== null) {
     lis3dhXValue.textContent = "X: 0.00 m/s²";
     lis3dhYValue.textContent = "Y: 0.00 m/s²";
     lis3dhZValue.textContent = "Z: 0.00 m/s²";
-    hallValue.textContent = "";
+     if (hallValue) hallValue.textContent = "";
+    if (hallArc && hallGlow) {
+      hallArc.style.stroke = "#34d399";
+      hallGlow.setAttribute("stdDeviation", 0);
+      hallArc.removeAttribute("filter");
+    }
     hallIcon.style.color = "#6b8af7";
     tlv493dXValue.textContent = "X: 0.00 mT";
     tlv493dYValue.textContent = "Y: 0.00 mT";
@@ -500,25 +508,31 @@ function selectSensor(sensor) {
 }
 
 
-// Parse sensor data and update presence
 function parseSensorData(data) {
   const protocol = document.getElementById("sensor-select").value;
-  if (!protocol) return data; // Return original data if no protocol
+  if (!protocol) {
+    // document.getElementById("output").innerHTML += `<span class="log-error">No protocol selected for parsing</span><br>`;
+    return data;
+  }
 
   const lines = data.split("\n").map(line => line.trim()).filter(line => line);
   lines.forEach(line => {
-    const sensorMatch = line.match(/^(.+?):\s*(.*)$/);
-    if (sensorMatch) {
-      const sensorName = sensorMatch[1].trim();
-      let paramsStr = sensorMatch[2].trim();
-      const params = paramsStr.split(',').map(p => p.trim());
-      const paramMap = {};
-      params.forEach(p => {
-        const [key, value] = p.split(/[:=]/).map(part => part.trim());
-        if (key && value !== undefined) {
-          paramMap[key] = value;
-        }
-      });
+    try {
+      // Clean special characters
+      let cleanedLine = line.replace(/°C/g, "").replace(/%/g, "");
+      const sensorMatch = cleanedLine.match(/^(.+?):\s*(.*)$/);
+  
+if (sensorMatch) {
+        const sensorName = sensorMatch[1].trim();
+        let paramsStr = sensorMatch[2].trim();
+        const params = paramsStr.split(',').map(p => p.trim());
+        const paramMap = {};
+        params.forEach(p => {
+          const [key, value] = p.split(/[:=]/).map(part => part.trim());
+          if (key && value !== undefined) {
+            paramMap[key] = value;
+          }
+        });
 
       const sensors = sensorProtocolMap[protocol] || [];
       if (sensors.includes(sensorName)) {
@@ -536,6 +550,13 @@ function parseSensorData(data) {
             'UV Index': 'UV'
           };
         }
+        else if (["BME680", "STTS751", "SHT40", "STS30"].includes(sensorName)) {
+            currentTemperature = paramMap["Temperature"] ? parseFloat(paramMap["Temperature"]) : null;
+            currentHumidity = paramMap["Humidity"] ? parseFloat(paramMap["Humidity"]) : null;
+            if (sensorName === "BME680") {
+              currentPressure = paramMap["Pressure"] ? parseFloat(paramMap["Pressure"]) : null;
+            }
+          }
         // Add similar keyMap objects for other sensors if their incoming keys differ from expected
 
         Object.entries(paramMap).forEach(([key, value]) => {
@@ -584,7 +605,9 @@ function parseSensorData(data) {
         }
       }
     }
-
+} catch (error) {
+      document.getElementById("output").innerHTML += `<span class="log-error">Parsing error: ${error.message}</span><br>`;
+    }
     // Existing rainMatch logic remains unchanged
     const rainMatch = line.match(/^Rain Tip Detected!\s*Hourly:\s*(\d+)\s*Daily:\s*(\d+)\s*Weekly:\s*(\d+)/);
     if (rainMatch && protocol === "ADC") {
