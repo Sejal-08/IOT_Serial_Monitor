@@ -499,6 +499,7 @@ function selectSensor(sensor) {
   updateSensorUI();
 }
 
+
 // Parse sensor data and update presence
 function parseSensorData(data) {
   const protocol = document.getElementById("sensor-select").value;
@@ -530,12 +531,14 @@ function parseSensorData(data) {
             'Y': 'AccelerationY',
             'Z': 'AccelerationZ'
           };
-        } else if (sensorName === "LTR390") {
+        }
+        else if (sensorName === "LTR390") {
           keyMap = {
             'UV Index': 'UV', // Map 'UV Index' to 'UV'
           
           };
         }
+        // Add similar keyMap objects for other sensors if their incoming keys differ from expected
 
         Object.entries(paramMap).forEach(([key, value]) => {
           const mappedKey = keyMap[key] || key;
@@ -582,6 +585,7 @@ function parseSensorData(data) {
       }
     }
 
+    // Existing rainMatch logic remains unchanged
     const rainMatch = line.match(/^Rain Tip Detected!\s*Hourly:\s*(\d+)\s*Daily:\s*(\d+)\s*Weekly:\s*(\d+)/);
     if (rainMatch && protocol === "ADC") {
       sensorStatus[protocol]["Rain Gauge"] = true;

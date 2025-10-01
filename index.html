@@ -227,12 +227,77 @@
               <div id="tof-bar" class="card-bar"></div>
             </div>
 
-            <!-- UVLTR390 UV and Ambient Light -->
-            <div id="uvltr-card" class="card-container" style="display: none;">
+           <!-- UVLTR390 UV Index with Sun Animation -->
+            <div id="uvltr-card" class="card-container" style="display: none; position: relative;">
               <h4>UV Index</h4>
               <div id="uv-value" class="sensor-value">UV: 0.00</div>
+              <svg id="uv-sun" width="120" height="120" viewBox="0 0 120 120" style="display: block; margin: 10px auto;">
+                <defs>
+                  <radialGradient id="uvSunGradient" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" style="stop-color:#ffeb3b; stop-opacity:1"/>
+                    <stop offset="60%" style="stop-color:#ff9800; stop-opacity:0.8"/>
+                    <stop offset="100%" style="stop-color:#ff6b00; stop-opacity:0.4"/>
+                  </radialGradient>
+                  <filter id="uvGlow" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                    <feMerge>
+                      <feMergeNode in="coloredBlur"/>
+                      <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                  </filter>
+                </defs>
+                
+                <!-- Animated rays container -->
+                <g id="uv-rays" transform="translate(60, 60)">
+                  <!-- 8 rays at different angles -->
+                  <line class="uv-ray" x1="0" y1="0" x2="0" y2="-35" stroke="#ffeb3b" stroke-width="2" opacity="0">
+                    <animate attributeName="opacity" values="0;0.8;0" dur="2s" repeatCount="indefinite"/>
+                    <animate attributeName="y2" values="-30;-40;-30" dur="2s" repeatCount="indefinite"/>
+                  </line>
+                  <line class="uv-ray" x1="0" y1="0" x2="25" y2="-25" stroke="#ffeb3b" stroke-width="2" opacity="0">
+                    <animate attributeName="opacity" values="0;0.8;0" dur="2s" begin="0.25s" repeatCount="indefinite"/>
+                    <animate attributeName="x2" values="21;28;21" dur="2s" begin="0.25s" repeatCount="indefinite"/>
+                    <animate attributeName="y2" values="-21;-28;-21" dur="2s" begin="0.25s" repeatCount="indefinite"/>
+                  </line>
+                  <line class="uv-ray" x1="0" y1="0" x2="35" y2="0" stroke="#ffeb3b" stroke-width="2" opacity="0">
+                    <animate attributeName="opacity" values="0;0.8;0" dur="2s" begin="0.5s" repeatCount="indefinite"/>
+                    <animate attributeName="x2" values="30;40;30" dur="2s" begin="0.5s" repeatCount="indefinite"/>
+                  </line>
+                  <line class="uv-ray" x1="0" y1="0" x2="25" y2="25" stroke="#ffeb3b" stroke-width="2" opacity="0">
+                    <animate attributeName="opacity" values="0;0.8;0" dur="2s" begin="0.75s" repeatCount="indefinite"/>
+                    <animate attributeName="x2" values="21;28;21" dur="2s" begin="0.75s" repeatCount="indefinite"/>
+                    <animate attributeName="y2" values="21;28;21" dur="2s" begin="0.75s" repeatCount="indefinite"/>
+                  </line>
+                  <line class="uv-ray" x1="0" y1="0" x2="0" y2="35" stroke="#ffeb3b" stroke-width="2" opacity="0">
+                    <animate attributeName="opacity" values="0;0.8;0" dur="2s" begin="1s" repeatCount="indefinite"/>
+                    <animate attributeName="y2" values="30;40;30" dur="2s" begin="1s" repeatCount="indefinite"/>
+                  </line>
+                  <line class="uv-ray" x1="0" y1="0" x2="-25" y2="25" stroke="#ffeb3b" stroke-width="2" opacity="0">
+                    <animate attributeName="opacity" values="0;0.8;0" dur="2s" begin="1.25s" repeatCount="indefinite"/>
+                    <animate attributeName="x2" values="-21;-28;-21" dur="2s" begin="1.25s" repeatCount="indefinite"/>
+                    <animate attributeName="y2" values="21;28;21" dur="2s" begin="1.25s" repeatCount="indefinite"/>
+                  </line>
+                  <line class="uv-ray" x1="0" y1="0" x2="-35" y2="0" stroke="#ffeb3b" stroke-width="2" opacity="0">
+                    <animate attributeName="opacity" values="0;0.8;0" dur="2s" begin="1.5s" repeatCount="indefinite"/>
+                    <animate attributeName="x2" values="-30;-40;-30" dur="2s" begin="1.5s" repeatCount="indefinite"/>
+                  </line>
+                  <line class="uv-ray" x1="0" y1="0" x2="-25" y2="-25" stroke="#ffeb3b" stroke-width="2" opacity="0">
+                    <animate attributeName="opacity" values="0;0.8;0" dur="2s" begin="1.75s" repeatCount="indefinite"/>
+                    <animate attributeName="x2" values="-21;-28;-21" dur="2s" begin="1.75s" repeatCount="indefinite"/>
+                    <animate attributeName="y2" values="-21;-28;-21" dur="2s" begin="1.75s" repeatCount="indefinite"/>
+                  </line>
+                </g>
+                
+                <!-- Central sun circle -->
+                <circle id="uv-sun-circle" cx="60" cy="60" r="18" fill="url(#uvSunGradient)" filter="url(#uvGlow)"/>
+                
+                <!-- Inner glow circle -->
+                <circle cx="60" cy="60" r="18" fill="none" stroke="#fff" stroke-width="1" opacity="0.3">
+                  <animate attributeName="r" values="18;22;18" dur="3s" repeatCount="indefinite"/>
+                  <animate attributeName="opacity" values="0.3;0.1;0.3" dur="3s" repeatCount="indefinite"/>
+                </circle>
+              </svg>
               <div id="uv-bar" class="card-bar"></div>
-             
             </div>
 
             <!-- IR Sensor -->
