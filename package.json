@@ -1,0 +1,33 @@
+{
+  "name": "serial-monitor-app",
+  "version": "1.0.0",
+  "description": "Serial Communication App",
+  "main": "main.js",
+  "author": "Annam",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder"
+  },
+  "dependencies": {
+    "serialport": "^10.5.0"
+  },
+  "devDependencies": {
+    "electron": "^38.2.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.annam.serialmonitor",
+    "productName": "Serial Monitor",
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "runAfterFinish": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+}

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Serial Monitor</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body class="light-mode">
+  <nav>
+    <div class="logo">
+      <img src="./build/logo.png" alt="Logo">
+    </div>
+    <ul class="nav-links">
+      <li>
+        <button class="theme-toggle" onclick="toggleTheme()"><i class="fas fa-moon"></i></button>
+      </li>
+    </ul>
+  </nav>
+
+  <div class="main-container">
+    <div class="left-panel">
+      <section class="control-section">
+        <h3><i class="fas fa-plug"></i> Serial Port</h3>
+        <div class="controls">
+          <button class="action-button" onclick="listPorts()"><i class="fas fa-list"></i> List Ports</button>
+          <select id="ports" class="input-field"></select>
+          <select id="baud-rate" class="input-field">
+            <option value="9600">9600</option>
+            <option value="19200">19200</option>
+            <option value="38400">38400</option>
+            <option value="57600">57600</option>
+            <option value="115200" selected>115200</option>
+            <option value="230400">230400</option>
+          </select>
+          <button class="action-button" onclick="connectPort()"><i class="fas fa-play"></i> Connect</button>
+          <button class="action-button" onclick="disconnectPort()"><i class="fas fa-stop"></i> Disconnect</button>
+        </div>
+      </section>
+
+      <section class="control-section">
+        <h3><i class="fas fa-clock"></i> Interval Configuration</h3>
+        <div class="controls">
+          <input type="number" id="interval" class="input-field" placeholder="Interval (seconds)" min="1">
+          <button class="action-button" onclick="setInterval()"><i class="fas fa-save"></i> Set Interval</button>
+          <button class="action-button" onclick="getInterval()"><i class="fas fa-eye"></i> Get Interval</button>
+        </div>
+      </section>
+
+      <section class="control-section">
+        <div class="controls">
+          <button id="restart-button" class="action-button" onclick="restartDevice()">
+            <i class="fas fa-redo"></i> Restart Device
+          </button>
+        </div>
+      </section>
+
+      <section class="control-section" id="sensors-section">
+        <h3><i class="fas fa-microchip"></i> Sensor Protocols</h3>
+        <div class="controls">
+          <select id="sensor-select" class="input-field" onchange="updateSensorUI()">
+            <option value="" disabled selected>Select a Sensor Protocol</option>
+            <option value="I2C">I2C</option>
+            <option value="RS485">RS485</option>
+            <option value="SPI">SPI</option>
+            <option value="Analog">Analog</option>
+          </select>
+        </div>
+        <div class="controls">
+          <select id="sensor-dropdown" class="input-field" onchange="selectSensor(this.value)">
+            <option value="" disabled selected>Select a Sensor</option>
+          </select>
+        </div>
+        <div id="sensor-data" class="sensor-data-container">
+          <!-- Selected sensor data will be dynamically inserted here -->
+        </div>
+      </section>
+    </div>
+
+    <div class="right-panel">
+      <div class="container">
+        <section class="control-section" id="sensor-visualization-section" style="display: none;">
+          <h3><i class="fas fa-chart-line"></i> Sensor Data Visualization</h3>
+          <div class="sensor-cards">
+            <!-- Temperature -->
+            <div id="thermometer-container" class="thermometer-container" style="display: none;">
+              <h4>Temperature</h4>
+              <div id="thermometer-value" class="sensor-value" style="margin-bottom: 8px;"></div>
+              <svg width="100" height="220" viewBox="0 0 100 220" class="thermometer">
+                <rect x="40" y="20" width="20" height="160" rx="10" ry="10" fill="#e0e7ff" stroke="#333" stroke-width="2"/>
+                <rect id="thermometer-fill" x="42" y="180" width="16" height="0" rx="8" ry="8" fill="#ffeb3b"/>
+                <circle cx="50" cy="180" r="10" fill="#e0e7ff" stroke="#333" stroke-width="2"/>
+                <circle id="thermometer-bulb" cx="50" cy="180" r="8" fill="#ffeb3b"/>
+                <line x1="65" y1="20"  x2="70"  y2="20"  stroke="#333" stroke-width="2"/><text x="75" y="25"  font-size="12" fill="var(--text-color)">50°C</text>
+                <line x1="65" y1="52"  x2="70"  y2="52"  stroke="#333" stroke-width="1"/><text x="75" y="57"  font-size="12" fill="var(--text-color)">40°C</text>
+                <line x1="65" y1="84"  x2="70"  y2="84"  stroke="#333" stroke-width="1"/><text x="75" y="89"  font-size="12" fill="var(--text-color)">30°C</text>
+                <line x1="65" y1="116" x2="70"  y2="116" stroke="#333" stroke-width="1"/><text x="75" y="121" font-size="12" fill="var(--text-color)">20°C</text>
+                <line x1="65" y1="148" x2="70"  y2="148" stroke="#333" stroke-width="1"/><text x="75" y="153" font-size="12" fill="var(--text-color)">10°C</text>
+                <line x1="65" y1="180" x2="70"  y2="180" stroke="#333" stroke-width="2"/><text x="75" y="185" font-size="12" fill="var(--text-color)">0°C</text>
+              </svg>
+            </div>
+
+            <!-- Humidity -->
+            <div id="humidity-card" class="wave-card-container" style="display: none;">
+              <h4>Humidity</h4>
+              <div class="wave-card-content">
+                <i class="fas fa-water-drop-outlined"></i>
+                <span id="humidity-value" class="sensor-value"></span>
+              </div>
+              <svg id="humidity-wave" width="100%" height="80" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="waveGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" id="waveColor1" style="stop-color:#3d8eb4;stop-opacity:0.5"/>
+                    <stop offset="100%" id="waveColor2" style="stop-color:#0474a8;stop-opacity:1"/>
+                  </linearGradient>
+                </defs>
+                <path id="wavePath" d="M 0 100 V 100 H 100 V 100 Z" fill="url(#waveGradient)"/>
+              </svg>
+            </div>
+
+            <!-- Pressure -->
+            <div id="pressure-card" class="card-container" style="display: none;">
+              <h4>Pressure</h4>
+              <div id="pressure-value" class="sensor-value"></div>
+              <div id="pressure-bar" class="card-bar"></div>
+            </div>
+
+              <!-- Adjusted Light Intensity Card with Dark Mode Support -->
+            <div id="light-card" class="card-container" style="display: none; position: relative; border-radius: 15px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1); padding: 15px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+              <h4>Light Intensity</h4>
+              <div id="light-value" class="sensor-value"></div>
+              <svg id="light-sun" width="100" height="100" viewBox="0 0 100 100" style="display: block; margin: 0 auto;">
+                <defs>
+                  <radialGradient id="sunGradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+                    <stop offset="0%" style="stop-color:#ffd700; stop-opacity:0.9"/>
+                    <stop offset="70%" style="stop-color:#ff8c00; stop-opacity:0.4"/>
+                    <stop offset="100%" style="stop-color:#ff4500; stop-opacity:0"/>
+                  </radialGradient>
+                  <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur stdDeviation="5" result="coloredBlur"/>
+                    <feMerge>
+                      <feMergeNode in="coloredBlur"/>
+                      <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                  </filter>
+                </defs>
+                <rect x="0" y="0" width="100" height="100" fill="url(#sunGradient)" style="filter: brightness(1); transition: filter 0.5s ease;"/>
+                <circle id="sun-circle" cx="50" cy="50" r="20" fill="url(#sunGradient)" filter="url(#glow)"/>
+                <g id="sparkles">
+                  <circle cx="30" cy="30" r="2" fill="#fff" opacity="0">
+                    <animate attributeName="opacity" values="0;1;0" dur="1.5s" repeatCount="indefinite"/>
+                    <animate attributeName="r" values="2;3;2" dur="1.5s" repeatCount="indefinite"/>
+                  </circle>
+                  <circle cx="70" cy="70" r="2" fill="#fff" opacity="0">
+                    <animate attributeName="opacity" values="0;1;0" dur="1.8s" begin="0.5s" repeatCount="indefinite"/>
+                    <animate attributeName="r" values="2;3;2" dur="1.8s" begin="0.5s" repeatCount="indefinite"/>
+                  </circle>
+                  <circle cx="40" cy="60" r="2" fill="#fff" opacity="0">
+                    <animate attributeName="opacity" values="0;1;0" dur="2s" begin="1s" repeatCount="indefinite"/>
+                    <animate attributeName="r" values="2;3;2" dur="2s" begin="1s" repeatCount="indefinite"/>
+                  </circle>
+                </g>
+              </svg>
+            </div>
+            <!-- LIS3DH Acceleration -->
+            <div id="lis3dh-card" class="card-container" style="display: none;">
+              <h4>Acceleration</h4>
+              <div id="lis3dh-x-value" class="sensor-value">X: 0.00 m/s²</div>
+              <div id="lis3dh-x-bar" class="card-bar"></div>
+              <div id="lis3dh-y-value" class="wave-card-value">Y: 0.00 m/s²</div>
+              <div id="lis3dh-y-bar" class="card-bar"></div>
+              <div id="lis3dh-z-value" class="wave-card-value">Z: 0.00 m/s²</div>
+              <div id="lis3dh-z-bar" class="card-bar"></div>
+            </div>
+
+            <!-- Hall Sensor -->
+            <div id="hall-card" class="card-container" style="display: none;">
+              <h4>Hall Sensor</h4>
+              <div id="hall-value" class="sensor-value"></div>
+              <i id="hall-icon" class="fas fa-magnet" style="font-size: 50px;"></i>
+            </div>
+
+            <!-- TLV493D Magnetic Field -->
+            <div id="tlv493d-card" class="card-container" style="display: none;">
+              <h4>Magnetic Field</h4>
+              <div id="tlv493d-x-value" class="sensor-value">X: 0.00 mT</div>
+              <div id="tlv493d-x-bar" class="card-bar"></div>
+              <div id="tlv493d-y-value" class="sensor-value">Y: 0.00 mT</div>
+              <div id="tlv493d-y-bar" class="card-bar"></div>
+              <div id="tlv493d-z-value" class="sensor-value">Z: 0.00 mT</div>
+              <div id="tlv493d-z-bar" class="card-bar"></div>
+            </div>
+
+            <!-- TOFVL53L0X Distance -->
+            <div id="tof-card" class="card-container" style="display: none;">
+              <h3>Distance</h3>
+              <div id="tof-value" class="sensor-value"></div>
+              <div id="tof-bar" class="card-bar"></div>
+            </div>
+
+            <!-- UVLTR390 UV and Ambient Light -->
+            <div id="uvltr-card" class="card-container" style="display: none;">
+              <h4>UV & Ambient Light</h4>
+              <div id="uv-value" class="sensor-value">UV: 0.00</div>
+              <div id="uv-bar" class="card-bar"></div>
+              <div id="ambient-value" class="wave-card-value">Ambient: 0.00 lux</div>
+              <div id="ambient-bar" class="card-bar"></div>
+            </div>
+
+            <!-- IR Sensor -->
+            <div id="ir-card" class="card-container" style="display: none;">
+              <h4>IR Intensity</h4>
+              <div id="ir-value" class="sensor-value"></div>
+              <svg id="ir-flame" width="80" height="80" viewBox="0 0 100 100">
+                <path d="M50 90 Q30 70 50 50 Q70 70 50 90 Z" fill="#ffeb3b" />
+                <path d="M50 70 Q35 50 50 30 Q65 50 50 70 Z" fill="#ff9800" />
+                <path d="M50 50 Q40 35 50 20 Q60 35 50 50 Z" fill="#f44336" />
+                <defs>
+                  <filter id="ir-glow">
+                    <feGaussianBlur stdDeviation="0" result="coloredBlur"/>
+                    <feMerge>
+                      <feMergeNode in="coloredBlur"/>
+                      <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                  </filter>
+                </defs>
+              </svg>
+            </div>
+          </div>
+        </section>
+
+        <section class="control-section">
+          <h3><i class="fas fa-file-alt"></i> UART Logs</h3>
+          <div class="controls">
+            <button class="action-button" onclick="clearOutput()"><i class="fas fa-trash"></i> Clear Logs</button>
+          </div>
+          <div id="output"></div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p><i class="fas fa-copyright"></i> Serial Monitor App © 2025</p>
+  </footer>
+
+  <script src="renderer.js"></script>
+  <script>
+    let isLedOn = false;
+
+    function restartDevice() {
+      sendCommand('Restart Device');
+      document.getElementById('output').innerHTML += 'Sent RESTART command to device.<br>';
+      const button = document.getElementById('restart-button');
+      button.disabled = true;
+      setTimeout(() => {
+        button.disabled = false;
+      }, 5000);
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle('dark-mode');
+      localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+      const icon = document.querySelector('.theme-toggle i');
+      icon.className = document.body.classList.contains('dark-mode') ? 'fas fa-sun' : 'fas fa-moon';
+    }
+
+    function clearOutput() {
+      document.getElementById('output').innerHTML = '';
+    }
+
+    // Function to update visibility of sensor visualization section
+    function updateSensorVisualizationVisibility() {
+      const visualizationSection = document.getElementById('sensor-visualization-section');
+      const thermometerValue = document.getElementById('thermometer-value').textContent;
+      const humidityValue = document.getElementById('humidity-value').textContent;
+      const pressureValue = document.getElementById('pressure-value').textContent;
+      const lightValue = document.getElementById('light-value').textContent;
+      const lis3dhXValue = document.getElementById('lis3dh-x-value').textContent;
+      const hallValue = document.getElementById('hall-value').textContent;
+      const tlv493dXValue = document.getElementById('tlv493d-x-value').textContent;
+      const tofValue = document.getElementById('tof-value').textContent;
+      const uvValue = document.getElementById('uv-value').textContent;
+      const irValue = document.getElementById('ir-value').textContent;
+
+      // Check if any sensor card has data
+      const hasData = thermometerValue || humidityValue || pressureValue || lightValue || lis3dhXValue || hallValue || tlv493dXValue || tofValue || uvValue || irValue;
+
+      // Show visualization section only if there is data
+      visualizationSection.style.display = hasData ? 'block' : 'none';
+    }
+
+    // Override updateSensorUI to include visibility check
+    const originalUpdateSensorUI = window.updateSensorUI || function() {};
+    window.updateSensorUI = function() {
+      originalUpdateSensorUI();
+      updateSensorVisualizationVisibility();
+    };
+
+    // Override selectSensor to include visibility check
+    const originalSelectSensor = window.selectSensor || function() {};
+    window.selectSensor = function(value) {
+      originalSelectSensor(value);
+      updateSensorVisualizationVisibility();
+    };
+
+    if (localStorage.getItem('theme') === 'dark') {
+      document.body.classList.add('dark-mode');
+      document.querySelector('.theme-toggle i').className = 'fas fa-sun';
+    }
+
+    // Initial check for visualization visibility
+    updateSensorVisualizationVisibility();
+  </script>
+</body>
+</html>
