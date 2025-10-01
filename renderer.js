@@ -579,9 +579,9 @@ function parseSensorData(data) {
         if (sensorName === "IR Sensor") {
           currentIR = paramMap['Infrared'] ? parseFloat(paramMap['Infrared']) : null;
         }
-        if (selectedSensor === sensorName) {
-          updateSensorUI();
-        }
+        // if (selectedSensor === sensorName) {
+        //   // updateSensorUI();
+        // }
       }
     }
 
