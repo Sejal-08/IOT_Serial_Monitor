@@ -2,7 +2,7 @@ let selectedSensor = null;
 
 // Sensor protocol to sensor mapping
 const sensorProtocolMap = {
-  "I2C": ["SHT40", "BME680", "STS30","STTS751", "LIS3DH", "Lux Sensor", "TLV493D", "TOFVL53L0X", "LTR390"],
+  "I2C": ["SHT40", "BME680", "STS30","STTS751", "LIS3DH", "Lux Sensor", "TLV493D", "VL53L0X", "LTR390"],
   "RS485": ["MD-02"],
   "SPI": [""],
   "Analog": ["Hall Sensor", "IR Sensor"],
@@ -10,7 +10,7 @@ const sensorProtocolMap = {
 
 // Track sensor presence and data
 let sensorStatus = {
-  "I2C": { SHT40: false, BME680: false ,STS30: false,STTS751: false, LIS3DH: false, LuxSensor: false, TLV493D: false, TOFVL53L0X: false, LTR390: false },
+  "I2C": { SHT40: false, BME680: false ,STS30: false,STTS751: false, LIS3DH: false, LuxSensor: false, TLV493D: false, VL53L0X: false, LTR390: false },
   "RS485": { MD02: false },
   "SPI": { },
   "Analog": { Hall_Sensor: false, IR_Sensor: false }
@@ -107,7 +107,7 @@ const sensorParameters = {
   "LIS3DH": ["AccelerationX", "AccelerationY", "AccelerationZ"],
   "Hall Sensor": ["MagneticField"],
   "TLV493D": ["MagneticX", "MagneticY", "MagneticZ"],
-  "TOFVL53L0X": ["Distance"],
+  "VL53L0X": ["Distance"],
   "LTR390": ["UV"],
   "IR Sensor": ["Infrared"]
 };
@@ -370,7 +370,7 @@ if (protocol === "I2C" && selectedSensor === "LIS3DH" && currentAccelX !== null 
     }
 
     // Update TOFVL53L0X distance card (for I2C TOFVL53L0X)
-    if (protocol === "I2C" && selectedSensor === "TOFVL53L0X" && currentDistance !== null) {
+    if (protocol === "I2C" && selectedSensor === "VL53L0X" && currentDistance !== null) {
       const distance = parseFloat(currentDistance);
       const maxDist = 2000; // Assuming max 2000 mm
       const barColor = "#34d399";
@@ -569,7 +569,7 @@ function parseSensorData(data) {
           currentMagneticY = paramMap['MagneticY'] ? parseFloat(paramMap['MagneticY']) : null;
           currentMagneticZ = paramMap['MagneticZ'] ? parseFloat(paramMap['MagneticZ']) : null;
         }
-        if (sensorName === "TOFVL53L0X") {
+        if (sensorName === "VL53L0X") {
           currentDistance = paramMap['Distance'] ? parseFloat(paramMap['Distance']) : null;
         }
         if (sensorName === "LTR390") {
