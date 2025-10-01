@@ -325,7 +325,7 @@ if (protocol === "I2C" && selectedSensor === "LIS3DH" && currentAccelX !== null 
   }
 }
 
-    // Update Hall Sensor card (for Analog Hall Sensor)
+     // Update Hall Sensor card (for Analog Hall Sensor)
     if (protocol === "Analog" && selectedSensor === "Hall Sensor" && currentMagneticField !== null) {
       const field = parseInt(currentMagneticField);
       hallValue.textContent = field === 1 ? "High (Detected)" : "Low (Not Detected)";
@@ -338,7 +338,6 @@ if (protocol === "I2C" && selectedSensor === "LIS3DH" && currentAccelX !== null 
       hallGlow.setAttribute("stdDeviation", 0);
       hallArc.removeAttribute("filter");
     }
-
 
     // Update TLV493D magnetic field card (for I2C TLV493D)
     if (protocol === "I2C" && selectedSensor === "TLV493D" && currentMagneticX !== null && currentMagneticY !== null && currentMagneticZ !== null) {
