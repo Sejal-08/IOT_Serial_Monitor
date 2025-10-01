@@ -329,11 +329,16 @@ if (protocol === "I2C" && selectedSensor === "LIS3DH" && currentAccelX !== null 
     if (protocol === "Analog" && selectedSensor === "Hall Sensor" && currentMagneticField !== null) {
       const field = parseInt(currentMagneticField);
       hallValue.textContent = field === 1 ? "High (Detected)" : "Low (Not Detected)";
-      hallIcon.style.color = field === 1 ? "#f44336" : "#34d399";
+      hallArc.style.stroke = field === 1 ? "#f44336" : "#34d399";
+      hallGlow.setAttribute("stdDeviation", field === 1 ? 5 : 0);
+      hallArc.setAttribute("filter", field === 1 ? "url(#hall-glow)" : "");
     } else {
       hallValue.textContent = "";
-      hallIcon.style.color = "#6b8af7";
+      hallArc.style.stroke = "#34d399";
+      hallGlow.setAttribute("stdDeviation", 0);
+      hallArc.removeAttribute("filter");
     }
+
 
     // Update TLV493D magnetic field card (for I2C TLV493D)
     if (protocol === "I2C" && selectedSensor === "TLV493D" && currentMagneticX !== null && currentMagneticY !== null && currentMagneticZ !== null) {

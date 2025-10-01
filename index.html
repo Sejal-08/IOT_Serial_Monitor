@@ -191,11 +191,22 @@
     </div>
   </div>
 </div>
-            <!-- Hall Sensor -->
+         <!-- Hall Sensor with C-shaped Arc -->
             <div id="hall-card" class="card-container" style="display: none;">
               <h4>Hall Sensor</h4>
               <div id="hall-value" class="sensor-value"></div>
-              <i id="hall-icon" class="fas fa-magnet" style="font-size: 50px;"></i>
+              <svg id="hall-arc" width="80" height="80" viewBox="0 0 100 100">
+                <defs>
+                  <filter id="hall-glow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur stdDeviation="0" result="coloredBlur"/>
+                    <feMerge>
+                      <feMergeNode in="coloredBlur"/>
+                      <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                  </filter>
+                </defs>
+                <path id="hall-arc-path" d="M 20 80 A 30 30 0 1 1 80 80" fill="none" stroke="#f44336" stroke-width="8" stroke-linecap="round"/>
+              </svg>
             </div>
 
             <!-- TLV493D Magnetic Field -->
