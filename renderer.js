@@ -37,7 +37,6 @@ let currentMagneticY = null;
 let currentMagneticZ = null;
 let currentDistance = null; // TOFVL53L0X
 let currentUV = null; // UVLTR390
-let currentAmbient = null;
 let currentIR = null; // IR Sensor
 
 // Update sensor UI
@@ -90,8 +89,7 @@ function updateSensorUI() {
   const tofBar = document.getElementById("tof-bar");
   const uvValue = document.getElementById("uv-value");
   const uvBar = document.getElementById("uv-bar");
-  const ambientValue = document.getElementById("ambient-value");
-  const ambientBar = document.getElementById("ambient-bar");
+
   const irValue = document.getElementById("ir-value");
   const irFlame = document.getElementById("ir-flame");
   const irGlow = document.querySelector("#ir-glow feGaussianBlur");
@@ -100,19 +98,19 @@ function updateSensorUI() {
   sensorDataDiv.innerHTML = "";
 
   // Define which sensors support which parameters
-  const sensorParameters = {
-    "BME680": ["Temperature", "Humidity", "Pressure"],
-    "SHT40": ["Temperature", "Humidity"],
-    "STTS751": ["Temperature"],
-    "Lux Sensor": ["LightIntensity"],
-    "STS30": ["Temperature"],
-    "LIS3DH": ["AccelerationX", "AccelerationY", "AccelerationZ"],
-    "Hall Sensor": ["MagneticField"],
-    "TLV493D": ["MagneticX", "MagneticY", "MagneticZ"],
-    "TOFVL53L0X": ["Distance"],
-    "LTR390": ["UV", "AmbientLight"],
-    "IR Sensor": ["Infrared"]
-  };
+const sensorParameters = {
+  "BME680": ["Temperature", "Humidity", "Pressure"],
+  "SHT40": ["Temperature", "Humidity"],
+  "STTS751": ["Temperature"],
+  "Lux Sensor": ["LightIntensity"],
+  "STS30": ["Temperature"],
+  "LIS3DH": ["AccelerationX", "AccelerationY", "AccelerationZ"],
+  "Hall Sensor": ["MagneticField"],
+  "TLV493D": ["MagneticX", "MagneticY", "MagneticZ"],
+  "TOFVL53L0X": ["Distance"],
+  "LTR390": ["UV"],
+  "IR Sensor": ["Infrared"]
+};
 
   if (protocol) {
     // Populate sensor dropdown
@@ -386,29 +384,20 @@ if (protocol === "I2C" && selectedSensor === "LIS3DH" && currentAccelX !== null 
       tofBar.style.backgroundColor = "#34d399";
     }
 
-    // Update UVLTR390 card (for I2C UVLTR390)
-    if (protocol === "I2C" && selectedSensor === "LTR390" && currentUV !== null && currentAmbient !== null) {
-      const uv = parseFloat(currentUV);
-      const ambient = parseFloat(currentAmbient);
-      const maxUV = 100; // Arbitrary max for UV index
-      const maxAmbient = 120000; // Similar to light
-      const barColor = "#6b8af7";
-      const barWidthUV = Math.min(Math.max((uv / maxUV) * 100, 0), 100);
-      const barWidthAmbient = Math.min(Math.max((ambient / maxAmbient) * 100, 0), 100);
-      uvValue.textContent = `UV: ${uv.toFixed(2)}`;
-      ambientValue.textContent = `Ambient: ${ambient.toFixed(2)} lux`;
-      uvBar.style.width = `${barWidthUV}%`;
-      ambientBar.style.width = `${barWidthAmbient}%`;
-      uvBar.style.backgroundColor = barColor;
-      ambientBar.style.backgroundColor = barColor;
-    } else {
-      uvValue.textContent = "UV: 0.00";
-      ambientValue.textContent = "Ambient: 0.00 lux";
-      uvBar.style.width = "0%";
-      ambientBar.style.width = "0%";
-      uvBar.style.backgroundColor = "#6b8af7";
-      ambientBar.style.backgroundColor = "#6b8af7";
-    }
+   // LTR390 card update
+if (protocol === "I2C" && selectedSensor === "LTR390" && currentUV !== null) {
+  const uv = parseFloat(currentUV);
+  const maxUV = 100;
+  const barColor = "#6b8af7";
+  const barWidthUV = Math.min(Math.max((uv / maxUV) * 100, 0), 100);
+  uvValue.textContent = `UV: ${uv.toFixed(2)}`;
+  uvBar.style.width = `${barWidthUV}%`;
+  uvBar.style.backgroundColor = barColor;
+} else {
+  uvValue.textContent = "UV: 0.00";
+  uvBar.style.width = "0%";
+  uvBar.style.backgroundColor = "#6b8af7";
+}
 
     // Update IR Sensor card (for Analog IR Sensor)
     if (protocol === "Analog" && selectedSensor === "IR Sensor" && currentIR !== null) {
@@ -544,7 +533,7 @@ function parseSensorData(data) {
         } else if (sensorName === "LTR390") {
           keyMap = {
             'UV Index': 'UV', // Map 'UV Index' to 'UV'
-            'Ambient': 'AmbientLight' // Map 'Ambient' to 'AmbientLight' if applicable
+          
           };
         }
 
@@ -582,7 +571,7 @@ function parseSensorData(data) {
         }
         if (sensorName === "LTR390") {
           currentUV = paramMap['UV Index'] ? parseFloat(paramMap['UV Index']) : null;
-          currentAmbient = paramMap['Ambient'] ? parseFloat(paramMap['Ambient']) : null;
+         console.log(`LTR390 Data - UV: ${currentUV}`);
         }
         if (sensorName === "IR Sensor") {
           currentIR = paramMap['Infrared'] ? parseFloat(paramMap['Infrared']) : null;
