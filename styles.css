@@ -58,7 +58,9 @@ body.dark-mode {
   --h3-color: #a3bffa;
   --h2-gradient: linear-gradient(90deg, #2a4370, #6b8af7, #a3bffa);
 }
-
+.control-section:has(h3 > i.fa-file-alt) .controls {
+  margin-bottom: 30px; /* Adds 20px of space below the Clear Logs button */
+}
 /* Base Styles */
 * {
   margin: 0;
