@@ -77,19 +77,27 @@ function updateSensorUI() {
   const lis3dhXValue = document.getElementById("lis3dh-x-value");
   const lis3dhYValue = document.getElementById("lis3dh-y-value");
   const lis3dhZValue = document.getElementById("lis3dh-z-value");
+
   const hallValue = document.getElementById("hall-value"); // Fixed: Added hallValue initialization
-const hallArc = document.getElementById("hall-arc-path"); // Fixed: Correct ID for Hall Sensor SVG path
+  const hallArc = document.getElementById("hall-arc-path"); // Fixed: Correct ID for Hall Sensor SVG path
   const hallGlow = document.getElementById("hall-glow");
+
   const tlv493dXValue = document.getElementById("tlv493d-x-value");
   const tlv493dYValue = document.getElementById("tlv493d-y-value");
   const tlv493dZValue = document.getElementById("tlv493d-z-value");
   const tlv493dXBar = document.getElementById("tlv493d-x-bar");
   const tlv493dYBar = document.getElementById("tlv493d-y-bar");
   const tlv493dZBar = document.getElementById("tlv493d-z-bar");
+
   const tofValue = document.getElementById("tof-value");
   const tofBar = document.getElementById("tof-bar");
+
   const uvValue = document.getElementById("uv-value");
   const uvBar = document.getElementById("uv-bar");
+  const uvSun = document.getElementById("uv-sun");
+  const uvSunCircle = document.getElementById("uv-sun-circle");
+  const uvRays = document.getElementById("uv-rays");
+  const uvGlow = document.getElementById("uvGlow");
 
   const irValue = document.getElementById("ir-value");
   const irFlame = document.getElementById("ir-flame");
@@ -387,19 +395,82 @@ if (protocol === "I2C" && selectedSensor === "LIS3DH" && currentAccelX !== null 
       tofBar.style.backgroundColor = "#34d399";
     }
 
-   // LTR390 card update
+  // Update LTR390 card (for I2C LTR390)
 if (protocol === "I2C" && selectedSensor === "LTR390" && currentUV !== null) {
   const uv = parseFloat(currentUV);
-  const maxUV = 100;
+  const maxUV = 11; // Cap at 11+ for Extreme
   const barColor = "#6b8af7";
   const barWidthUV = Math.min(Math.max((uv / maxUV) * 100, 0), 100);
   uvValue.textContent = `UV: ${uv.toFixed(2)}`;
   uvBar.style.width = `${barWidthUV}%`;
   uvBar.style.backgroundColor = barColor;
+
+  // Define UV index ranges and corresponding colors
+  const uvRanges = [
+    { range: [0, 2], label: "Low", color: "#ffeb3b" }, // Green
+    { range: [2, 5], label: "Moderate", color: "#ff9800" }, // Yellow
+    { range: [6, 7], label: "High", color: "#ff5500ff" }, // Orange
+    { range: [8, 10], label: "Very High", color: "#f11a0bff" }, // Red
+    { range: [11, Infinity], label: "Extreme", color: "#9c27b0" } // Purple
+  ];
+
+  // Determine UV range and color
+  let uvColor = "#ffeb3b"; // Default color
+  let uvLabel = "Low";
+  for (const range of uvRanges) {
+    if (uv >= range.range[0] && uv <= range.range[1]) {
+      uvColor = range.color;
+      uvLabel = range.label;
+      break;
+    }
+  }
+
+  // Update sun circle and gradient
+  uvSunCircle.setAttribute("r", uv >= 3 ? 22 : 18); // Slightly larger for Moderate and above
+  uvGlow.setAttribute("stdDeviation", uv >= 3 ? 5 : 3); // Increase glow for higher UV
+  uvSunGradient.children[0].setAttribute("style", `stop-color:${uvColor}; stop-opacity:1`);
+  uvSunGradient.children[1].setAttribute("style", `stop-color:${uvColor}; stop-opacity:0.8`);
+  uvSunGradient.children[2].setAttribute("style", `stop-color:${uvColor}; stop-opacity:0.4`);
+
+  // Update rays visibility and color
+  const rays = uvRays.querySelectorAll(".uv-ray");
+  rays.forEach(ray => {
+    ray.setAttribute("stroke", uvColor);
+    ray.style.opacity = uv >= 3 ? 1 : 0; // Rays appear for Moderate and above
+    // Update animation for higher UV levels
+    if (uv >= 3) {
+      const animOpacity = ray.querySelector('animate[attributeName="opacity"]');
+      const animX2 = ray.querySelector('animate[attributeName="x2"]');
+      const animY2 = ray.querySelector('animate[attributeName="y2"]');
+      if (animOpacity) {
+        animOpacity.setAttribute("values", uv >= 8 ? "0;1;0" : "0;0.8;0"); // Stronger pulse for Very High+
+        animOpacity.setAttribute("dur", uv >= 11 ? "1.5s" : "2s"); // Faster for Extreme
+      }
+      if (animX2) {
+        animX2.setAttribute("values", uv >= 11 ? `${parseFloat(animX2.getAttribute("values").split(";")[0])*1.2};${parseFloat(animX2.getAttribute("values").split(";")[1])*1.2};${parseFloat(animX2.getAttribute("values").split(";")[0])*1.2}` : animX2.getAttribute("values"));
+      }
+      if (animY2) {
+        animY2.setAttribute("values", uv >= 11 ? `${parseFloat(animY2.getAttribute("values").split(";")[0])*1.2};${parseFloat(animY2.getAttribute("values").split(";")[1])*1.2};${parseFloat(animY2.getAttribute("values").split(";")[0])*1.2}` : animY2.getAttribute("values"));
+      }
+    }
+  });
+
+  // Update UV value with risk label
+  uvValue.textContent = `UV: ${uv.toFixed(2)} (${uvLabel})`;
 } else {
   uvValue.textContent = "UV: 0.00";
   uvBar.style.width = "0%";
   uvBar.style.backgroundColor = "#6b8af7";
+  uvSunCircle.setAttribute("r", 18);
+  uvGlow.setAttribute("stdDeviation", 3);
+  uvSunGradient.children[0].setAttribute("style", "stop-color:#ffeb3b; stop-opacity:1");
+  uvSunGradient.children[1].setAttribute("style", "stop-color:#ff9800; stop-opacity:0.8");
+  uvSunGradient.children[2].setAttribute("style", "stop-color:#ff6b00; stop-opacity:0.4");
+  const rays = uvRays.querySelectorAll(".uv-ray");
+  rays.forEach(ray => {
+    ray.setAttribute("stroke", "#ffeb3b");
+    ray.style.opacity = 0;
+  });
 }
 
     // Update IR Sensor card (for Analog IR Sensor)
