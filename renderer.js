@@ -465,37 +465,29 @@ function updateSensorUI() {
       });
     }
 
-    // Update IR Sensor card (for Analog IR Sensor)
-    if (protocol === "Analog" && selectedSensor === "IR Sensor" && currentIR !== null) {
-      const ir = parseFloat(currentIR);
-      let flameColor1 = "#ffeb3b";
-      let flameColor2 = "#ff9800";
-      let flameColor3 = "#f44336";
-      let glowStd = 0;
-      if (ir <= 50) {
-        glowStd = 2;
-      } else if (ir > 50 && ir <= 100) {
-        glowStd = 5;
-      } else {
-        glowStd = 8;
-      }
-      const brightness = Math.min(Math.max(ir / 200, 0), 1);
-      const flamePaths = irFlame.querySelectorAll("path");
-      flamePaths[0].setAttribute("fill", flameColor1);
-      flamePaths[1].setAttribute("fill", flameColor2);
-      flamePaths[2].setAttribute("fill", flameColor3);
-      irGlow.setAttribute("stdDeviation", glowStd * brightness);
-      irFlame.setAttribute("filter", "url(#ir-glow)");
-      irValue.textContent = `${ir.toFixed(2)}`;
-    } else {
-      irValue.textContent = "";
-      const flamePaths = irFlame.querySelectorAll("path");
-      flamePaths[0].setAttribute("fill", "#ffeb3b");
-      flamePaths[1].setAttribute("fill", "#ff9800");
-      flamePaths[2].setAttribute("fill", "#f44336");
-      irGlow.setAttribute("stdDeviation", 0);
-      irFlame.removeAttribute("filter");
-    }
+  // Update IR Sensor card (for Analog IR Sensor)
+if (protocol === "Analog" && selectedSensor === "IR Sensor" && currentIR !== null) {
+  const ir = parseInt(currentIR); // Parse as integer since it's 0 or 1
+  const irValue = document.getElementById("ir-value");
+  const irBulbCircle = document.getElementById("ir-bulb-circle");
+  const irGlow = document.querySelector("#ir-glow feGaussianBlur");
+
+  // Set display text and bulb appearance based on binary state
+  irValue.textContent = ir === 1 ? "On (Detected)" : "Off (Not Detected)";
+  irBulbCircle.setAttribute("fill", ir === 1 ? "#ffeb3b" : "#ccc"); // Yellow when on, gray when off
+  irGlow.setAttribute("stdDeviation", ir === 1 ? 5 : 0); // Glow when on
+  irBulbCircle.setAttribute("filter", ir === 1 ? "url(#ir-glow)" : "");
+} else {
+  const irValue = document.getElementById("ir-value");
+  const irBulbCircle = document.getElementById("ir-bulb-circle");
+  const irGlow = document.querySelector("#ir-glow feGaussianBlur");
+  if (irValue) irValue.textContent = "";
+  if (irBulbCircle && irGlow) {
+    irBulbCircle.setAttribute("fill", "#ccc");
+    irGlow.setAttribute("stdDeviation", 0);
+    irBulbCircle.removeAttribute("filter");
+  }
+}
 
     // Update visualization section visibility
     updateSensorVisualizationVisibility();

@@ -313,25 +313,24 @@
               <div id="uv-bar" class="card-bar"></div>
             </div>
 
-            <!-- IR Sensor -->
-            <div id="ir-card" class="card-container" style="display: none;">
-              <h4>IR Intensity</h4>
-              <div id="ir-value" class="sensor-value"></div>
-              <svg id="ir-flame" width="80" height="80" viewBox="0 0 100 100">
-                <path d="M50 90 Q30 70 50 50 Q70 70 50 90 Z" fill="#ffeb3b" />
-                <path d="M50 70 Q35 50 50 30 Q65 50 50 70 Z" fill="#ff9800" />
-                <path d="M50 50 Q40 35 50 20 Q60 35 50 50 Z" fill="#f44336" />
-                <defs>
-                  <filter id="ir-glow">
-                    <feGaussianBlur stdDeviation="0" result="coloredBlur"/>
-                    <feMerge>
-                      <feMergeNode in="coloredBlur"/>
-                      <feMergeNode in="SourceGraphic"/>
-                    </feMerge>
-                  </filter>
-                </defs>
-              </svg>
-            </div>
+          <!-- IR Sensor -->
+<div id="ir-card" class="card-container" style="display: none;">
+  <h4>IR Sensor</h4>
+  <div id="ir-value" class="sensor-value"></div>
+  <svg id="ir-bulb" width="80" height="80" viewBox="0 0 100 100">
+    <defs>
+      <filter id="ir-glow" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="0" result="coloredBlur"/>
+        <feMerge>
+          <feMergeNode in="coloredBlur"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+    </defs>
+    <circle id="ir-bulb-circle" cx="50" cy="50" r="30" fill="#ccc" stroke="#333" stroke-width="2"/>
+    <path id="ir-bulb-base" d="M 35 80 H 65 V 90 H 35 Z" fill="#666"/>
+  </svg>
+</div>
           </div>
         </section>
 
