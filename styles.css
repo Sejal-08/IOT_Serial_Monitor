@@ -5,8 +5,8 @@
 /* CSS Variables for Shared Styles */
 :root {
   --text-color: #1e293b;
-  --bg-color: #f7f9fc;
-  --panel-bg: #ffffff;
+  --bg-color: linear-gradient(135deg, #f3f4f6 0%, #e4e8f2 50%, #d3d4d5 100%);
+  --panel-bg:linear-gradient(135deg, #ffffff 0%, #e0e7ff 50%, #f9f9f9 100%);
   --panel-border: #e0e7ff;
   --panel-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
   --nav-bg: linear-gradient(90deg, #4b6cb7, #6b8af7, #a3bffa);
