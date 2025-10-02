@@ -743,7 +743,6 @@ async function listPorts() {
     return;
   }
 
-  availablePorts = result;
   result.forEach((p) => {
     const option = document.createElement("option");
     option.value = p;
@@ -756,7 +755,6 @@ async function listPorts() {
 }
 
 async function connectPort() {
-  await listPorts();
   const portName = document.getElementById("ports").value;
   const baudRate = parseInt(document.getElementById("baud-rate").value);
 
@@ -769,12 +767,6 @@ async function connectPort() {
 
   if (!baudRate || isNaN(baudRate) || baudRate <= 0) {
     document.getElementById("output").innerHTML += `<span style="color: red;">Please select a valid baud rate.</span><br>`;
-    return;
-  }
-
-  if (!availablePorts.includes(portName)) {
-    document.getElementById("output").innerHTML += `<span style="color: red;">Selected port ${portName} is not available.</span><br>`;
-    console.error(`Port ${portName} not in available ports: ${availablePorts}`);
     return;
   }
 
@@ -903,8 +895,6 @@ window.addEventListener("DOMContentLoaded", () => {
   listPorts();
   updateSensorUI();
 
-  setInterval(listPorts, 1000);
-
   const baudRateInput = document.getElementById("baud-rate");
   if (baudRateInput) {
     baudRateInput.addEventListener("change", async (event) => {
@@ -929,6 +919,9 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const portsSelect = document.getElementById("ports");
   if (portsSelect) {
+    portsSelect.addEventListener("focus", async () => {
+      await listPorts();
+    });
     portsSelect.addEventListener("change", async (event) => {
       const newPort = event.target.value;
       console.log(`Port changed to: ${newPort}`);
