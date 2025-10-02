@@ -352,71 +352,87 @@
 
   <script src="renderer.js"></script>
   <script>
-    let isLedOn = false;
+  let isLedOn = false;
 
-    function restartDevice() {
-      sendCommand('Restart Device');
-      document.getElementById('output').innerHTML += 'Sent RESTART command to device.<br>';
-      const button = document.getElementById('restart-button');
-      button.disabled = true;
-      setTimeout(() => {
-        button.disabled = false;
-      }, 5000);
-    }
+  function restartDevice() {
+    sendCommand('Restart Device');
+    document.getElementById('output').innerHTML += 'Sent RESTART command to device.<br>';
+    const button = document.getElementById('restart-button');
+    button.disabled = true;
+    setTimeout(() => {
+      button.disabled = false;
+    }, 5000);
+  }
 
-    function toggleTheme() {
-      document.body.classList.toggle('dark-mode');
-      localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
-      const icon = document.querySelector('.theme-toggle i');
-      icon.className = document.body.classList.contains('dark-mode') ? 'fas fa-sun' : 'fas fa-moon';
-    }
+  function toggleTheme() {
+    document.body.classList.toggle('dark-mode');
+    localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+    const icon = document.querySelector('.theme-toggle i');
+    icon.className = document.body.classList.contains('dark-mode') ? 'fas fa-sun' : 'fas fa-moon';
+  }
 
-    function clearOutput() {
-      document.getElementById('output').innerHTML = '';
-    }
+  function clearOutput() {
+    document.getElementById('output').innerHTML = '';
+  }
 
-    // Function to update visibility of sensor visualization section
-    function updateSensorVisualizationVisibility() {
-      const visualizationSection = document.getElementById('sensor-visualization-section');
-      const thermometerValue = document.getElementById('thermometer-value').textContent;
-      const humidityValue = document.getElementById('humidity-value').textContent;
-      const pressureValue = document.getElementById('pressure-value').textContent;
-      const lightValue = document.getElementById('light-value').textContent;
-      const lis3dhXValue = document.getElementById('lis3dh-x-value').textContent;
-      const hallValue = document.getElementById('hall-value').textContent;
-      const tlv493dXValue = document.getElementById('tlv493d-x-value').textContent;
-      const tofValue = document.getElementById('tof-value').textContent;
-      const uvValue = document.getElementById('uv-value').textContent;
-      const irValue = document.getElementById('ir-value').textContent;
+  // Function to check if any sensor has data and update visibility
+  function updateSensorVisualizationVisibility() {
+    const visualizationSection = document.getElementById('sensor-visualization-section');
+    
+    // List of sensor value elements to check
+    const sensorValues = [
+      document.getElementById('thermometer-value').textContent,
+      document.getElementById('humidity-value').textContent,
+      document.getElementById('pressure-value').textContent,
+      document.getElementById('light-value').textContent,
+      document.getElementById('lis3dh-x-value').textContent,
+      document.getElementById('hall-value').textContent,
+      document.getElementById('tlv493d-x-value').textContent,
+      document.getElementById('tof-value').textContent,
+      document.getElementById('uv-value').textContent,
+      document.getElementById('ir-value').textContent
+    ];
 
-      // Check if any sensor card has data
-      const hasData = thermometerValue || humidityValue || pressureValue || lightValue || lis3dhXValue || hallValue || tlv493dXValue || tofValue || uvValue || irValue;
+    // Check if any sensor has non-empty data (and not just default/placeholder values)
+    const hasData = sensorValues.some(value => 
+      value && 
+      value.trim() !== '' && 
+      !value.includes('0.00') && // Adjust this based on your default values
+      value !== 'X: 0.00 m/s²' && 
+      value !== 'Y: 0.00 m/s²' && 
+      value !== 'Z: 0.00 m/s²' && 
+      value !== 'X: 0.00 mT' && 
+      value !== 'Y: 0.00 mT' && 
+      value !== 'Z: 0.00 mT' && 
+      value !== 'UV: 0.00'
+    );
 
-      // Show visualization section only if there is data
-      visualizationSection.style.display = hasData ? 'block' : 'none';
-    }
+    // Show or hide the entire visualization section
+    visualizationSection.style.display = hasData ? 'block' : 'none';
+  }
 
-    // Override updateSensorUI to include visibility check
-    const originalUpdateSensorUI = window.updateSensorUI || function() {};
-    window.updateSensorUI = function() {
-      originalUpdateSensorUI();
-      updateSensorVisualizationVisibility();
-    };
-
-    // Override selectSensor to include visibility check
-    const originalSelectSensor = window.selectSensor || function() {};
-    window.selectSensor = function(value) {
-      originalSelectSensor(value);
-      updateSensorVisualizationVisibility();
-    };
-
-    if (localStorage.getItem('theme') === 'dark') {
-      document.body.classList.add('dark-mode');
-      document.querySelector('.theme-toggle i').className = 'fas fa-sun';
-    }
-
-    // Initial check for visualization visibility
+  // Override updateSensorUI to include visibility check
+  const originalUpdateSensorUI = window.updateSensorUI || function() {};
+  window.updateSensorUI = function() {
+    originalUpdateSensorUI();
     updateSensorVisualizationVisibility();
-  </script>
+  };
+
+  // Override selectSensor to include visibility check
+  const originalSelectSensor = window.selectSensor || function() {};
+  window.selectSensor = function(value) {
+    originalSelectSensor(value);
+    updateSensorVisualizationVisibility();
+  };
+
+  // Apply saved theme on page load
+  if (localStorage.getItem('theme') === 'dark') {
+    document.body.classList.add('dark-mode');
+    document.querySelector('.theme-toggle i').className = 'fas fa-sun';
+  }
+
+  // Initial check for visualization visibility
+  updateSensorVisualizationVisibility();
+</script>
 </body>
 </html>
