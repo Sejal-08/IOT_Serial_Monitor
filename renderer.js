@@ -2,7 +2,7 @@ let selectedSensor = null;
 
 // Sensor protocol to sensor mapping
 const sensorProtocolMap = {
-  "I2C": ["SHT40", "BME680", "STS30","STTS751", "LIS3DH", "Lux Sensor", "TLV493D", "VL53L0X", "LTR390"],
+  "I2C": ["SHT40", "BME680", "STS30", "STTS751", "LIS3DH", "Lux Sensor", "TLV493D", "VL53L0X", "LTR390"],
   "RS485": ["MD-02"],
   "SPI": [""],
   "Analog": ["Hall Sensor", "IR Sensor"],
@@ -10,9 +10,9 @@ const sensorProtocolMap = {
 
 // Track sensor presence and data
 let sensorStatus = {
-  "I2C": { SHT40: false, BME680: false ,STS30: false,STTS751: false, LIS3DH: false, LuxSensor: false, TLV493D: false, VL53L0X: false, LTR390: false },
+  "I2C": { SHT40: false, BME680: false, STS30: false, STTS751: false, LIS3DH: false, LuxSensor: false, TLV493D: false, VL53L0X: false, LTR390: false },
   "RS485": { MD02: false },
-  "SPI": { },
+  "SPI": {},
   "Analog": { Hall_Sensor: false, IR_Sensor: false }
 };
 
@@ -31,13 +31,16 @@ let currentLight = null;
 let currentAccelX = null;
 let currentAccelY = null;
 let currentAccelZ = null;
-let currentMagneticField = null; // Hall Sensor (0 or 1)
-let currentMagneticX = null; // TLV493D
+let currentMagneticField = null;
+let currentMagneticX = null;
 let currentMagneticY = null;
 let currentMagneticZ = null;
-let currentDistance = null; // TOFVL53L0X
-let currentUV = null; // UVLTR390
-let currentIR = null; // IR Sensor
+let currentDistance = null;
+let currentUV = null;
+let currentIR = null;
+
+let isConnected = false;
+let currentBaud = null;
 
 // Update sensor UI
 function updateSensorUI() {
@@ -78,8 +81,8 @@ function updateSensorUI() {
   const lis3dhYValue = document.getElementById("lis3dh-y-value");
   const lis3dhZValue = document.getElementById("lis3dh-z-value");
 
-  const hallValue = document.getElementById("hall-value"); // Fixed: Added hallValue initialization
-  const hallArc = document.getElementById("hall-arc-path"); // Fixed: Correct ID for Hall Sensor SVG path
+  const hallValue = document.getElementById("hall-value");
+  const hallArc = document.getElementById("hall-arc-path");
   const hallGlow = document.getElementById("hall-glow");
 
   const tlv493dXValue = document.getElementById("tlv493d-x-value");
@@ -107,19 +110,19 @@ function updateSensorUI() {
   sensorDataDiv.innerHTML = "";
 
   // Define which sensors support which parameters
-const sensorParameters = {
-  "BME680": ["Temperature", "Humidity", "Pressure"],
-  "SHT40": ["Temperature", "Humidity"],
-  "STTS751": ["Temperature"],
-  "Lux Sensor": ["LightIntensity"],
-  "STS30": ["Temperature"],
-  "LIS3DH": ["AccelerationX", "AccelerationY", "AccelerationZ"],
-  "Hall Sensor": ["MagneticField"],
-  "TLV493D": ["MagneticX", "MagneticY", "MagneticZ"],
-  "VL53L0X": ["Distance"],
-  "LTR390": ["UV"],
-  "IR Sensor": ["Infrared"]
-};
+  const sensorParameters = {
+    "BME680": ["Temperature", "Humidity", "Pressure"],
+    "SHT40": ["Temperature", "Humidity"],
+    "STTS751": ["Temperature"],
+    "Lux Sensor": ["LightIntensity"],
+    "STS30": ["Temperature"],
+    "LIS3DH": ["AccelerationX", "AccelerationY", "AccelerationZ"],
+    "Hall Sensor": ["MagneticField"],
+    "TLV493D": ["MagneticX", "MagneticY", "MagneticZ"],
+    "VL53L0X": ["Distance"],
+    "LTR390": ["UV"],
+    "IR Sensor": ["Infrared"]
+  };
 
   if (protocol) {
     // Populate sensor dropdown
@@ -142,7 +145,6 @@ const sensorParameters = {
       if (sensorKeys.length > 0) {
         sensorKeys.forEach(key => {
           let value = sensorData[protocol][key];
-          // Format numeric values to two decimal places
           if (!isNaN(parseFloat(value))) {
             value = parseFloat(value).toFixed(2);
           }
@@ -240,7 +242,7 @@ const sensorParameters = {
       waveColor1.setAttribute("style", `stop-color: #3d8eb4; stop-opacity: 0.5`);
       waveColor2.setAttribute("style", `stop-color: #0474a8; stop-opacity: 1`);
       wavePath.style.animation = "";
-      wavePath.setAttribute("d", "M 0 100 V 100 H 100 V 100 Z");
+      wavePath.setAttribute("d", "M 0 100 V 100 H 0 Z");
     }
 
     // Update pressure card (only for I2C BME680)
@@ -264,7 +266,7 @@ const sensorParameters = {
       pressureBar.style.backgroundColor = "#34d399";
     }
 
-   // Update light intensity card (only for I2C Lux Sensor)
+    // Update light intensity card (only for I2C Lux Sensor)
     if (protocol === "I2C" && selectedSensor === "Lux Sensor" && currentLight !== null) {
       const light = parseFloat(currentLight);
       const maxLight = 120000;
@@ -300,39 +302,36 @@ const sensorParameters = {
       sparkles.style.opacity = 0;
     }
 
+    // Update LIS3DH acceleration card (only for I2C LIS3DH)
+    if (protocol === "I2C" && selectedSensor === "LIS3DH" && currentAccelX !== null && currentAccelY !== null && currentAccelZ !== null) {
+      const accelX = parseFloat(currentAccelX);
+      const accelY = parseFloat(currentAccelY);
+      const accelZ = parseFloat(currentAccelZ);
+      lis3dhXValue.textContent = `X: ${accelX.toFixed(2)} m/s²`;
+      lis3dhYValue.textContent = `Y: ${accelY.toFixed(2)} m/s²`;
+      lis3dhZValue.textContent = `Z: ${accelZ.toFixed(2)} m/s²`;
 
- // Update LIS3DH acceleration card (only for I2C LIS3DH) - 3D cube with moving ball and rotation
-if (protocol === "I2C" && selectedSensor === "LIS3DH" && currentAccelX !== null && currentAccelY !== null && currentAccelZ !== null) {
-  const accelX = parseFloat(currentAccelX);
-  const accelY = parseFloat(currentAccelY);
-  const accelZ = parseFloat(currentAccelZ);
-  lis3dhXValue.textContent = `X: ${accelX.toFixed(2)} m/s²`;
-  lis3dhYValue.textContent = `Y: ${accelY.toFixed(2)} m/s²`;
-  lis3dhZValue.textContent = `Z: ${accelZ.toFixed(2)} m/s²`;
+      const scale = 75 / 12;
+      const clamp = (val, min, max) => Math.max(min, Math.min(max, val));
+      const ballX = clamp(accelX * scale, -67.5, 67.5);
+      const ballY = clamp(-accelY * scale, -67.5, 67.5);
+      const ballZ = clamp(accelZ * scale, -67.5, 67.5);
 
-  // Translate the ball based on acceleration values
-  const scale = 75 / 12; // px per m/s², adjusted for max accel of 12 to reach cube edge
-  const clamp = (val, min, max) => Math.max(min, Math.min(max, val));
-  const ballX = clamp(accelX * scale, -67.5, 67.5); // Adjusted for 150px cube (75px half)
-  const ballY = clamp(-accelY * scale, -67.5, 67.5); // -accelY for +Y up convention
-  const ballZ = clamp(accelZ * scale, -67.5, 67.5);
+      const ball = document.getElementById("accel-ball");
+      if (ball) {
+        ball.style.transform = `translate(-50%, -50%) translate3d(${ballX}px, ${ballY}px, ${ballZ}px)`;
+      }
+    } else {
+      lis3dhXValue.textContent = "X: 0.00 m/s²";
+      lis3dhYValue.textContent = "Y: 0.00 m/s²";
+      lis3dhZValue.textContent = "Z: 0.00 m/s²";
+      const ball = document.getElementById("accel-ball");
+      if (ball) {
+        ball.style.transform = `translate(-50%, -50%) translate3d(0px, 0px, 0px)`;
+      }
+    }
 
-  // Apply translation to the ball within the rotated cube
-  const ball = document.getElementById("accel-ball");
-  if (ball) {
-    ball.style.transform = `translate(-50%, -50%) translate3d(${ballX}px, ${ballY}px, ${ballZ}px)`;
-  }
-} else {
-  lis3dhXValue.textContent = "X: 0.00 m/s²";
-  lis3dhYValue.textContent = "Y: 0.00 m/s²";
-  lis3dhZValue.textContent = "Z: 0.00 m/s²";
-  const ball = document.getElementById("accel-ball");
-  if (ball) {
-    ball.style.transform = `translate(-50%, -50%) translate3d(0px, 0px, 0px)`;
-  }
-}
-
-   // Update Hall Sensor card (for Analog Hall Sensor)
+    // Update Hall Sensor card (for Analog Hall Sensor)
     if (protocol === "Analog" && selectedSensor === "Hall Sensor" && currentMagneticField !== null && hallValue && hallArc && hallGlow) {
       const field = parseInt(currentMagneticField);
       hallValue.textContent = field === 1 ? "High (Detected)" : "Low (Not Detected)";
@@ -353,7 +352,7 @@ if (protocol === "I2C" && selectedSensor === "LIS3DH" && currentAccelX !== null 
       const magX = parseFloat(currentMagneticX);
       const magY = parseFloat(currentMagneticY);
       const magZ = parseFloat(currentMagneticZ);
-      const maxMag = 200; // Assuming ±200 mT range, adjust as needed
+      const maxMag = 200;
       const minMag = -200;
       const barColor = "#6b8af7";
       const barWidthX = Math.min(Math.max(((magX - minMag) / (maxMag - minMag)) * 100, 0), 100);
@@ -380,10 +379,10 @@ if (protocol === "I2C" && selectedSensor === "LIS3DH" && currentAccelX !== null 
       tlv493dZBar.style.backgroundColor = "#6b8af7";
     }
 
-    // Update TOFVL53L0X distance card (for I2C TOFVL53L0X)
+    // Update TOFVL53L0X distance card (for I2C VL53L0X)
     if (protocol === "I2C" && selectedSensor === "VL53L0X" && currentDistance !== null) {
       const distance = parseFloat(currentDistance);
-      const maxDist = 2000; // Assuming max 2000 mm
+      const maxDist = 2000;
       const barColor = "#34d399";
       const barWidth = Math.min(Math.max((distance / maxDist) * 100, 0), 100);
       tofValue.textContent = `${distance.toFixed(2)} mm`;
@@ -395,83 +394,77 @@ if (protocol === "I2C" && selectedSensor === "LIS3DH" && currentAccelX !== null 
       tofBar.style.backgroundColor = "#34d399";
     }
 
-  // Update LTR390 card (for I2C LTR390)
-if (protocol === "I2C" && selectedSensor === "LTR390" && currentUV !== null) {
-  const uv = parseFloat(currentUV);
-  const maxUV = 11; // Cap at 11+ for Extreme
-  const barColor = "#6b8af7";
-  const barWidthUV = Math.min(Math.max((uv / maxUV) * 100, 0), 100);
-  uvValue.textContent = `UV: ${uv.toFixed(2)}`;
-  uvBar.style.width = `${barWidthUV}%`;
-  uvBar.style.backgroundColor = barColor;
+    // Update LTR390 card (for I2C LTR390)
+    if (protocol === "I2C" && selectedSensor === "LTR390" && currentUV !== null) {
+      const uv = parseFloat(currentUV);
+      const maxUV = 11;
+      const barColor = "#6b8af7";
+      const barWidthUV = Math.min(Math.max((uv / maxUV) * 100, 0), 100);
+      uvValue.textContent = `UV: ${uv.toFixed(2)}`;
+      uvBar.style.width = `${barWidthUV}%`;
+      uvBar.style.backgroundColor = barColor;
 
-  // Define UV index ranges and corresponding colors
-  const uvRanges = [
-    { range: [0, 2], label: "Low", color: "#ffeb3b" }, // Green
-    { range: [2, 5], label: "Moderate", color: "#ff9800" }, // Yellow
-    { range: [6, 7], label: "High", color: "#ff5500ff" }, // Orange
-    { range: [8, 10], label: "Very High", color: "#f11a0bff" }, // Red
-    { range: [11, Infinity], label: "Extreme", color: "#9c27b0" } // Purple
-  ];
+      const uvRanges = [
+        { range: [0, 2], label: "Low", color: "#ffeb3b" },
+        { range: [2, 5], label: "Moderate", color: "#ff9800" },
+        { range: [6, 7], label: "High", color: "#ff5500ff" },
+        { range: [8, 10], label: "Very High", color: "#f11a0bff" },
+        { range: [11, Infinity], label: "Extreme", color: "#9c27b0" }
+      ];
 
-  // Determine UV range and color
-  let uvColor = "#ffeb3b"; // Default color
-  let uvLabel = "Low";
-  for (const range of uvRanges) {
-    if (uv >= range.range[0] && uv <= range.range[1]) {
-      uvColor = range.color;
-      uvLabel = range.label;
-      break;
+      let uvColor = "#ffeb3b";
+      let uvLabel = "Low";
+      for (const range of uvRanges) {
+        if (uv >= range.range[0] && uv <= range.range[1]) {
+          uvColor = range.color;
+          uvLabel = range.label;
+          break;
+        }
+      }
+
+      uvSunCircle.setAttribute("r", uv >= 3 ? 22 : 18);
+      uvGlow.setAttribute("stdDeviation", uv >= 3 ? 5 : 3);
+      uvSunGradient.children[0].setAttribute("style", `stop-color:${uvColor}; stop-opacity:1`);
+      uvSunGradient.children[1].setAttribute("style", `stop-color:${uvColor}; stop-opacity:0.8`);
+      uvSunGradient.children[2].setAttribute("style", `stop-color:${uvColor}; stop-opacity:0.4`);
+
+      const rays = uvRays.querySelectorAll(".uv-ray");
+      rays.forEach(ray => {
+        ray.setAttribute("stroke", uvColor);
+        ray.style.opacity = uv >= 3 ? 1 : 0;
+        if (uv >= 3) {
+          const animOpacity = ray.querySelector('animate[attributeName="opacity"]');
+          const animX2 = ray.querySelector('animate[attributeName="x2"]');
+          const animY2 = ray.querySelector('animate[attributeName="y2"]');
+          if (animOpacity) {
+            animOpacity.setAttribute("values", uv >= 8 ? "0;1;0" : "0;0.8;0");
+            animOpacity.setAttribute("dur", uv >= 11 ? "1.5s" : "2s");
+          }
+          if (animX2) {
+            animX2.setAttribute("values", uv >= 11 ? `${parseFloat(animX2.getAttribute("values").split(";")[0])*1.2};${parseFloat(animX2.getAttribute("values").split(";")[1])*1.2};${parseFloat(animX2.getAttribute("values").split(";")[0])*1.2}` : animX2.getAttribute("values"));
+          }
+          if (animY2) {
+            animY2.setAttribute("values", uv >= 11 ? `${parseFloat(animY2.getAttribute("values").split(";")[0])*1.2};${parseFloat(animY2.getAttribute("values").split(";")[1])*1.2};${parseFloat(animY2.getAttribute("values").split(";")[0])*1.2}` : animY2.getAttribute("values"));
+          }
+        }
+      });
+
+      uvValue.textContent = `UV: ${uv.toFixed(2)} (${uvLabel})`;
+    } else {
+      uvValue.textContent = "UV: 0.00";
+      uvBar.style.width = "0%";
+      uvBar.style.backgroundColor = "#6b8af7";
+      uvSunCircle.setAttribute("r", 18);
+      uvGlow.setAttribute("stdDeviation", 3);
+      uvSunGradient.children[0].setAttribute("style", "stop-color:#ffeb3b; stop-opacity:1");
+      uvSunGradient.children[1].setAttribute("style", "stop-color:#ff9800; stop-opacity:0.8");
+      uvSunGradient.children[2].setAttribute("style", "stop-color:#ff6b00; stop-opacity:0.4");
+      const rays = uvRays.querySelectorAll(".uv-ray");
+      rays.forEach(ray => {
+        ray.setAttribute("stroke", "#ffeb3b");
+        ray.style.opacity = 0;
+      });
     }
-  }
-
-  // Update sun circle and gradient
-  uvSunCircle.setAttribute("r", uv >= 3 ? 22 : 18); // Slightly larger for Moderate and above
-  uvGlow.setAttribute("stdDeviation", uv >= 3 ? 5 : 3); // Increase glow for higher UV
-  uvSunGradient.children[0].setAttribute("style", `stop-color:${uvColor}; stop-opacity:1`);
-  uvSunGradient.children[1].setAttribute("style", `stop-color:${uvColor}; stop-opacity:0.8`);
-  uvSunGradient.children[2].setAttribute("style", `stop-color:${uvColor}; stop-opacity:0.4`);
-
-  // Update rays visibility and color
-  const rays = uvRays.querySelectorAll(".uv-ray");
-  rays.forEach(ray => {
-    ray.setAttribute("stroke", uvColor);
-    ray.style.opacity = uv >= 3 ? 1 : 0; // Rays appear for Moderate and above
-    // Update animation for higher UV levels
-    if (uv >= 3) {
-      const animOpacity = ray.querySelector('animate[attributeName="opacity"]');
-      const animX2 = ray.querySelector('animate[attributeName="x2"]');
-      const animY2 = ray.querySelector('animate[attributeName="y2"]');
-      if (animOpacity) {
-        animOpacity.setAttribute("values", uv >= 8 ? "0;1;0" : "0;0.8;0"); // Stronger pulse for Very High+
-        animOpacity.setAttribute("dur", uv >= 11 ? "1.5s" : "2s"); // Faster for Extreme
-      }
-      if (animX2) {
-        animX2.setAttribute("values", uv >= 11 ? `${parseFloat(animX2.getAttribute("values").split(";")[0])*1.2};${parseFloat(animX2.getAttribute("values").split(";")[1])*1.2};${parseFloat(animX2.getAttribute("values").split(";")[0])*1.2}` : animX2.getAttribute("values"));
-      }
-      if (animY2) {
-        animY2.setAttribute("values", uv >= 11 ? `${parseFloat(animY2.getAttribute("values").split(";")[0])*1.2};${parseFloat(animY2.getAttribute("values").split(";")[1])*1.2};${parseFloat(animY2.getAttribute("values").split(";")[0])*1.2}` : animY2.getAttribute("values"));
-      }
-    }
-  });
-
-  // Update UV value with risk label
-  uvValue.textContent = `UV: ${uv.toFixed(2)} (${uvLabel})`;
-} else {
-  uvValue.textContent = "UV: 0.00";
-  uvBar.style.width = "0%";
-  uvBar.style.backgroundColor = "#6b8af7";
-  uvSunCircle.setAttribute("r", 18);
-  uvGlow.setAttribute("stdDeviation", 3);
-  uvSunGradient.children[0].setAttribute("style", "stop-color:#ffeb3b; stop-opacity:1");
-  uvSunGradient.children[1].setAttribute("style", "stop-color:#ff9800; stop-opacity:0.8");
-  uvSunGradient.children[2].setAttribute("style", "stop-color:#ff6b00; stop-opacity:0.4");
-  const rays = uvRays.querySelectorAll(".uv-ray");
-  rays.forEach(ray => {
-    ray.setAttribute("stroke", "#ffeb3b");
-    ray.style.opacity = 0;
-  });
-}
 
     // Update IR Sensor card (for Analog IR Sensor)
     if (protocol === "Analog" && selectedSensor === "IR Sensor" && currentIR !== null) {
@@ -487,7 +480,7 @@ if (protocol === "I2C" && selectedSensor === "LTR390" && currentUV !== null) {
       } else {
         glowStd = 8;
       }
-      const brightness = Math.min(Math.max(ir / 200, 0), 1); // Arbitrary scaling
+      const brightness = Math.min(Math.max(ir / 200, 0), 1);
       const flamePaths = irFlame.querySelectorAll("path");
       flamePaths[0].setAttribute("fill", flameColor1);
       flamePaths[1].setAttribute("fill", flameColor2);
@@ -537,13 +530,12 @@ if (protocol === "I2C" && selectedSensor === "LTR390" && currentUV !== null) {
     lis3dhXValue.textContent = "X: 0.00 m/s²";
     lis3dhYValue.textContent = "Y: 0.00 m/s²";
     lis3dhZValue.textContent = "Z: 0.00 m/s²";
-     if (hallValue) hallValue.textContent = "";
+    if (hallValue) hallValue.textContent = "";
     if (hallArc && hallGlow) {
       hallArc.style.stroke = "#34d399";
       hallGlow.setAttribute("stdDeviation", 0);
       hallArc.removeAttribute("filter");
     }
-    hallIcon.style.color = "#6b8af7";
     tlv493dXValue.textContent = "X: 0.00 mT";
     tlv493dYValue.textContent = "Y: 0.00 mT";
     tlv493dZValue.textContent = "Z: 0.00 mT";
@@ -557,11 +549,8 @@ if (protocol === "I2C" && selectedSensor === "LTR390" && currentUV !== null) {
     tofBar.style.width = "0%";
     tofBar.style.backgroundColor = "#34d399";
     uvValue.textContent = "UV: 0.00";
-    ambientValue.textContent = "Ambient: 0.00 lux";
     uvBar.style.width = "0%";
-    ambientBar.style.width = "0%";
     uvBar.style.backgroundColor = "#6b8af7";
-    ambientBar.style.backgroundColor = "#6b8af7";
     irValue.textContent = "";
     updateSensorVisualizationVisibility();
   }
@@ -569,7 +558,6 @@ if (protocol === "I2C" && selectedSensor === "LTR390" && currentUV !== null) {
 
 // Handle sensor selection
 function selectSensor(sensor) {
-  // If the selected sensor is already active, deselect it
   if (selectedSensor === sensor) {
     selectedSensor = null;
   } else {
@@ -578,22 +566,19 @@ function selectSensor(sensor) {
   updateSensorUI();
 }
 
-
 function parseSensorData(data) {
   const protocol = document.getElementById("sensor-select").value;
   if (!protocol) {
-    // document.getElementById("output").innerHTML += `<span class="log-error">No protocol selected for parsing</span><br>`;
     return data;
   }
 
   const lines = data.split("\n").map(line => line.trim()).filter(line => line);
   lines.forEach(line => {
     try {
-      // Clean special characters
       let cleanedLine = line.replace(/°C/g, "").replace(/%/g, "");
       const sensorMatch = cleanedLine.match(/^(.+?):\s*(.*)$/);
   
-if (sensorMatch) {
+      if (sensorMatch) {
         const sensorName = sensorMatch[1].trim();
         let paramsStr = sensorMatch[2].trim();
         const params = paramsStr.split(',').map(p => p.trim());
@@ -605,81 +590,78 @@ if (sensorMatch) {
           }
         });
 
-      const sensors = sensorProtocolMap[protocol] || [];
-      if (sensors.includes(sensorName)) {
-        sensorStatus[protocol][sensorName.replace(" ", "")] = true;
+        const sensors = sensorProtocolMap[protocol] || [];
+        if (sensors.includes(sensorName)) {
+          sensorStatus[protocol][sensorName.replace(" ", "")] = true;
 
-        let keyMap = {};
-        if (sensorName === "LIS3DH") {
-          keyMap = {
-            'X': 'AccelerationX',
-            'Y': 'AccelerationY',
-            'Z': 'AccelerationZ'
-          };
-        } else if (sensorName === "LTR390") {
-          keyMap = {
-            'UV Index': 'UV'
-          };
-        }
-        else if (["BME680", "STTS751", "SHT40", "STS30"].includes(sensorName)) {
+          let keyMap = {};
+          if (sensorName === "LIS3DH") {
+            keyMap = {
+              'X': 'AccelerationX',
+              'Y': 'AccelerationY',
+              'Z': 'AccelerationZ'
+            };
+          } else if (sensorName === "LTR390") {
+            keyMap = {
+              'UV Index': 'UV'
+            };
+          } else if (["BME680", "STTS751", "SHT40", "STS30"].includes(sensorName)) {
             currentTemperature = paramMap["Temperature"] ? parseFloat(paramMap["Temperature"]) : null;
             currentHumidity = paramMap["Humidity"] ? parseFloat(paramMap["Humidity"]) : null;
             if (sensorName === "BME680") {
               currentPressure = paramMap["Pressure"] ? parseFloat(paramMap["Pressure"]) : null;
             }
           }
-        // Add similar keyMap objects for other sensors if their incoming keys differ from expected
 
-        Object.entries(paramMap).forEach(([key, value]) => {
-          const mappedKey = keyMap[key] || key;
-          const formattedValue = isNaN(parseFloat(value)) ? value : parseFloat(value).toFixed(2);
-          sensorData[protocol][`${sensorName} ${mappedKey}`] = formattedValue;
-        });
+          Object.entries(paramMap).forEach(([key, value]) => {
+            const mappedKey = keyMap[key] || key;
+            const formattedValue = isNaN(parseFloat(value)) ? value : parseFloat(value).toFixed(2);
+            sensorData[protocol][`${sensorName} ${mappedKey}`] = formattedValue;
+          });
 
-        if (selectedSensor === "BME680" || sensorName === "STTS751" || sensorName === "SHT40" || sensorName === "STS30") {
-          currentTemperature = paramMap['Temperature'] ? parseFloat(paramMap['Temperature']) : null;
-          currentHumidity = paramMap['Humidity'] ? parseFloat(paramMap['Humidity']) : null;
-          if (sensorName === "BME680") {
-            currentPressure = paramMap['Pressure'] ? parseFloat(paramMap['Pressure']) : null;
+          if (selectedSensor === "BME680" || sensorName === "STTS751" || sensorName === "SHT40" || sensorName === "STS30") {
+            currentTemperature = paramMap['Temperature'] ? parseFloat(paramMap['Temperature']) : null;
+            currentHumidity = paramMap['Humidity'] ? parseFloat(paramMap['Humidity']) : null;
+            if (sensorName === "BME680") {
+              currentPressure = paramMap['Pressure'] ? parseFloat(paramMap['Pressure']) : null;
+            }
+          }
+          if (sensorName === "Lux Sensor") {
+            currentLight = paramMap['LightIntensity'] ? parseFloat(paramMap['LightIntensity']) : null;
+          }
+          if (sensorName === "LIS3DH") {
+            currentAccelX = paramMap['X'] ? parseFloat(paramMap['X']) : null;
+            currentAccelY = paramMap['Y'] ? parseFloat(paramMap['Y']) : null;
+            currentAccelZ = paramMap['Z'] ? parseFloat(paramMap['Z']) : null;
+          }
+          if (sensorName === "Hall Sensor") {
+            currentMagneticField = paramMap['MagneticField'];
+          }
+          if (sensorName === "TLV493D") {
+            currentMagneticX = paramMap['MagneticX'] ? parseFloat(paramMap['MagneticX']) : null;
+            currentMagneticY = paramMap['MagneticY'] ? parseFloat(paramMap['MagneticY']) : null;
+            currentMagneticZ = paramMap['MagneticZ'] ? parseFloat(paramMap['MagneticZ']) : null;
+          }
+          if (sensorName === "VL53L0X") {
+            currentDistance = paramMap['Distance'] ? parseFloat(paramMap['Distance']) : null;
+          }
+          if (sensorName === "LTR390") {
+            currentUV = paramMap['UV Index'] ? parseFloat(paramMap['UV Index']) : null;
+            console.log(`LTR390 Data - UV: ${currentUV}`);
+          }
+          if (sensorName === "IR Sensor") {
+            currentIR = paramMap['Infrared'] ? parseFloat(paramMap['Infrared']) : null;
+          }
+
+          if (selectedSensor === sensorName) {
+            updateSensorUI();
           }
         }
-        if (sensorName === "Lux Sensor") {
-          currentLight = paramMap['LightIntensity'] ? parseFloat(paramMap['LightIntensity']) : null;
-        }
-        if (sensorName === "LIS3DH") {
-          currentAccelX = paramMap['X'] ? parseFloat(paramMap['X']) : null;
-          currentAccelY = paramMap['Y'] ? parseFloat(paramMap['Y']) : null;
-          currentAccelZ = paramMap['Z'] ? parseFloat(paramMap['Z']) : null;
-        }
-        if (sensorName === "Hall Sensor") {
-          currentMagneticField = paramMap['MagneticField'];
-        }
-        if (sensorName === "TLV493D") {
-          currentMagneticX = paramMap['MagneticX'] ? parseFloat(paramMap['MagneticX']) : null;
-          currentMagneticY = paramMap['MagneticY'] ? parseFloat(paramMap['MagneticY']) : null;
-          currentMagneticZ = paramMap['MagneticZ'] ? parseFloat(paramMap['MagneticZ']) : null;
-        }
-        if (sensorName === "VL53L0X") {
-          currentDistance = paramMap['Distance'] ? parseFloat(paramMap['Distance']) : null;
-        }
-        if (sensorName === "LTR390") {
-          currentUV = paramMap['UV Index'] ? parseFloat(paramMap['UV Index']) : null;
-          console.log(`LTR390 Data - UV: ${currentUV}`);
-        }
-        if (sensorName === "IR Sensor") {
-          currentIR = paramMap['Infrared'] ? parseFloat(paramMap['Infrared']) : null;
-        }
-
-        // Update UI only if this sensor is selected
-        if (selectedSensor === sensorName) {
-          updateSensorUI();
-        }
       }
-    }
-} catch (error) {
+    } catch (error) {
       document.getElementById("output").innerHTML += `<span class="log-error">Parsing error: ${error.message}</span><br>`;
     }
-    // Existing rainMatch logic remains unchanged
+
     const rainMatch = line.match(/^Rain Tip Detected!\s*Hourly:\s*(\d+)\s*Daily:\s*(\d+)\s*Weekly:\s*(\d+)/);
     if (rainMatch && protocol === "ADC") {
       sensorStatus[protocol]["Rain Gauge"] = true;
@@ -691,8 +673,45 @@ if (sensorMatch) {
       }
     }
   });
-  return data; // Return original data for logging
+  return data;
 }
+
+function resetSensorData() {
+  currentTemperature = null;
+  currentHumidity = null;
+  currentPressure = null;
+  currentLight = null;
+  currentAccelX = null;
+  currentAccelY = null;
+  currentAccelZ = null;
+  currentMagneticField = null;
+  currentMagneticX = null;
+  currentMagneticY = null;
+  currentMagneticZ = null;
+  currentDistance = null;
+  currentUV = null;
+  currentIR = null;
+
+  sensorData = {
+    "I2C": {},
+    "ADC": {},
+    "RS232": {},
+    "RS485": {},
+    "SPI": {},
+    "Analog": {}
+  };
+
+  sensorStatus = {
+    "I2C": { SHT40: false, BME680: false, STS30: false, STTS751: false, LIS3DH: false, LuxSensor: false, TLV493D: false, VL53L0X: false, LTR390: false },
+    "RS485": { MD02: false },
+    "SPI": {},
+    "Analog": { Hall_Sensor: false, IR_Sensor: false }
+  };
+
+  selectedSensor = null;
+  updateSensorUI();
+}
+
 async function listPorts() {
   const result = await window.electronAPI.listPorts();
   const select = document.getElementById("ports");
@@ -713,7 +732,9 @@ async function listPorts() {
 
 async function connectPort() {
   const portName = document.getElementById("ports").value;
-  const baudRate = document.getElementById("baud-rate").value;
+  const baudRate = parseInt(document.getElementById("baud-rate").value);
+
+  console.log(`connectPort called with port: ${portName}, baudRate: ${baudRate}, isConnected: ${isConnected}, currentBaud: ${currentBaud}`);
 
   if (!portName) {
     document.getElementById("output").innerHTML += `<span style="color: red;">Please select a port.</span><br>`;
@@ -725,23 +746,51 @@ async function connectPort() {
     return;
   }
 
-  const result = await window.electronAPI.connectPort(portName, baudRate);
-
-  if (result.error) {
-    document.getElementById("output").innerHTML += `<span style="color: red;">${result.error}</span><br>`;
-    return;
+  if (isConnected && baudRate !== currentBaud) {
+    console.log(`Baud rate changed from ${currentBaud} to ${baudRate}, disconnecting...`);
+    const disconnectResult = await window.electronAPI.disconnectPort();
+    if (!disconnectResult.error) {
+      document.getElementById("output").innerHTML += `<span style="color: green;">Disconnected from port at ${currentBaud} baud. Please reconnect with the new baud rate.</span><br>`;
+      resetSensorData();
+      isConnected = false;
+      currentBaud = null;
+    } else {
+      document.getElementById("output").innerHTML += `<span style="color: red;">Failed to disconnect: ${disconnectResult.error}</span><br>`;
+      console.error(`Disconnect error: ${disconnectResult.error}`);
+      return;
+    }
   }
 
-  document.getElementById("output").innerHTML += `<span style="color: green;">${result}</span><br>`;
+  if (!isConnected) {
+    const result = await window.electronAPI.connectPort(portName, baudRate);
+    if (result.error) {
+      document.getElementById("output").innerHTML += `<span style="color: red;">${result.error}</span><br>`;
+      console.error(`Connect error: ${result.error}`);
+      return;
+    }
+
+    document.getElementById("output").innerHTML += `<span style="color: green;">${result}</span><br>`;
+    isConnected = true;
+    currentBaud = baudRate;
+    console.log(`Connected successfully, isConnected: ${isConnected}, currentBaud: ${currentBaud}`);
+  } else {
+    document.getElementById("output").innerHTML += `<span style="color: orange;">Already connected at ${currentBaud} baud.</span><br>`;
+  }
 }
 
 async function disconnectPort() {
+  console.log(`Disconnecting port, currentBaud: ${currentBaud}`);
   const result = await window.electronAPI.disconnectPort();
   if (result.error) {
     document.getElementById("output").innerHTML += `<span style="color: red;">${result.error}</span><br>`;
+    console.error(`Disconnect error: ${result.error}`);
     return;
   }
   document.getElementById("output").innerHTML += `<span style="color: green;">${result}</span><br>`;
+  resetSensorData();
+  isConnected = false;
+  currentBaud = null;
+  console.log(`Disconnected successfully, isConnected: ${isConnected}, currentBaud: ${currentBaud}`);
 }
 
 async function sendCommand(cmd) {
@@ -783,7 +832,15 @@ window.electronAPI.onSerialData((data) => {
     const outputDiv = document.getElementById("output");
     let logClass = "log-default";
 
-    parseSensorData(sanitizedData);
+    if (sanitizedData.includes("Port disconnected due to cable unplug.")) {
+      console.log("Cable unplugged detected, resetting data and state");
+      resetSensorData();
+      isConnected = false;
+      currentBaud = null;
+      logClass = "log-error";
+    } else {
+      parseSensorData(sanitizedData);
+    }
 
     if (sanitizedData.includes("Error") || sanitizedData.includes("error") || sanitizedData.includes("failed") || sanitizedData.includes("ENOENT") || sanitizedData.includes("Invalid")) {
       logClass = "log-error";
@@ -809,6 +866,28 @@ window.addEventListener("DOMContentLoaded", () => {
   listPorts();
   updateSensorUI();
 
+  // Add event listener for baud rate change
+  const baudRateInput = document.getElementById("baud-rate");
+  if (baudRateInput) {
+    baudRateInput.addEventListener("change", async (event) => {
+      const newBaudRate = parseInt(event.target.value);
+      console.log(`Baud rate changed to: ${newBaudRate}`);
+      if (isConnected && newBaudRate !== currentBaud) {
+        console.log(`Baud rate changed from ${currentBaud} to ${newBaudRate}, disconnecting...`);
+        const disconnectResult = await window.electronAPI.disconnectPort();
+        if (!disconnectResult.error) {
+          document.getElementById("output").innerHTML += `<span style="color: green;">Disconnected from port at ${currentBaud} baud. Please reconnect with the new baud rate.</span><br>`;
+          resetSensorData();
+          isConnected = false;
+          currentBaud = null;
+        } else {
+          document.getElementById("output").innerHTML += `<span style="color: red;">Failed to disconnect: ${disconnectResult.error}</span><br>`;
+          console.error(`Disconnect error: ${disconnectResult.error}`);
+        }
+      }
+    });
+  }
+
   // Cube rotation variables
   let isDragging = false;
   let previousX = 0;
@@ -824,15 +903,15 @@ window.addEventListener("DOMContentLoaded", () => {
       isDragging = true;
       previousX = e.clientX;
       previousY = e.clientY;
-      cube.style.transition = 'none'; // Disable transition during drag
+      cube.style.transition = 'none';
     });
 
     document.addEventListener('mousemove', (e) => {
       if (isDragging) {
         const deltaX = e.clientX - previousX;
         const deltaY = e.clientY - previousY;
-        rotateY += deltaX * 0.5; // Adjust sensitivity
-        rotateX -= deltaY * 0.5; // Adjust sensitivity
+        rotateY += deltaX * 0.5;
+        rotateX -= deltaY * 0.5;
         cube.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
         previousX = e.clientX;
         previousY = e.clientY;
@@ -841,10 +920,9 @@ window.addEventListener("DOMContentLoaded", () => {
 
     document.addEventListener('mouseup', () => {
       isDragging = false;
-      cube.style.transition = 'transform 0.3s ease'; // Re-enable transition
+      cube.style.transition = 'transform 0.3s ease';
     });
 
-    // Prevent text selection while dragging
     cubeWrapper.addEventListener('dragstart', (e) => e.preventDefault());
   }
 });

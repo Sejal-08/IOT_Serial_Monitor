@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog,Menu  } = require("electron");
+const { app, BrowserWindow, ipcMain, dialog, Menu } = require("electron");
 const path = require("path");
 const { SerialPort } = require("serialport");
 const fs = require("fs").promises;
@@ -17,7 +17,6 @@ async function sendCommand(message) {
   }
 
   try {
-    // Flush UART buffer
     while (port.readable && port.readableLength > 0) {
       port.read();
     }
@@ -25,7 +24,6 @@ async function sendCommand(message) {
     console.log(`Sending command: ${JSON.stringify(command)}`);
     mainWindow.webContents.send("serial-data", `> ${message}`);
     
-
     await new Promise((resolve, reject) => {
       port.write(command, (err) => (err ? reject(err) : resolve()));
     });
@@ -44,14 +42,13 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1000,
     height: 600,
-    icon: path.join(__dirname, "build", "icon.ico"), // 👈 add this
+    icon: path.join(__dirname, "build", "icon.ico"),
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
     },
   });
 
-    Menu.setApplicationMenu(null);
-
+  Menu.setApplicationMenu(null);
   mainWindow.loadFile("index.html");
 }
 
@@ -86,6 +83,7 @@ ipcMain.handle("connect-port", async (event, portName, baudRate = 115200) => {
   try {
     if (port && port.isOpen) {
       await new Promise((resolve) => port.close(resolve));
+      console.log(`Port closed before new connection: ${portName} at ${baudRate}`);
     }
     responseBuffer = "";
 
@@ -131,6 +129,15 @@ ipcMain.handle("connect-port", async (event, portName, baudRate = 115200) => {
       mainWindow.webContents.send("serial-data", `Port error: ${err.message}`);
     });
 
+    port.on("close", (err) => {
+      if (err && err.disconnected) {
+        console.log("Port closed due to cable unplug");
+        mainWindow.webContents.send("serial-data", "Port disconnected due to cable unplug.");
+        responseBuffer = "";
+        port = null;
+      }
+    });
+
     return `Connected to ${portName} at ${baudRate} baud`;
   } catch (error) {
     console.error("Connect port error:", error);
@@ -143,8 +150,11 @@ ipcMain.handle("disconnect-port", async () => {
     if (port && port.isOpen) {
       await new Promise((resolve) => port.close(resolve));
       responseBuffer = "";
+      port = null;
+      console.log("Port disconnected successfully");
       return "Disconnected from port.";
     }
+    console.log("No port to disconnect");
     return "No port to disconnect.";
   } catch (error) {
     console.error("Disconnect port error:", error);
@@ -152,18 +162,13 @@ ipcMain.handle("disconnect-port", async () => {
   }
 });
 
-// --- Device ID Config ---
 ipcMain.handle("set-device-id", (event, deviceID) => sendCommand(`SET_DEVICE_ID:${deviceID}`));
-// ipcMain.handle("get-device-id", () => sendCommand("GET_DEVICE_ID"));
 
-// --- Basic config commands ---
 ipcMain.handle("send-data", (event, message) => sendCommand(message));
 ipcMain.handle("get-interval", () => sendCommand("GET_INTERVAL"));
-
 
 ipcMain.handle("set-interval", (event, interval) => {
   const i = parseInt(interval);
   if (isNaN(i) || i <= 0) return { error: "Invalid interval" };
- return sendCommand(`Interval Configuration : ${i}`);
-
+  return sendCommand(`Interval Configuration : ${i}`);
 });
