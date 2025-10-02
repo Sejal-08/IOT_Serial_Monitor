@@ -1,5 +1,6 @@
 let selectedSensor = null;
 
+
 // Sensor protocol to sensor mapping
 const sensorProtocolMap = {
   "I2C": ["SHT40", "BME680", "STS30", "STTS751", "LIS3DH", "Lux Sensor", "TLV493D", "VL53L0X", "LTR390"],
@@ -41,6 +42,7 @@ let currentIR = null;
 
 let isConnected = false;
 let currentBaud = null;
+let currentPort = null;
 
 // Update sensor UI
 function updateSensorUI() {
@@ -93,7 +95,7 @@ function updateSensorUI() {
   const tlv493dZBar = document.getElementById("tlv493d-z-bar");
 
   const tofValue = document.getElementById("tof-value");
-  const tofBar = document.getElementById("tof-bar");
+  const tofPerson = document.getElementById("tof-person");
 
   const uvValue = document.getElementById("uv-value");
   const uvBar = document.getElementById("uv-bar");
@@ -106,7 +108,7 @@ function updateSensorUI() {
   const irFlame = document.getElementById("ir-flame");
   const irGlow = document.querySelector("#ir-glow feGaussianBlur");
 
-  sensorDropdown.innerHTML = '<option value="" disabled selected>Select a Sensor</option>';
+  sensorDropdown.innerHTML = '<option value="" disabled>Select a Sensor</option>';
   sensorDataDiv.innerHTML = "";
 
   // Define which sensors support which parameters
@@ -383,15 +385,12 @@ function updateSensorUI() {
     if (protocol === "I2C" && selectedSensor === "VL53L0X" && currentDistance !== null) {
       const distance = parseFloat(currentDistance);
       const maxDist = 2000;
-      const barColor = "#34d399";
-      const barWidth = Math.min(Math.max((distance / maxDist) * 100, 0), 100);
       tofValue.textContent = `${distance.toFixed(2)} mm`;
-      tofBar.style.width = `${barWidth}%`;
-      tofBar.style.backgroundColor = barColor;
+      const pos = 20 + Math.min(Math.max((distance / maxDist) * 170, 0), 170);
+      tofPerson.setAttribute("transform", `translate(${pos}, 0)`);
     } else {
       tofValue.textContent = "";
-      tofBar.style.width = "0%";
-      tofBar.style.backgroundColor = "#34d399";
+      tofPerson.setAttribute("transform", "translate(20, 0)");
     }
 
     // Update LTR390 card (for I2C LTR390)
@@ -546,8 +545,7 @@ function updateSensorUI() {
     tlv493dYBar.style.backgroundColor = "#6b8af7";
     tlv493dZBar.style.backgroundColor = "#6b8af7";
     tofValue.textContent = "";
-    tofBar.style.width = "0%";
-    tofBar.style.backgroundColor = "#34d399";
+    if (tofPerson) tofPerson.setAttribute("transform", "translate(20, 0)");
     uvValue.textContent = "UV: 0.00";
     uvBar.style.width = "0%";
     uvBar.style.backgroundColor = "#6b8af7";
@@ -558,11 +556,7 @@ function updateSensorUI() {
 
 // Handle sensor selection
 function selectSensor(sensor) {
-  if (selectedSensor === sensor) {
-    selectedSensor = null;
-  } else {
-    selectedSensor = sensor;
-  }
+  selectedSensor = sensor;
   updateSensorUI();
 }
 
@@ -573,6 +567,8 @@ function parseSensorData(data) {
   }
 
   const lines = data.split("\n").map(line => line.trim()).filter(line => line);
+  let autoSelected = false;
+
   lines.forEach(line => {
     try {
       let cleanedLine = line.replace(/°C/g, "").replace(/%/g, "");
@@ -593,6 +589,16 @@ function parseSensorData(data) {
         const sensors = sensorProtocolMap[protocol] || [];
         if (sensors.includes(sensorName)) {
           sensorStatus[protocol][sensorName.replace(" ", "")] = true;
+
+          // Automatically select the first detected sensor if none is selected
+          if (!selectedSensor && !autoSelected) {
+            selectedSensor = sensorName;
+            autoSelected = true;
+            const sensorDropdown = document.getElementById("sensor-dropdown");
+            if (sensorDropdown) {
+              sensorDropdown.value = sensorName;
+            }
+          }
 
           let keyMap = {};
           if (sensorName === "LIS3DH") {
@@ -619,7 +625,7 @@ function parseSensorData(data) {
             sensorData[protocol][`${sensorName} ${mappedKey}`] = formattedValue;
           });
 
-          if (selectedSensor === "BME680" || sensorName === "STTS751" || sensorName === "SHT40" || sensorName === "STS30") {
+          if (sensorName === "BME680" || sensorName === "STTS751" || sensorName === "SHT40" || sensorName === "STS30") {
             currentTemperature = paramMap['Temperature'] ? parseFloat(paramMap['Temperature']) : null;
             currentHumidity = paramMap['Humidity'] ? parseFloat(paramMap['Humidity']) : null;
             if (sensorName === "BME680") {
@@ -668,11 +674,24 @@ function parseSensorData(data) {
       sensorData[protocol]["Rain Gauge Hourly"] = `${rainMatch[1]} tips`;
       sensorData[protocol]["Rain Gauge Daily"] = `${rainMatch[2]} tips`;
       sensorData[protocol]["Rain Gauge Weekly"] = `${rainMatch[3]} tips`;
+      if (!selectedSensor && !autoSelected) {
+        selectedSensor = "Rain Gauge";
+        autoSelected = true;
+        const sensorDropdown = document.getElementById("sensor-dropdown");
+        if (sensorDropdown) {
+          sensorDropdown.value = "Rain Gauge";
+        }
+      }
       if (selectedSensor === "Rain Gauge") {
         updateSensorUI();
       }
     }
   });
+
+  if (autoSelected) {
+    updateSensorUI();
+  }
+
   return data;
 }
 
@@ -715,6 +734,8 @@ function resetSensorData() {
 async function listPorts() {
   const result = await window.electronAPI.listPorts();
   const select = document.getElementById("ports");
+  const current = select.value;
+
   select.innerHTML = "";
 
   if (result.error) {
@@ -722,19 +743,24 @@ async function listPorts() {
     return;
   }
 
+  availablePorts = result;
   result.forEach((p) => {
     const option = document.createElement("option");
     option.value = p;
     option.textContent = p;
+    if (p === current) {
+      option.selected = true;
+    }
     select.appendChild(option);
   });
 }
 
 async function connectPort() {
+  await listPorts();
   const portName = document.getElementById("ports").value;
   const baudRate = parseInt(document.getElementById("baud-rate").value);
 
-  console.log(`connectPort called with port: ${portName}, baudRate: ${baudRate}, isConnected: ${isConnected}, currentBaud: ${currentBaud}`);
+  console.log(`connectPort called with port: ${portName}, baudRate: ${baudRate}, isConnected: ${isConnected}, currentPort: ${currentPort}, currentBaud: ${currentBaud}`);
 
   if (!portName) {
     document.getElementById("output").innerHTML += `<span style="color: red;">Please select a port.</span><br>`;
@@ -746,14 +772,21 @@ async function connectPort() {
     return;
   }
 
-  if (isConnected && baudRate !== currentBaud) {
-    console.log(`Baud rate changed from ${currentBaud} to ${baudRate}, disconnecting...`);
+  if (!availablePorts.includes(portName)) {
+    document.getElementById("output").innerHTML += `<span style="color: red;">Selected port ${portName} is not available.</span><br>`;
+    console.error(`Port ${portName} not in available ports: ${availablePorts}`);
+    return;
+  }
+
+  if (isConnected && (baudRate !== currentBaud || portName !== currentPort)) {
+    console.log(`Settings changed (port from ${currentPort} to ${portName}, baud from ${currentBaud} to ${baudRate}), disconnecting...`);
     const disconnectResult = await window.electronAPI.disconnectPort();
     if (!disconnectResult.error) {
-      document.getElementById("output").innerHTML += `<span style="color: green;">Disconnected from port at ${currentBaud} baud. Please reconnect with the new baud rate.</span><br>`;
+      document.getElementById("output").innerHTML += `<span style="color: green;">Disconnected from previous connection (port: ${currentPort}, baud: ${currentBaud}). Please reconnect with new settings.</span><br>`;
       resetSensorData();
       isConnected = false;
       currentBaud = null;
+      currentPort = null;
     } else {
       document.getElementById("output").innerHTML += `<span style="color: red;">Failed to disconnect: ${disconnectResult.error}</span><br>`;
       console.error(`Disconnect error: ${disconnectResult.error}`);
@@ -772,14 +805,15 @@ async function connectPort() {
     document.getElementById("output").innerHTML += `<span style="color: green;">${result}</span><br>`;
     isConnected = true;
     currentBaud = baudRate;
-    console.log(`Connected successfully, isConnected: ${isConnected}, currentBaud: ${currentBaud}`);
+    currentPort = portName;
+    console.log(`Connected successfully, isConnected: ${isConnected}, currentPort: ${currentPort}, currentBaud: ${currentBaud}`);
   } else {
-    document.getElementById("output").innerHTML += `<span style="color: orange;">Already connected at ${currentBaud} baud.</span><br>`;
+    document.getElementById("output").innerHTML += `<span style="color: orange;">Already connected to port ${currentPort} at ${currentBaud} baud.</span><br>`;
   }
 }
 
 async function disconnectPort() {
-  console.log(`Disconnecting port, currentBaud: ${currentBaud}`);
+  console.log(`Disconnecting port, currentPort: ${currentPort}, currentBaud: ${currentBaud}`);
   const result = await window.electronAPI.disconnectPort();
   if (result.error) {
     document.getElementById("output").innerHTML += `<span style="color: red;">${result.error}</span><br>`;
@@ -790,7 +824,9 @@ async function disconnectPort() {
   resetSensorData();
   isConnected = false;
   currentBaud = null;
-  console.log(`Disconnected successfully, isConnected: ${isConnected}, currentBaud: ${currentBaud}`);
+  currentPort = null;
+  console.log(`Disconnected successfully, isConnected: ${isConnected}, currentPort: ${currentPort}, currentBaud: ${currentBaud}`);
+  await listPorts();
 }
 
 async function sendCommand(cmd) {
@@ -809,7 +845,6 @@ async function setInterval() {
   const interval = document.getElementById("interval").value;
 
   if (!interval || isNaN(interval) || interval <= 0) {
-    document.getElementById("output").innerHTML += `<span style="color: red;">Please enter a valid interval (positive seconds).</span><br>`;
     return;
   }
 
@@ -837,7 +872,9 @@ window.electronAPI.onSerialData((data) => {
       resetSensorData();
       isConnected = false;
       currentBaud = null;
+      currentPort = null;
       logClass = "log-error";
+      listPorts();
     } else {
       parseSensorData(sanitizedData);
     }
@@ -866,7 +903,8 @@ window.addEventListener("DOMContentLoaded", () => {
   listPorts();
   updateSensorUI();
 
-  // Add event listener for baud rate change
+  setInterval(listPorts, 1000);
+
   const baudRateInput = document.getElementById("baud-rate");
   if (baudRateInput) {
     baudRateInput.addEventListener("change", async (event) => {
@@ -880,6 +918,7 @@ window.addEventListener("DOMContentLoaded", () => {
           resetSensorData();
           isConnected = false;
           currentBaud = null;
+          currentPort = null;
         } else {
           document.getElementById("output").innerHTML += `<span style="color: red;">Failed to disconnect: ${disconnectResult.error}</span><br>`;
           console.error(`Disconnect error: ${disconnectResult.error}`);
@@ -888,7 +927,35 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Cube rotation variables
+  const portsSelect = document.getElementById("ports");
+  if (portsSelect) {
+    portsSelect.addEventListener("change", async (event) => {
+      const newPort = event.target.value;
+      console.log(`Port changed to: ${newPort}`);
+      if (isConnected && newPort !== currentPort) {
+        console.log(`Port changed from ${currentPort} to ${newPort}, disconnecting...`);
+        const disconnectResult = await window.electronAPI.disconnectPort();
+        if (!disconnectResult.error) {
+          document.getElementById("output").innerHTML += `<span style="color: green;">Disconnected from previous port ${currentPort}. Please connect to the new port.</span><br>`;
+          resetSensorData();
+          isConnected = false;
+          currentBaud = null;
+          currentPort = null;
+        } else {
+          document.getElementById("output").innerHTML += `<span style="color: red;">Failed to disconnect: ${disconnectResult.error}</span><br>`;
+          console.error(`Disconnect error: ${disconnectResult.error}`);
+        }
+      }
+    });
+  }
+
+  const sensorDropdown = document.getElementById("sensor-dropdown");
+  if (sensorDropdown) {
+    sensorDropdown.addEventListener("change", (event) => {
+      selectSensor(event.target.value);
+    });
+  }
+
   let isDragging = false;
   let previousX = 0;
   let previousY = 0;
@@ -922,7 +989,6 @@ window.addEventListener("DOMContentLoaded", () => {
       isDragging = false;
       cube.style.transition = 'transform 0.3s ease';
     });
-
     cubeWrapper.addEventListener('dragstart', (e) => e.preventDefault());
   }
 });

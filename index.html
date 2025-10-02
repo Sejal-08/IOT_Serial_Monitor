@@ -113,7 +113,7 @@
                     <stop offset="100%" id="waveColor2" style="stop-color:#0474a8;stop-opacity:1"/>
                   </linearGradient>
                 </defs>
-                <path id="wavePath" d="M 0 100 V 100 H 100 V 100 Z" fill="url(#waveGradient)"/>
+                <path id="wavePath" d="M 0 100 V 100 H 0 Z" fill="url(#waveGradient)"/>
               </svg>
             </div>
 
@@ -222,9 +222,22 @@
 
             <!-- TOFVL53L0X Distance -->
             <div id="tof-card" class="card-container" style="display: none;">
-              <h3>Distance</h3>
+              <h4>Distance</h4>
               <div id="tof-value" class="sensor-value"></div>
-              <div id="tof-bar" class="card-bar"></div>
+              <svg id="tof-animation" width="220" height="60" viewBox="0 0 220 60">
+                <rect x="5" y="25" width="10" height="10" fill="blue"/> <!-- Sensor -->
+                <line x1="0" y1="45" x2="220" y2="45" stroke="#ccc" stroke-width="1"/> <!-- Ground line -->
+                <g id="tof-person" transform="translate(20, 0)">
+                  <circle cx="5" cy="10" r="5" fill="black"/> <!-- Head -->
+                  <line x1="5" y1="15" x2="5" y2="35" stroke="black" stroke-width="2"/> <!-- Body -->
+                  <line x1="5" y1="20" x2="-5" y2="25" stroke="black" stroke-width="2"/> <!-- Left arm -->
+                  <line x1="5" y1="20" x2="15" y2="25" stroke="black" stroke-width="2"/> <!-- Right arm -->
+                  <line x1="5" y1="35" x2="-5" y2="45" stroke="black" stroke-width="2"/> <!-- Left leg -->
+                  <line x1="5" y1="35" x2="15" y2="45" stroke="black" stroke-width="2"/> <!-- Right leg -->
+                </g>
+                <text x="0" y="55" font-size="10">0mm</text>
+                <text x="190" y="55" font-size="10">2000mm</text>
+              </svg>
             </div>
 
            <!-- UVLTR390 UV Index with Enhanced Sun Animation -->
