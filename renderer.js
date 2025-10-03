@@ -249,24 +249,33 @@ function updateSensorUI() {
 
     // Update pressure card (only for I2C BME680)
     if (protocol === "I2C" && selectedSensor === "BME680" && currentPressure !== null) {
-      const pressure = parseFloat(currentPressure);
-      let barColor;
-      if (pressure >= 950 && pressure <= 1050) {
-        barColor = "#34d399";
-      } else if ((pressure >= 900 && pressure < 950) || (pressure > 1050 && pressure <= 1100)) {
-        barColor = "#ffeb3b";
-      } else {
-        barColor = "#f87171";
-      }
-      const barWidth = Math.min(Math.max((pressure - 300) / (1100 - 300) * 100, 0), 100);
-      pressureValue.textContent = `${pressure.toFixed(2)} hPa`;
-      pressureBar.style.width = `${barWidth}%`;
-      pressureBar.style.backgroundColor = barColor;
-    } else {
-      pressureValue.textContent = "";
-      pressureBar.style.width = "0%";
-      pressureBar.style.backgroundColor = "#34d399";
+      updatePressureCard(parseFloat(currentPressure));
     }
+      function updatePressureCard(hpa) {
+        const card   = document.getElementById('pressure-card');
+        const value  = document.getElementById('pressure-value');
+        const needle = document.getElementById('pressureNeedle');
+
+        if (hpa === null || isNaN(hpa)) { // no data → hide
+          card.style.display = 'none';
+          return;
+        }
+
+      card.style.display = 'flex';  // show card
+       value.textContent = `${Number(hpa).toFixed(1)} hPa`;
+
+        /* 300 hPa → 0° (left)   1100 hPa → 180° (right) */
+        const minP = 300, maxP = 1100;
+        const t    = Math.min(Math.max((hpa - minP) / (maxP - minP), 0), 1);
+        /* 300 hPa → ‑90° (left)   1100 hPa → +90° (right) */
+        const angle = (t * 180) - 90;          // ‑90° … +90°
+      needle.style.transform = `translateX(-50%) rotate(${angle}deg)`;
+
+        // optional tiny pulse on update (kept from your last code)
+        needle.classList.remove('needle-update');
+        void needle.offsetWidth;
+        needle.classList.add('needle-update');
+      }
 
     // Update light intensity card (only for I2C Lux Sensor)
     if (protocol === "I2C" && selectedSensor === "VEML7700" && currentLight !== null) {
