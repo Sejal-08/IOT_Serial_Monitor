@@ -3,7 +3,7 @@ let selectedSensor = null;
 
 // Sensor protocol to sensor mapping
 const sensorProtocolMap = {
-  "I2C": ["SHT40", "BME680", "STS30", "STTS751", "LIS3DH", "Lux Sensor", "TLV493D", "VL53L0X", "LTR390"],
+  "I2C": ["SHT40", "BME680", "STS30", "STTS751", "LIS3DH", "VEML", "TLV493D", "VL53L0X", "LTR390"],
   "RS485": ["MD-02"],
   "SPI": [""],
   "Analog": ["Hall Sensor", "IR Sensor"],
@@ -11,7 +11,7 @@ const sensorProtocolMap = {
 
 // Track sensor presence and data
 let sensorStatus = {
-  "I2C": { SHT40: false, BME680: false, STS30: false, STTS751: false, LIS3DH: false, LuxSensor: false, TLV493D: false, VL53L0X: false, LTR390: false },
+  "I2C": { SHT40: false, BME680: false, STS30: false, STTS751: false, LIS3DH: false, VEML: false, TLV493D: false, VL53L0X: false, LTR390: false },
   "RS485": { MD02: false },
   "SPI": {},
   "Analog": { Hall_Sensor: false, IR_Sensor: false }
@@ -116,7 +116,7 @@ function updateSensorUI() {
     "BME680": ["Temperature", "Humidity", "Pressure"],
     "SHT40": ["Temperature", "Humidity"],
     "STTS751": ["Temperature"],
-    "Lux Sensor": ["LightIntensity"],
+    "VEML": ["LightIntensity"],
     "STS30": ["Temperature"],
     "LIS3DH": ["AccelerationX", "AccelerationY", "AccelerationZ"],
     "Hall Sensor": ["MagneticField"],
@@ -269,7 +269,7 @@ function updateSensorUI() {
     }
 
     // Update light intensity card (only for I2C Lux Sensor)
-    if (protocol === "I2C" && selectedSensor === "Lux Sensor" && currentLight !== null) {
+    if (protocol === "I2C" && selectedSensor === "VEML" && currentLight !== null) {
       lightCard.style.display = "block";
       const light = parseFloat(currentLight);
       const maxLight = 120000;
@@ -656,7 +656,7 @@ function parseSensorData(data) {
               currentPressure = paramMap['Pressure'] ? parseFloat(paramMap['Pressure']) : null;
             }
           }
-          if (sensorName === "Lux Sensor") {
+          if (sensorName === "VEML") {
             currentLight = paramMap['LightIntensity'] ? parseFloat(paramMap['LightIntensity']) : null;
           }
           if (sensorName === "LIS3DH") {
@@ -745,7 +745,7 @@ function resetSensorData() {
   };
 
   sensorStatus = {
-    "I2C": { SHT40: false, BME680: false, STS30: false, STTS751: false, LIS3DH: false, LuxSensor: false, TLV493D: false, VL53L0X: false, LTR390: false },
+    "I2C": { SHT40: false, BME680: false, STS30: false, STTS751: false, LIS3DH: false, VEML: false, TLV493D: false, VL53L0X: false, LTR390: false },
     "RS485": { MD02: false },
     "SPI": {},
     "Analog": { Hall_Sensor: false, IR_Sensor: false }
