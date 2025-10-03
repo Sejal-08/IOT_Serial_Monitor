@@ -691,7 +691,7 @@ body.dark-mode  #pressure-card h4 { color: #a3bffa; }
     #22c55e  72deg,     /* ~700 hPa (72°)  */
     #3b82f6  108deg,    /* ~900 hPa (108°) */
     #6366f1  144deg,    /* ~1100 hPa(144°) */
-    #6366f1  180deg     /* *ADD* this last stop → 180° */
+    #6366f1  180deg     /* ADD this last stop → 180° */
   );
   border-radius: 140px 140px 0 0;  /* Perfect half-circle */
   border: 4px solid #1f2937;
@@ -794,4 +794,21 @@ body.dark-mode  #pressure-card h4 { color: #a3bffa; }
   .scale-700   { left: 60px; top: 2px; }
   .scale-900   { left: 50px; top: 25px; }
   .scale-1100  { left: 118px; top: 60px; }
+}
+
+/* centre everything inside the Hall card */
+#hall-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;   /* horizontal centre */
+  justify-content: center; /* vertical centre */
+  text-align: center;    /* keep title & value centred */
+}
+
+/* your existing SVG rule – now works in both axes */
+#hallCshape {
+  margin: -8px auto 0 auto;   /* -8 px up, left/right auto, no bottom push */
+  display: block;
+  width: 70%;
+  height: auto;
 }
