@@ -293,17 +293,18 @@
                 <rect x="5" y="45" width="10" height="10" fill="blue"/> <!-- Sensor -->
                 <line x1="0" y1="75" x2="220" y2="75" stroke="#ccc" stroke-width="2"/> <!-- Ground line -->
                 <g id="tof-person" transform="translate(20, 0)">
-                  <circle cx="5" cy="20" r="5" fill="black"/> <!-- Head -->
-                  <line x1="5" y1="25" x2="5" y2="55" stroke="black" stroke-width="2"/> <!-- Body -->
-                  <line x1="5" y1="30" x2="-5" y2="40" stroke="black" stroke-width="2"/> <!-- Left arm -->
-                  <line x1="5" y1="30" x2="15" y2="40" stroke="black" stroke-width="2"/> <!-- Right arm -->
-                  <line x1="5" y1="55" x2="-5" y2="75" stroke="black" stroke-width="2"/> <!-- Left leg -->
-                  <line x1="5" y1="55" x2="15" y2="75" stroke="black" stroke-width="2"/> <!-- Right leg -->
+                  <circle cx="5" cy="20" r="5" fill="var(--person-color)"/> <!-- Head -->
+                  <line x1="5" y1="25" x2="5" y2="55" stroke="var(--person-color)" stroke-width="2"/> <!-- Body -->
+                  <line x1="5" y1="30" x2="-5" y2="40" stroke="var(--person-color)" stroke-width="2"/> <!-- Left arm -->
+                  <line x1="5" y1="30" x2="15" y2="40" stroke="var(--person-color)" stroke-width="2"/> <!-- Right arm -->
+                  <line x1="5" y1="55" x2="-5" y2="75" stroke="var(--person-color)" stroke-width="2"/> <!-- Left leg -->
+                  <line x1="5" y1="55" x2="15" y2="75" stroke="var(--person-color)" stroke-width="2"/> <!-- Right leg -->
                 </g>
                 <text x="0" y="95" font-size="10">0mm</text>
                 <text x="190" y="95" font-size="10">800mm</text>
               </svg>
             </div>
+
 
            <!-- UVLTR390 UV Index with Enhanced Sun Animation -->
             <div id="uvltr-card" class="card-container" style="display: none; position: relative;">

@@ -30,6 +30,7 @@
   --sensor-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   --h3-color: #2d4060;
   --h2-gradient: linear-gradient(90deg, #4b6cb7, #6b8af7, #a3bffa);
+   --person-color: #000000; /* Black for light mode */
 }
 
 body.dark-mode {
@@ -57,6 +58,7 @@ body.dark-mode {
   --sensor-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
   --h3-color: #a3bffa;
   --h2-gradient: linear-gradient(90deg, #2a4370, #6b8af7, #a3bffa);
+     --person-color: #ffffff; /* White for dark mode */
 }
 .control-section:has(h3 > i.fa-file-alt) .controls {
   margin-bottom: 30px; /* Adds 20px of space below the Clear Logs button */
