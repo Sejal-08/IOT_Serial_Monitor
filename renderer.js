@@ -702,7 +702,11 @@ function parseSensorData(data) {
               'Y': 'AccelerationY',
               'Z': 'AccelerationZ'
             };
-          } else if (sensorName === "LTR390") {
+          } else if (sensorName === "Hall Sensor") {
+  keyMap = {
+    'State': 'MagneticField'
+  };
+} else if (sensorName === "LTR390") {
             keyMap = {
               'UV Index': 'UV'
             };
@@ -735,9 +739,10 @@ function parseSensorData(data) {
             currentAccelY = paramMap['Y'] ? parseFloat(paramMap['Y']) : null;
             currentAccelZ = paramMap['Z'] ? parseFloat(paramMap['Z']) : null;
           }
-          if (sensorName === "Hall Sensor") {
-            currentMagneticField = paramMap['MagneticField'];
-          }
+      if (sensorName === "Hall Sensor") {
+  currentMagneticField = paramMap['State'] ? paramMap['State'] : null;
+  console.log(`Hall Sensor Data: currentMagneticField=${currentMagneticField}, paramMap=${JSON.stringify(paramMap)}`);
+}
           if (sensorName === "TLV493D") {
             currentMagneticX = paramMap['MagneticX'] ? parseFloat(paramMap['MagneticX']) : null;
             currentMagneticY = paramMap['MagneticY'] ? parseFloat(paramMap['MagneticY']) : null;
