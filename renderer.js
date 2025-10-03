@@ -417,7 +417,7 @@ function updateSensorUI() {
     if (protocol === "I2C" && selectedSensor === "VL53L0X" && currentDistance !== null) {
       const distance = parseFloat(currentDistance);
       const maxDist = 2000;
-      tofValue.textContent = `${distance.toFixed(2)} mm`;
+      tofValue.textContent = `${distance.toFixed(2)} cm`;
       const pos = 20 + Math.min(Math.max((distance / maxDist) * 170, 0), 170);
       tofPerson.setAttribute("transform", `translate(${pos}, 0)`);
     } else {
