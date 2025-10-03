@@ -4,7 +4,7 @@ let selectedSensor = null;
 // Sensor protocol to sensor mapping
 const sensorProtocolMap = {
   "I2C": ["SHT40", "BME680", "STS30", "STTS751", "LIS3DH", "VEML7700", "TLV493D", "VL53L0X", "LTR390"],
-  "RS485": ["MD-02"],
+  "RS485": ["MD02"],
   "SPI": [""],
   "Analog": ["Hall Sensor", "IR Sensor"],
 };
@@ -123,7 +123,9 @@ function updateSensorUI() {
     "TLV493D": ["MagneticX", "MagneticY", "MagneticZ"],
     "VL53L0X": ["Distance"],
     "LTR390": ["UV"],
-    "IR Sensor": ["Infrared"]
+    "IR Sensor": ["Infrared"],
+    "MD02": ["Temperature", "Humidity"]
+
   };
 
   if (protocol) {
@@ -187,7 +189,7 @@ function updateSensorUI() {
     }
 
     // Update thermometer (for I2C BME680 or SHT40 or STTS751 or STS30)
-    if (protocol === "I2C" && (selectedSensor === "BME680" || selectedSensor === "STTS751" || selectedSensor === "SHT40" || selectedSensor === "STS30") && currentTemperature !== null) {
+    if (protocol === "I2C" && (selectedSensor === "BME680" || selectedSensor === "STTS751" || selectedSensor === "SHT40" || selectedSensor === "STS30" ) && currentTemperature !== null) {
       const temp = parseFloat(currentTemperature);
       let fillColor;
       if (temp < 25) {
@@ -279,7 +281,7 @@ function updateSensorUI() {
 
     // Update light intensity card (only for I2C Lux Sensor)
     if (protocol === "I2C" && selectedSensor === "VEML7700" && currentLight !== null) {
-      lightCard.style.display = "block";
+      lightContainer.style.display = "block";
       const light = parseFloat(currentLight);
       const maxLight = 120000;
       const brightness = Math.min(Math.max(light / maxLight, 0), 1);
@@ -505,6 +507,66 @@ function updateSensorUI() {
         ray.style.opacity = 0;
       });
     }
+   if (protocol === "RS485" && (selectedSensor === "MD02") && currentTemperature !== null) {
+      const temp = parseFloat(currentTemperature);
+      let fillColor;
+      if (temp < 25) {
+        fillColor = "#ffeb3b";
+      } else if (temp >= 25 && temp <= 35) {
+        fillColor = "#ff9800";
+      } else {
+        fillColor = "#f44336";
+      }
+      const maxTemp = 50;
+      const minTemp = 0;
+      const maxHeight = 160;
+      const fillHeight = Math.min(Math.max((temp - minTemp) / (maxTemp - minTemp) * maxHeight, 0), maxHeight);
+      thermometerFill.setAttribute("y", 180 - fillHeight);
+      thermometerFill.setAttribute("height", fillHeight);
+      thermometerFill.setAttribute("fill", fillColor);
+      thermometerBulb.setAttribute("fill", fillColor);
+      thermometerValue.textContent = `${temp.toFixed(2)}°C`;
+    } else {
+      thermometerFill.setAttribute("y", 180);
+      thermometerFill.setAttribute("height", 0);
+      thermometerFill.setAttribute("fill", "#ffeb3b");
+      thermometerBulb.setAttribute("fill", "#ffeb3b");
+      thermometerValue.textContent = "";
+    }
+
+    // Update humidity wave (for RS485 MD02)
+    if (protocol === "RS485" && (selectedSensor === "MD02") && currentHumidity !== null) {
+      const humidity = parseFloat(currentHumidity);
+      humidityValue.textContent = `${humidity.toFixed(2)}%`;
+      const t = Math.min(Math.max(humidity / 100, 0), 1);
+      const lowColor = { r: 61, g: 142, b: 180 };
+      const highColor = { r: 4, g: 116, b: 168 };
+      const r = Math.round(lowColor.r + (highColor.r - lowColor.r) * t);
+      const g = Math.round(lowColor.g + (highColor.g - lowColor.g) * t);
+      const b = Math.round(lowColor.b + (highColor.b - lowColor.b) * t);
+      const primaryColor = `rgb(${r}, ${g}, ${b})`;
+      waveColor1.setAttribute("style", `stop-color: ${primaryColor}; stop-opacity: 0.5`);
+      waveColor2.setAttribute("style", `stop-color: ${primaryColor}; stop-opacity: 1`);
+      const waveHeight = 100 - (humidity * 100 / 100);
+      const waveAnimation = `
+        @keyframes waveAnimation {
+          0% { d: "M 0 ${waveHeight} Q 25 ${waveHeight + 5} 50 ${waveHeight} T 100 ${waveHeight} V 100 H 0 Z"; }
+          50% { d: "M 0 ${waveHeight + 2} Q 25 ${waveHeight + 7} 50 ${waveHeight + 2} T 100 ${waveHeight + 2} V 100 H 0 Z"; }
+          100% { d: "M 0 ${waveHeight} Q 25 ${waveHeight + 5} 50 ${waveHeight} T 100 ${waveHeight} V 100 H 0 Z"; }
+        }
+      `;
+      const styleSheet = document.styleSheets[0];
+      styleSheet.insertRule(waveAnimation, styleSheet.cssRules.length);
+      wavePath.style.animation = "waveAnimation 8s ease-in-out infinite";
+      wavePath.setAttribute("d", `M 0 ${waveHeight} Q 25 ${waveHeight + 5} 50 ${waveHeight} T 100 ${waveHeight} V 100 H 0 Z`);
+    } else {
+      humidityValue.textContent = "";
+      waveColor1.setAttribute("style", `stop-color: #3d8eb4; stop-opacity: 0.5`);
+      waveColor2.setAttribute("style", `stop-color: #0474a8; stop-opacity: 1`);
+      wavePath.style.animation = "";
+      wavePath.setAttribute("d", "M 0 100 V 100 H 0 Z");
+    }
+
 
   // Update IR Sensor card (for Analog IR Sensor)
 if (protocol === "Analog" && selectedSensor === "IR Sensor" && currentIR !== null) {
