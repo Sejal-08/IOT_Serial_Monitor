@@ -3,7 +3,7 @@ let selectedSensor = null;
 
 // Sensor protocol to sensor mapping
 const sensorProtocolMap = {
-  "I2C": ["SHT40", "BME680", "STS30", "STTS751", "LIS3DH", "VEML", "TLV493D", "VL53L0X", "LTR390"],
+  "I2C": ["SHT40", "BME680", "STS30", "STTS751", "LIS3DH", "VEML7700", "TLV493D", "VL53L0X", "LTR390"],
   "RS485": ["MD-02"],
   "SPI": [""],
   "Analog": ["Hall Sensor", "IR Sensor"],
@@ -11,7 +11,7 @@ const sensorProtocolMap = {
 
 // Track sensor presence and data
 let sensorStatus = {
-  "I2C": { SHT40: false, BME680: false, STS30: false, STTS751: false, LIS3DH: false, VEML: false, TLV493D: false, VL53L0X: false, LTR390: false },
+  "I2C": { SHT40: false, BME680: false, STS30: false, STTS751: false, LIS3DH: false, VEML7700: false, TLV493D: false, VL53L0X: false, LTR390: false },
   "RS485": { MD02: false },
   "SPI": {},
   "Analog": { Hall_Sensor: false, IR_Sensor: false }
@@ -116,7 +116,7 @@ function updateSensorUI() {
     "BME680": ["Temperature", "Humidity", "Pressure"],
     "SHT40": ["Temperature", "Humidity"],
     "STTS751": ["Temperature"],
-    "VEML": ["LightIntensity"],
+    "VEML7700": ["Lux"],
     "STS30": ["Temperature"],
     "LIS3DH": ["AccelerationX", "AccelerationY", "AccelerationZ"],
     "Hall Sensor": ["MagneticField"],
@@ -166,7 +166,7 @@ function updateSensorUI() {
       thermometerContainer.style.display = supportedParams.includes("Temperature") && currentTemperature !== null ? "block" : "none";
       humidityContainer.style.display = supportedParams.includes("Humidity") && currentHumidity !== null ? "block" : "none";
       pressureContainer.style.display = supportedParams.includes("Pressure") && currentPressure !== null ? "block" : "none";
-      lightContainer.style.display = supportedParams.includes("LightIntensity") && currentLight !== null ? "block" : "none";
+      lightContainer.style.display = supportedParams.includes("Lux") && currentLight !== null ? "block" : "none";
       lis3dhContainer.style.display = supportedParams.includes("AccelerationX") && currentAccelX !== null ? "block" : "none";
       hallContainer.style.display = supportedParams.includes("MagneticField") && currentMagneticField !== null ? "block" : "none";
       tlv493dContainer.style.display = supportedParams.includes("MagneticX") && currentMagneticX !== null ? "block" : "none";
@@ -269,7 +269,7 @@ function updateSensorUI() {
     }
 
     // Update light intensity card (only for I2C Lux Sensor)
-    if (protocol === "I2C" && selectedSensor === "VEML" && currentLight !== null) {
+    if (protocol === "I2C" && selectedSensor === "VEML7700" && currentLight !== null) {
       lightCard.style.display = "block";
       const light = parseFloat(currentLight);
       const maxLight = 120000;
@@ -656,8 +656,8 @@ function parseSensorData(data) {
               currentPressure = paramMap['Pressure'] ? parseFloat(paramMap['Pressure']) : null;
             }
           }
-          if (sensorName === "VEML") {
-            currentLight = paramMap['LightIntensity'] ? parseFloat(paramMap['LightIntensity']) : null;
+          if (sensorName === "VEML7700") {
+           currentLight = paramMap['Lux'] ? parseFloat(paramMap['Lux']) : null;
           }
           if (sensorName === "LIS3DH") {
             currentAccelX = paramMap['X'] ? parseFloat(paramMap['X']) : null;
@@ -745,7 +745,7 @@ function resetSensorData() {
   };
 
   sensorStatus = {
-    "I2C": { SHT40: false, BME680: false, STS30: false, STTS751: false, LIS3DH: false, VEML: false, TLV493D: false, VL53L0X: false, LTR390: false },
+    "I2C": { SHT40: false, BME680: false, STS30: false, STTS751: false, LIS3DH: false, VEML7700: false, TLV493D: false, VL53L0X: false, LTR390: false },
     "RS485": { MD02: false },
     "SPI": {},
     "Analog": { Hall_Sensor: false, IR_Sensor: false }
