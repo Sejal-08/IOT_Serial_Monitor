@@ -396,17 +396,17 @@ const tlv493dXValue = document.getElementById("tlv493d-x-value");
     }
 
    // Update TLV493D magnetic field card (for I2C TLV493D)
-    if (protocol === "I2C" && selectedSensor === "TLV493D" && currentMagneticX !== null && currentMagneticY !== null && currentMagneticZ !== null) {
-      const magX = parseFloat(currentMagneticX);
-      const magY = parseFloat(currentMagneticY);
-      const magZ = parseFloat(currentMagneticZ);
-      tlv493dXValue.textContent = `X: ${magX.toFixed(2)} mT`;
-      tlv493dYValue.textContent = `Y: ${magY.toFixed(2)} mT`;
-      tlv493dZValue.textContent = `Z: ${magZ.toFixed(2)} mT`;
+   if (protocol === "I2C" && selectedSensor === "TLV493D" && currentMagneticX !== null && currentMagneticY !== null && currentMagneticZ !== null) {
+  const magX = parseFloat(currentMagneticX);
+  const magY = parseFloat(currentMagneticY);
+  const magZ = parseFloat(currentMagneticZ);
+  tlv493dXValue.textContent = `X: ${magX.toFixed(2)} mT`;
+  tlv493dYValue.textContent = `Y: ${magY.toFixed(2)} mT`;
+  tlv493dZValue.textContent = `Z: ${magZ.toFixed(2)} mT`;
 
       // Calculate magnetic field vector direction and magnitude
       const magnitude = Math.sqrt(magX * magX + magY * magY + magZ * magZ);
-      const maxMagnitude = 200; // Adjust based on sensor range
+      const maxMagnitude = 250; // Adjust based on sensor range
       const normalizedMagnitude = Math.min(magnitude / maxMagnitude, 1);
 
       // Calculate spherical coordinates (azimuth and polar angles)
@@ -444,8 +444,8 @@ const tlv493dXValue = document.getElementById("tlv493d-x-value");
       prevMagnitude = magnitude;
     } else {
       tlv493dXValue.textContent = "X: 0.00 mT";
-      tlv493dYValue.textContent = "Y: 0.00 mT";
-      tlv493dZValue.textContent = "Z: 0.00 mT";
+  tlv493dYValue.textContent = "Y: 0.00 mT";
+  tlv493dZValue.textContent = "Z: 0.00 mT";
       if (tlv493dArrow) {
         tlv493dArrow.style.transform = `rotateY(0deg) rotateX(0deg) scale(1)`;
         tlv493dArrow.classList.remove('magnitude-low', 'magnitude-medium', 'magnitude-high');
@@ -457,7 +457,6 @@ const tlv493dXValue = document.getElementById("tlv493d-x-value");
       prevPolar = 0;
       prevMagnitude = 0;
     }
-
     // Update TOFVL53L0X distance card (for I2C VL53L0X)
     if (protocol === "I2C" && selectedSensor === "VL53L0X" && currentDistance !== null) {
       const distance = parseFloat(currentDistance);
@@ -736,15 +735,25 @@ function parseSensorData(data) {
               'Y': 'AccelerationY',
               'Z': 'AccelerationZ'
             };
-          } else if (sensorName === "Hall Sensor") {
-  keyMap = {
-    'State': 'MagneticField'
-  };
-} else if (sensorName === "LTR390") {
+          } 
+          else if (sensorName === "Hall Sensor") {
+            keyMap = {
+              'State': 'MagneticField'
+           };
+         } 
+         else if (sensorName === "TLV493D") {
+           keyMap = {
+            'X': 'MagneticX',
+            'Y': 'MagneticY',
+            'Z': 'MagneticZ'
+         };
+       }
+        else if (sensorName === "LTR390") {
             keyMap = {
               'UV Index': 'UV'
             };
-          } else if (["BME680", "STTS751", "SHT40", "STS30"].includes(sensorName)) {
+          } 
+        else if (["BME680", "STTS751", "SHT40", "STS30"].includes(sensorName)) {
             currentTemperature = paramMap["Temperature"] ? parseFloat(paramMap["Temperature"]) : null;
             currentHumidity = paramMap["Humidity"] ? parseFloat(paramMap["Humidity"]) : null;
             if (sensorName === "BME680") {
@@ -773,15 +782,19 @@ function parseSensorData(data) {
             currentAccelY = paramMap['Y'] ? parseFloat(paramMap['Y']) : null;
             currentAccelZ = paramMap['Z'] ? parseFloat(paramMap['Z']) : null;
           }
-      if (sensorName === "Hall Sensor") {
-  currentMagneticField = paramMap['State'] ? paramMap['State'] : null;
-  console.log(`Hall Sensor Data: currentMagneticField=${currentMagneticField}, paramMap=${JSON.stringify(paramMap)}`);
-}
-          if (sensorName === "TLV493D") {
-            currentMagneticX = paramMap['MagneticX'] ? parseFloat(paramMap['MagneticX']) : null;
-            currentMagneticY = paramMap['MagneticY'] ? parseFloat(paramMap['MagneticY']) : null;
-            currentMagneticZ = paramMap['MagneticZ'] ? parseFloat(paramMap['MagneticZ']) : null;
-          }
+          if (sensorName === "Hall Sensor") {
+             currentMagneticField = paramMap['State'] ? paramMap['State'] : null;
+   
+         }
+         if (sensorName === "TLV493D") {
+             currentMagneticX = paramMap['X'] ? parseFloat(paramMap['X']) : null;
+             currentMagneticY = paramMap['Y'] ? parseFloat(paramMap['Y']) : null;
+             currentMagneticZ = paramMap['Z'] ? parseFloat(paramMap['Z']) : null;
+             Object.entries(paramMap).forEach(([key, value]) => {
+             const formattedValue = isNaN(parseFloat(value)) ? value : parseFloat(value).toFixed(2);
+             sensorData[protocol][`${sensorName} ${key}`] = formattedValue;
+             });
+         }
           if (sensorName === "VL53L0X") {
             currentDistance = paramMap['Distance'] ? parseFloat(paramMap['Distance']) : null;
           }
