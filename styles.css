@@ -75,9 +75,11 @@ body {
   background: var(--bg-color);
   color: var(--text-color);
   min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   padding-top: 4.5rem;
+  overflow: hidden;
   transition: background 0.4s ease, color 0.4s ease;
 }
 
@@ -132,9 +134,9 @@ ul.nav-links {
 .main-container {
   display: flex;
   flex: 1;
+  height: calc(100vh - 4.5rem - 40px);
   gap: 20px;
   padding: 20px;
-  min-height: calc(100vh - 4.5rem - 40px);
 }
 
 .left-panel, .right-panel {
@@ -147,14 +149,55 @@ ul.nav-links {
 
 .left-panel {
   width: 32%;
-  overflow-y: auto;
-  max-height: calc(100vh - 4.5rem - 40px - 40px);
+  height: 100%;
+  overflow: hidden;
 }
 
 .right-panel {
   flex: 1;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Right Panel Container Adjustments */
+.right-panel .container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+#sensor-visualization-section {
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.control-section:has(h3 > i.fa-file-alt) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.control-section:has(h3 > i.fa-file-alt) .controls {
+  flex-shrink: 0;
+  margin-bottom: 15px;
+}
+
+#output {
+  flex: 1;
+  width: 100%;
+  border-radius: 12px;
+  padding: 12px;
   overflow-y: auto;
-  max-height: calc(100vh - 4.5rem - 40px - 40px);
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+  background: var(--output-bg);
+  color: var(--text-color);
+  border: 1px solid var(--output-border);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.5);
 }
 
 /* Headings */
@@ -253,32 +296,21 @@ body.dark-mode .action-button {
   align-items: center;
 }
 
-/* Output (Logs) */
-#output {
-  width: 100%;
-  height: 700px;
-  border-radius: 12px;
-  padding: 12px;
-  overflow-y: auto;
-  font-family: 'Courier New', monospace;
-  font-size: 0.9em;
-  background: var(--output-bg);
-  color: var(--text-color);
-  border: 1px solid var(--output-border);
-  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.5);
-}
-
 /* Footer */
 footer {
   background: var(--footer-bg);
   color: var(--footer-color);
   text-align: center;
   padding: 12px;
-  margin-top: auto;
   font-size: 0.85em;
   border-top-left-radius: 12px;
   border-top-right-radius: 12px;
   box-shadow: var(--footer-shadow);
+  flex-shrink: 0;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Sensor Data Container */
@@ -557,11 +589,12 @@ body.dark-mode #accel-ball {
 @media (max-width: 1200px) {
   .main-container {
     flex-direction: column;
+    height: calc(100vh - 4.5rem - 40px);
   }
 
   .left-panel, .right-panel {
     width: 100%;
-    max-height: none;
+    height: auto;
   }
 
   .sensor-cards {
@@ -623,10 +656,6 @@ body.dark-mode #accel-ball {
   .input-field, .action-button, select {
     padding: 8px;
     font-size: 0.85em;
-  }
-
-  #output {
-    height: 300px;
   }
 
   .thermometer-container,
@@ -798,6 +827,7 @@ body.dark-mode  #pressure-card h4 { color: #a3bffa; }
 
 /* centre everything inside the Hall card */
 #hall-card {
+  height: 50%;
   display: flex;
   flex-direction: column;
   align-items: center;   /* horizontal centre */
@@ -805,9 +835,8 @@ body.dark-mode  #pressure-card h4 { color: #a3bffa; }
   text-align: center;    /* keep title & value centred */
 }
 
-/* your existing SVG rule – now works in both axes */
 #hallCshape {
-  margin: -8px auto 0 auto;   /* -8 px up, left/right auto, no bottom push */
+  margin: -70px auto 0 auto ;   /* -8 px up, left/right auto, no bottom push */
   display: block;
   width: 70%;
   height: auto;

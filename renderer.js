@@ -39,6 +39,9 @@ let currentMagneticZ = null;
 let currentDistance = null;
 let currentUV = null;
 let currentIR = null;
+let prevAzimuth = 0; // For TLV493D arrow animation
+let prevPolar = 0;
+let prevMagnitude = 0;
 
 let isConnected = false;
 let currentBaud = null;
@@ -87,12 +90,12 @@ function updateSensorUI() {
   const hallArc = document.getElementById("hall-arc-path");
   const hallGlow = document.getElementById("hall-glow");
 
-  const tlv493dXValue = document.getElementById("tlv493d-x-value");
+const tlv493dXValue = document.getElementById("tlv493d-x-value");
   const tlv493dYValue = document.getElementById("tlv493d-y-value");
   const tlv493dZValue = document.getElementById("tlv493d-z-value");
-  const tlv493dXBar = document.getElementById("tlv493d-x-bar");
-  const tlv493dYBar = document.getElementById("tlv493d-y-bar");
-  const tlv493dZBar = document.getElementById("tlv493d-z-bar");
+  const tlv493dArrow = document.querySelector(".tlv493d-arrow");
+  const tlv493dArrowShaft = document.getElementById("tlv493d-arrow-shaft");
+  const tlv493dArrowHead = document.getElementById("tlv493d-arrow-head");
 
   const tofValue = document.getElementById("tof-value");
   const tofPerson = document.getElementById("tof-person");
@@ -392,36 +395,67 @@ function updateSensorUI() {
       }
     }
 
-    // Update TLV493D magnetic field card (for I2C TLV493D)
+   // Update TLV493D magnetic field card (for I2C TLV493D)
     if (protocol === "I2C" && selectedSensor === "TLV493D" && currentMagneticX !== null && currentMagneticY !== null && currentMagneticZ !== null) {
       const magX = parseFloat(currentMagneticX);
       const magY = parseFloat(currentMagneticY);
       const magZ = parseFloat(currentMagneticZ);
-      const maxMag = 200;
-      const minMag = -200;
-      const barColor = "#6b8af7";
-      const barWidthX = Math.min(Math.max(((magX - minMag) / (maxMag - minMag)) * 100, 0), 100);
-      const barWidthY = Math.min(Math.max(((magY - minMag) / (maxMag - minMag)) * 100, 0), 100);
-      const barWidthZ = Math.min(Math.max(((magZ - minMag) / (maxMag - minMag)) * 100, 0), 100);
       tlv493dXValue.textContent = `X: ${magX.toFixed(2)} mT`;
       tlv493dYValue.textContent = `Y: ${magY.toFixed(2)} mT`;
       tlv493dZValue.textContent = `Z: ${magZ.toFixed(2)} mT`;
-      tlv493dXBar.style.width = `${barWidthX}%`;
-      tlv493dYBar.style.width = `${barWidthY}%`;
-      tlv493dZBar.style.width = `${barWidthZ}%`;
-      tlv493dXBar.style.backgroundColor = barColor;
-      tlv493dYBar.style.backgroundColor = barColor;
-      tlv493dZBar.style.backgroundColor = barColor;
+
+      // Calculate magnetic field vector direction and magnitude
+      const magnitude = Math.sqrt(magX * magX + magY * magY + magZ * magZ);
+      const maxMagnitude = 200; // Adjust based on sensor range
+      const normalizedMagnitude = Math.min(magnitude / maxMagnitude, 1);
+
+      // Calculate spherical coordinates (azimuth and polar angles)
+      const azimuth = Math.atan2(magY, magX) * 180 / Math.PI; // Y/X for XY plane rotation
+      const polar = Math.acos(magZ / (magnitude || 1)) * 180 / Math.PI; // Z angle from pole
+
+      // Color based on magnitude
+      let magnitudeClass = 'magnitude-low';
+      if (magnitude > 150) {
+        magnitudeClass = 'magnitude-high';
+      } else if (magnitude > 50) {
+        magnitudeClass = 'magnitude-medium';
+      }
+
+      // Apply rotation and scale to arrow
+      if (tlv493dArrow) {
+        tlv493dArrow.style.transform = `rotateY(${azimuth}deg) rotateX(${polar}deg) scale(${1 + normalizedMagnitude * 0.5})`;
+        tlv493dArrow.classList.remove('magnitude-low', 'magnitude-medium', 'magnitude-high');
+        tlv493dArrow.classList.add(magnitudeClass);
+
+        // Trigger pulse animation
+        tlv493dArrow.classList.remove('update-pulse');
+        void tlv493dArrow.offsetWidth; // Force reflow
+        tlv493dArrow.classList.add('update-pulse');
+      }
+
+      // Update arrow length based on magnitude
+      const shaftLength = 30 + normalizedMagnitude * 20; // Base length 30, up to 50
+      tlv493dArrowShaft.setAttribute('d', `M 50 50 L 50 ${50 - shaftLength}`);
+      tlv493dArrowHead.setAttribute('points', `50,${50 - shaftLength - 5} 45,${50 - shaftLength + 5} 55,${50 - shaftLength + 5}`);
+
+      // Store current angles for next update
+      prevAzimuth = azimuth;
+      prevPolar = polar;
+      prevMagnitude = magnitude;
     } else {
       tlv493dXValue.textContent = "X: 0.00 mT";
       tlv493dYValue.textContent = "Y: 0.00 mT";
       tlv493dZValue.textContent = "Z: 0.00 mT";
-      tlv493dXBar.style.width = "0%";
-      tlv493dYBar.style.width = "0%";
-      tlv493dZBar.style.width = "0%";
-      tlv493dXBar.style.backgroundColor = "#6b8af7";
-      tlv493dYBar.style.backgroundColor = "#6b8af7";
-      tlv493dZBar.style.backgroundColor = "#6b8af7";
+      if (tlv493dArrow) {
+        tlv493dArrow.style.transform = `rotateY(0deg) rotateX(0deg) scale(1)`;
+        tlv493dArrow.classList.remove('magnitude-low', 'magnitude-medium', 'magnitude-high');
+        tlv493dArrow.classList.add('magnitude-low');
+        tlv493dArrowShaft.setAttribute('d', `M 50 50 L 50 20`);
+        tlv493dArrowHead.setAttribute('points', `50,15 45,25 55,25`);
+      }
+      prevAzimuth = 0;
+      prevPolar = 0;
+      prevMagnitude = 0;
     }
 
     // Update TOFVL53L0X distance card (for I2C VL53L0X)
@@ -507,65 +541,65 @@ function updateSensorUI() {
         ray.style.opacity = 0;
       });
     }
-   if (protocol === "RS485" && (selectedSensor === "MD02") && currentTemperature !== null) {
-      const temp = parseFloat(currentTemperature);
-      let fillColor;
-      if (temp < 25) {
-        fillColor = "#ffeb3b";
-      } else if (temp >= 25 && temp <= 35) {
-        fillColor = "#ff9800";
-      } else {
-        fillColor = "#f44336";
-      }
-      const maxTemp = 50;
-      const minTemp = 0;
-      const maxHeight = 160;
-      const fillHeight = Math.min(Math.max((temp - minTemp) / (maxTemp - minTemp) * maxHeight, 0), maxHeight);
-      thermometerFill.setAttribute("y", 180 - fillHeight);
-      thermometerFill.setAttribute("height", fillHeight);
-      thermometerFill.setAttribute("fill", fillColor);
-      thermometerBulb.setAttribute("fill", fillColor);
-      thermometerValue.textContent = `${temp.toFixed(2)}°C`;
-    } else {
-      thermometerFill.setAttribute("y", 180);
-      thermometerFill.setAttribute("height", 0);
-      thermometerFill.setAttribute("fill", "#ffeb3b");
-      thermometerBulb.setAttribute("fill", "#ffeb3b");
-      thermometerValue.textContent = "";
-    }
+  //  if (protocol === "RS485" && (selectedSensor === "MD02") && currentTemperature !== null) {
+  //     const temp = parseFloat(currentTemperature);
+  //     let fillColor;
+  //     if (temp < 25) {
+  //       fillColor = "#ffeb3b";
+  //     } else if (temp >= 25 && temp <= 35) {
+  //       fillColor = "#ff9800";
+  //     } else {
+  //       fillColor = "#f44336";
+  //     }
+  //     const maxTemp = 50;
+  //     const minTemp = 0;
+  //     const maxHeight = 160;
+  //     const fillHeight = Math.min(Math.max((temp - minTemp) / (maxTemp - minTemp) * maxHeight, 0), maxHeight);
+  //     thermometerFill.setAttribute("y", 180 - fillHeight);
+  //     thermometerFill.setAttribute("height", fillHeight);
+  //     thermometerFill.setAttribute("fill", fillColor);
+  //     thermometerBulb.setAttribute("fill", fillColor);
+  //     thermometerValue.textContent = `${temp.toFixed(2)}°C`;
+  //   } else {
+  //     thermometerFill.setAttribute("y", 180);
+  //     thermometerFill.setAttribute("height", 0);
+  //     thermometerFill.setAttribute("fill", "#ffeb3b");
+  //     thermometerBulb.setAttribute("fill", "#ffeb3b");
+  //     thermometerValue.textContent = "";
+  //   }
 
-    // Update humidity wave (for RS485 MD02)
-    if (protocol === "RS485" && (selectedSensor === "MD02") && currentHumidity !== null) {
-      const humidity = parseFloat(currentHumidity);
-      humidityValue.textContent = `${humidity.toFixed(2)}%`;
-      const t = Math.min(Math.max(humidity / 100, 0), 1);
-      const lowColor = { r: 61, g: 142, b: 180 };
-      const highColor = { r: 4, g: 116, b: 168 };
-      const r = Math.round(lowColor.r + (highColor.r - lowColor.r) * t);
-      const g = Math.round(lowColor.g + (highColor.g - lowColor.g) * t);
-      const b = Math.round(lowColor.b + (highColor.b - lowColor.b) * t);
-      const primaryColor = `rgb(${r}, ${g}, ${b})`;
-      waveColor1.setAttribute("style", `stop-color: ${primaryColor}; stop-opacity: 0.5`);
-      waveColor2.setAttribute("style", `stop-color: ${primaryColor}; stop-opacity: 1`);
-      const waveHeight = 100 - (humidity * 100 / 100);
-      const waveAnimation = `
-        @keyframes waveAnimation {
-          0% { d: "M 0 ${waveHeight} Q 25 ${waveHeight + 5} 50 ${waveHeight} T 100 ${waveHeight} V 100 H 0 Z"; }
-          50% { d: "M 0 ${waveHeight + 2} Q 25 ${waveHeight + 7} 50 ${waveHeight + 2} T 100 ${waveHeight + 2} V 100 H 0 Z"; }
-          100% { d: "M 0 ${waveHeight} Q 25 ${waveHeight + 5} 50 ${waveHeight} T 100 ${waveHeight} V 100 H 0 Z"; }
-        }
-      `;
-      const styleSheet = document.styleSheets[0];
-      styleSheet.insertRule(waveAnimation, styleSheet.cssRules.length);
-      wavePath.style.animation = "waveAnimation 8s ease-in-out infinite";
-      wavePath.setAttribute("d", `M 0 ${waveHeight} Q 25 ${waveHeight + 5} 50 ${waveHeight} T 100 ${waveHeight} V 100 H 0 Z`);
-    } else {
-      humidityValue.textContent = "";
-      waveColor1.setAttribute("style", `stop-color: #3d8eb4; stop-opacity: 0.5`);
-      waveColor2.setAttribute("style", `stop-color: #0474a8; stop-opacity: 1`);
-      wavePath.style.animation = "";
-      wavePath.setAttribute("d", "M 0 100 V 100 H 0 Z");
-    }
+  //   // Update humidity wave (for RS485 MD02)
+  //   if (protocol === "RS485" && (selectedSensor === "MD02") && currentHumidity !== null) {
+  //     const humidity = parseFloat(currentHumidity);
+  //     humidityValue.textContent = `${humidity.toFixed(2)}%`;
+  //     const t = Math.min(Math.max(humidity / 100, 0), 1);
+  //     const lowColor = { r: 61, g: 142, b: 180 };
+  //     const highColor = { r: 4, g: 116, b: 168 };
+  //     const r = Math.round(lowColor.r + (highColor.r - lowColor.r) * t);
+  //     const g = Math.round(lowColor.g + (highColor.g - lowColor.g) * t);
+  //     const b = Math.round(lowColor.b + (highColor.b - lowColor.b) * t);
+  //     const primaryColor = `rgb(${r}, ${g}, ${b})`;
+  //     waveColor1.setAttribute("style", `stop-color: ${primaryColor}; stop-opacity: 0.5`);
+  //     waveColor2.setAttribute("style", `stop-color: ${primaryColor}; stop-opacity: 1`);
+  //     const waveHeight = 100 - (humidity * 100 / 100);
+  //     const waveAnimation = `
+  //       @keyframes waveAnimation {
+  //         0% { d: "M 0 ${waveHeight} Q 25 ${waveHeight + 5} 50 ${waveHeight} T 100 ${waveHeight} V 100 H 0 Z"; }
+  //         50% { d: "M 0 ${waveHeight + 2} Q 25 ${waveHeight + 7} 50 ${waveHeight + 2} T 100 ${waveHeight + 2} V 100 H 0 Z"; }
+  //         100% { d: "M 0 ${waveHeight} Q 25 ${waveHeight + 5} 50 ${waveHeight} T 100 ${waveHeight} V 100 H 0 Z"; }
+  //       }
+  //     `;
+  //     const styleSheet = document.styleSheets[0];
+  //     styleSheet.insertRule(waveAnimation, styleSheet.cssRules.length);
+  //     wavePath.style.animation = "waveAnimation 8s ease-in-out infinite";
+  //     wavePath.setAttribute("d", `M 0 ${waveHeight} Q 25 ${waveHeight + 5} 50 ${waveHeight} T 100 ${waveHeight} V 100 H 0 Z`);
+  //   } else {
+  //     humidityValue.textContent = "";
+  //     waveColor1.setAttribute("style", `stop-color: #3d8eb4; stop-opacity: 0.5`);
+  //     waveColor2.setAttribute("style", `stop-color: #0474a8; stop-opacity: 1`);
+  //     wavePath.style.animation = "";
+  //     wavePath.setAttribute("d", "M 0 100 V 100 H 0 Z");
+  //   }
 
 
   // Update IR Sensor card (for Analog IR Sensor)

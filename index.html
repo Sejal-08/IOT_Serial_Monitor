@@ -286,13 +286,24 @@
             <div id="tlv493d-card" class="card-container" style="display: none;">
               <h4>Magnetic Field</h4>
               <div id="tlv493d-x-value" class="sensor-value">X: 0.00 mT</div>
-              <div id="tlv493d-x-bar" class="card-bar"></div>
               <div id="tlv493d-y-value" class="sensor-value">Y: 0.00 mT</div>
-              <div id="tlv493d-y-bar" class="card-bar"></div>
               <div id="tlv493d-z-value" class="sensor-value">Z: 0.00 mT</div>
-              <div id="tlv493d-z-bar" class="card-bar"></div>
+              <div class="tlv493d-arrow-container">
+                <svg class="tlv493d-arrow" width="150" height="150" viewBox="0 0 100 100">
+                  <!-- Arrow shaft (line) -->
+                  <path id="tlv493d-arrow-shaft" d="M 50 50 L 50 20" />
+                  <!-- Arrowhead (triangle) -->
+                  <polygon id="tlv493d-arrow-head" points="50,15 45,25 55,25" />
+                  <!-- Reference axes for orientation -->
+                  <line x1="50" y1="50" x2="80" y2="50" stroke="red" stroke-width="1" opacity="0.5"/>
+                  <text x="82" y="53" font-size="8" fill="red">+X</text>
+                  <line x1="50" y1="50" x2="50" y2="20" stroke="green" stroke-width="1" opacity="0.5"/>
+                  <text x="48" y="18" font-size="8" fill="green">+Y</text>
+                  <line x1="50" y1="50" x2="50" y2="50" stroke="blue" stroke-width="1" opacity="0.5" transform="rotate(90 50 50)"/>
+                  <text x="48" y="82" font-size="8" fill="blue">+Z</text>
+                </svg>
+              </div>
             </div>
-
            <!-- TOFVL53L0X Distance -->
             <div id="tof-card" class="card-container" style="display: none; height: 150px;">
               <h4>Distance</h4>
