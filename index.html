@@ -478,23 +478,12 @@
       document.getElementById('ir-value').textContent
     ];
 
-    // Check if any sensor has non-empty data (and not just default/placeholder values)
-    const hasData = sensorValues.some(value => 
-      value && 
-      value.trim() !== '' && 
-      !value.includes('0.00') && // Adjust this based on your default values
-      value !== 'X: 0.00 m/s²' && 
-      value !== 'Y: 0.00 m/s²' && 
-      value !== 'Z: 0.00 m/s²' && 
-      value !== 'X: 0.00 mT' && 
-      value !== 'Y: 0.00 mT' && 
-      value !== 'Z: 0.00 mT' && 
-      value !== 'UV: 0.00'
-    );
+   // Check if any sensor has non-empty data (relaxed: show even if zero, but hide if empty/undefined)
+  const hasData = sensorValues.some(value => value && value.trim() !== '');
 
-    // Show or hide the entire visualization section
-    visualizationSection.style.display = hasData ? 'block' : 'none';
-  }
+  // Show or hide the entire visualization section
+  visualizationSection.style.display = hasData ? 'block' : 'none';
+}
 
   // Override updateSensorUI to include visibility check
   const originalUpdateSensorUI = window.updateSensorUI || function() {};

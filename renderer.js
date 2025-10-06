@@ -123,7 +123,7 @@ const tlv493dXValue = document.getElementById("tlv493d-x-value");
     "STS30": ["Temperature"],
     "LIS3DH": ["AccelerationX", "AccelerationY", "AccelerationZ"],
     "Hall Sensor": ["MagneticField"],
-    "TLV493D": ["MagneticX", "MagneticY", "MagneticZ"],
+    "TLV493D": ["X", "Y", "Z"],
     "VL53L0X": ["Distance"],
     "LTR390": ["UV"],
     "IR Sensor": ["Infrared"],
@@ -174,7 +174,7 @@ const tlv493dXValue = document.getElementById("tlv493d-x-value");
       lightContainer.style.display = supportedParams.includes("Lux") && currentLight !== null ? "block" : "none";
       lis3dhContainer.style.display = supportedParams.includes("AccelerationX") && currentAccelX !== null ? "block" : "none";
       hallContainer.style.display = supportedParams.includes("MagneticField") && currentMagneticField !== null ? "block" : "none";
-      tlv493dContainer.style.display = supportedParams.includes("MagneticX") && currentMagneticX !== null ? "block" : "none";
+      tlv493dContainer.style.display = supportedParams.includes("X") && currentMagneticX !== null ? "block" : "none";
       tofContainer.style.display = supportedParams.includes("Distance") && currentDistance !== null ? "block" : "none";
       uvltrContainer.style.display = supportedParams.includes("UV") && currentUV !== null ? "block" : "none";
       irContainer.style.display = supportedParams.includes("Infrared") && currentIR !== null ? "block" : "none";
@@ -683,13 +683,7 @@ function parseSensorData(data) {
               'State': 'MagneticField'
            };
          } 
-         else if (sensorName === "TLV493D") {
-           keyMap = {
-            'X': 'MagneticX',
-            'Y': 'MagneticY',
-            'Z': 'MagneticZ'
-         };
-       }
+      
         else if (sensorName === "LTR390") {
             keyMap = {
               'UV Index': 'UV'
@@ -732,10 +726,7 @@ function parseSensorData(data) {
              currentMagneticX = paramMap['X'] ? parseFloat(paramMap['X']) : null;
              currentMagneticY = paramMap['Y'] ? parseFloat(paramMap['Y']) : null;
              currentMagneticZ = paramMap['Z'] ? parseFloat(paramMap['Z']) : null;
-             Object.entries(paramMap).forEach(([key, value]) => {
-             const formattedValue = isNaN(parseFloat(value)) ? value : parseFloat(value).toFixed(2);
-             sensorData[protocol][`${sensorName} ${key}`] = formattedValue;
-             });
+           
          }
           if (sensorName === "VL53L0X") {
             currentDistance = paramMap['Distance'] ? parseFloat(paramMap['Distance']) : null;
