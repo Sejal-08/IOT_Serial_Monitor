@@ -841,3 +841,30 @@ body.dark-mode  #pressure-card h4 { color: #a3bffa; }
   width: 70%;
   height: auto;
 }
+/* IR Card */
+#ir-card {
+  flex: 0 0 200px; /* Consistent width with other cards */
+  max-width: 200px;
+  min-height: 200px; /* Consistent height with other cards */
+  padding: 12px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Horizontal centering */
+  justify-content: center; /* Vertical centering */
+  background: var(--sensor-bg);
+  border: 1px solid var(--sensor-border);
+  box-shadow: var(--sensor-shadow);
+  transition: all 0.4s ease;
+  position: relative;
+  overflow: hidden;
+  text-align: center; /* Ensure text is centered */
+}
+
+#ir-bulb {
+  margin: 10px auto; /* Center horizontally with auto margins, small vertical margin */
+  display: block; /* Ensure SVG behaves as a block element */
+  width: 80px; /* Consistent size */
+  height: 80px;
+  flex-shrink: 0; /* Prevent SVG from shrinking */
+}
