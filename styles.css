@@ -6,7 +6,7 @@
 :root {
   --text-color: #1e293b;
   --bg-color: linear-gradient(135deg, #f3f4f6 0%, #e4e8f2 50%, #d3d4d5 100%);
-  --panel-bg:linear-gradient(135deg, #ffffff 0%, #e0e7ff 50%, #f9f9f9 100%);
+  --panel-bg:linear-gradient(135deg, #ffffff 20%, #e0e7ff 50%,  #c3cef2 50%);
   --panel-border: #e0e7ff;
   --panel-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
   --nav-bg: linear-gradient(90deg, #4b6cb7, #6b8af7, #a3bffa);
@@ -36,7 +36,7 @@
 body.dark-mode {
   --text-color: #e0e7ff;
   --bg-color: linear-gradient(135deg, #0a0e1a 0%, #1a2a4d 50%, #2a4370 100%);
-  --panel-bg: linear-gradient(135deg, #1a2a4d, #2d4060, #4b6cb7);
+  --panel-bg: linear-gradient(135deg, #1a2a4d, #2d4060 50%, #152342 50%);
   --panel-border: rgba(45, 65, 90, 0.5);
   --panel-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
   --nav-bg: linear-gradient(90deg, #0a0e1a, #2a4370, #4b6cb7);
