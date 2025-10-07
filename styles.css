@@ -39,7 +39,7 @@ body.dark-mode {
   --panel-bg: linear-gradient(135deg, #1a2a4d, #2d4060 50%, #152342 50%);
   --panel-border: rgba(45, 65, 90, 0.5);
   --panel-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
-  --nav-bg: linear-gradient(90deg, #0a0e1a, #2a4370, #4b6cb7);
+  --nav-bg: linear-gradient(90deg, #1d2849, #2a4370, #2b3d67);
   --nav-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
   --nav-border: rgba(45, 65, 90, 0.3);
   --input-bg: #1a2a4d;
@@ -50,7 +50,7 @@ body.dark-mode {
   --action-shadow: 0 4px 12px rgba(107, 138, 247, 0.7);
   --output-bg: linear-gradient(135deg, #0a0e1a, #1a2a4d);
   --output-border: #2d4060;
-  --footer-bg: linear-gradient(90deg, #2a4370, #0a0e1a);
+  --footer-bg: linear-gradient(90deg, #1d2849, #2a4370, #2b3d67);
   --footer-color: #a3bffa;
   --footer-shadow: 0 -2px 6px rgba(0, 0, 0, 0.4);
   --sensor-bg: linear-gradient(135deg, #1a2a4d, #2d4060);
