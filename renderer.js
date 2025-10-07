@@ -219,38 +219,88 @@ const tlv493dXValue = document.getElementById("tlv493d-x-value");
       thermometerValue.textContent = "";
     }
 
-    // Update humidity wave (for I2C BME680 or SHT40)
-    if (protocol === "I2C" && (selectedSensor === "BME680" || selectedSensor === "SHT40") && currentHumidity !== null) {
-      const humidity = parseFloat(currentHumidity);
-      humidityValue.textContent = `${humidity.toFixed(2)}%`;
-      const t = Math.min(Math.max(humidity / 100, 0), 1);
-      const lowColor = { r: 61, g: 142, b: 180 };
-      const highColor = { r: 4, g: 116, b: 168 };
-      const r = Math.round(lowColor.r + (highColor.r - lowColor.r) * t);
-      const g = Math.round(lowColor.g + (highColor.g - lowColor.g) * t);
-      const b = Math.round(lowColor.b + (highColor.b - lowColor.b) * t);
-      const primaryColor = `rgb(${r}, ${g}, ${b})`;
-      waveColor1.setAttribute("style", `stop-color: ${primaryColor}; stop-opacity: 0.5`);
-      waveColor2.setAttribute("style", `stop-color: ${primaryColor}; stop-opacity: 1`);
-      const waveHeight = 100 - (humidity * 100 / 100);
+   // Update humidity wave (for I2C BME680 or SHT40)
+    if (protocol === "I2C" && (selectedSensor === "BME680" || selectedSensor === "SHT40")) {
+      // Define continuous wave animation
       const waveAnimation = `
         @keyframes waveAnimation {
-          0% { d: "M 0 ${waveHeight} Q 25 ${waveHeight + 5} 50 ${waveHeight} T 100 ${waveHeight} V 100 H 0 Z"; }
-          50% { d: "M 0 ${waveHeight + 2} Q 25 ${waveHeight + 7} 50 ${waveHeight + 2} T 100 ${waveHeight + 2} V 100 H 0 Z"; }
-          100% { d: "M 0 ${waveHeight} Q 25 ${waveHeight + 5} 50 ${waveHeight} T 100 ${waveHeight} V 100 H 0 Z"; }
+          0% { d: path("M 0 50 Q 25 45 50 50 T 100 50 V 100 H 0 Z"); }
+          25% { d: path("M 0 50 Q 25 55 50 50 T 100 50 V 100 H 0 Z"); }
+          50% { d: path("M 0 50 Q 25 45 50 50 T 100 50 V 100 H 0 Z"); }
+          75% { d: path("M 0 50 Q 25 55 50 50 T 100 50 V 100 H 0 Z"); }
+          100% { d: path("M 0 50 Q 25 45 50 50 T 100 50 V 100 H 0 Z"); }
         }
       `;
-      const styleSheet = document.styleSheets[0];
+      // Insert or update the animation in the stylesheet
+      let styleSheet = document.styleSheets[0];
+      let existingRuleIndex = -1;
+      for (let i = 0; i < styleSheet.cssRules.length; i++) {
+        if (styleSheet.cssRules[i].name === "waveAnimation") {
+          existingRuleIndex = i;
+          break;
+        }
+      }
+      if (existingRuleIndex !== -1) {
+        styleSheet.deleteRule(existingRuleIndex);
+      }
       styleSheet.insertRule(waveAnimation, styleSheet.cssRules.length);
-      wavePath.style.animation = "waveAnimation 8s ease-in-out infinite";
-      wavePath.setAttribute("d", `M 0 ${waveHeight} Q 25 ${waveHeight + 5} 50 ${waveHeight} T 100 ${waveHeight} V 100 H 0 Z`);
+
+      if (currentHumidity !== null) {
+        const humidity = parseFloat(currentHumidity);
+        humidityValue.textContent = `${humidity.toFixed(2)}%`;
+        const t = Math.min(Math.max(humidity / 100, 0), 1);
+        const lowColor = { r: 61, g: 142, b: 180 };
+        const highColor = { r: 4, g: 116, b: 168 };
+        const r = Math.round(lowColor.r + (highColor.r - lowColor.r) * t);
+        const g = Math.round(lowColor.g + (highColor.g - lowColor.g) * t);
+        const b = Math.round(lowColor.b + (highColor.b - lowColor.b) * t);
+        const primaryColor = `rgb(${r}, ${g}, ${b})`;
+        waveColor1.setAttribute("style", `stop-color: ${primaryColor}; stop-opacity: 0.5`);
+        waveColor2.setAttribute("style", `stop-color: ${primaryColor}; stop-opacity: 1`);
+        const waveHeight = 100 - (humidity * 100 / 100);
+        wavePath.setAttribute("d", `M 0 ${waveHeight} Q 25 ${waveHeight + 5} 50 ${waveHeight} T 100 ${waveHeight} V 100 H 0 Z`);
+      } else {
+        humidityValue.textContent = "";
+        waveColor1.setAttribute("style", `stop-color: #3d8eb4; stop-opacity: 0.5`);
+        waveColor2.setAttribute("style", `stop-color: #0474a8; stop-opacity: 1`);
+        wavePath.setAttribute("d", "M 0 50 Q 25 45 50 50 T 100 50 V 100 H 0 Z");
+      }
+      // Apply and restart animation
+      wavePath.style.animation = "waveAnimation 3s ease-in-out infinite";
+      wavePath.style.animationPlayState = "running";
+      wavePath.getBoundingClientRect(); // Force reflow to restart animation
     } else {
       humidityValue.textContent = "";
       waveColor1.setAttribute("style", `stop-color: #3d8eb4; stop-opacity: 0.5`);
       waveColor2.setAttribute("style", `stop-color: #0474a8; stop-opacity: 1`);
-      wavePath.style.animation = "";
-      wavePath.setAttribute("d", "M 0 100 V 100 H 0 Z");
+      wavePath.setAttribute("d", "M 0 50 Q 25 45 50 50 T 100 50 V 100 H 0 Z");
+      // Apply continuous animation even when no data
+      const waveAnimation = `
+        @keyframes waveAnimation {
+          0% { d: path("M 0 50 Q 25 45 50 50 T 100 50 V 100 H 0 Z"); }
+          25% { d: path("M 0 50 Q 25 55 50 50 T 100 50 V 100 H 0 Z"); }
+          50% { d: path("M 0 50 Q 25 45 50 50 T 100 50 V 100 H 0 Z"); }
+          75% { d: path("M 0 50 Q 25 55 50 50 T 100 50 V 100 H 0 Z"); }
+          100% { d: path("M 0 50 Q 25 45 50 50 T 100 50 V 100 H 0 Z"); }
+        }
+      `;
+      let styleSheet = document.styleSheets[0];
+      let existingRuleIndex = -1;
+      for (let i = 0; i < styleSheet.cssRules.length; i++) {
+        if (styleSheet.cssRules[i].name === "waveAnimation") {
+          existingRuleIndex = i;
+          break;
+        }
+      }
+      if (existingRuleIndex !== -1) {
+        styleSheet.deleteRule(existingRuleIndex);
+      }
+      styleSheet.insertRule(waveAnimation, styleSheet.cssRules.length);
+      wavePath.style.animation = "waveAnimation 3s ease-in-out infinite";
+      wavePath.style.animationPlayState = "running";
+      wavePath.getBoundingClientRect(); // Force reflow to restart animation
     }
+
 
     // Update pressure card (only for I2C BME680)
     if (protocol === "I2C" && selectedSensor === "BME680" && currentPressure !== null) {
