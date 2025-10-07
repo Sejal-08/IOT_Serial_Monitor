@@ -1,15 +1,15 @@
 {
-  "name": "serial-monitor-app",
+  "name": "iot-serial-monitor-app",
   "version": "1.0.0",
-  "description": "Serial Communication App",
+  "description": "IOT Serial Communication App",
   "main": "main.js",
-  "author": "Annam",
+  "author": "Annamai",
   "scripts": {
     "start": "electron .",
     "dist": "electron-builder"
   },
   "dependencies": {
-    "pyserial": "^0.0.1-security",
+    
     "serialport": "^10.5.0"
   },
   "devDependencies": {
@@ -17,8 +17,8 @@
     "electron-builder": "^26.0.12"
   },
   "build": {
-    "appId": "com.annam.serialmonitor",
-    "productName": "Serial Monitor",
+    "appId": "com.annamai.serialmonitor",
+    "productName": "IOT Serial Monitor",
     "win": {
       "target": "nsis",
       "icon": "build/icon.ico"
