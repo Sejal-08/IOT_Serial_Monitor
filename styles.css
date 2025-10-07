@@ -119,7 +119,7 @@ ul.nav-links {
 .theme-toggle {
   background: none;
   border: none;
-  color: var(--text-color);
+  color: #f5f7ff;
   font-size: 1.4rem;
   cursor: pointer;
   transition: transform 0.2s ease, color 0.3s;
@@ -127,7 +127,7 @@ ul.nav-links {
 
 .theme-toggle:hover {
   transform: scale(1.1);
-  color: var(--action-hover-bg);
+  color: #6b8af7;
 }
 
 /* Layout */
