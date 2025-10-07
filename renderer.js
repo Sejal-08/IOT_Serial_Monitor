@@ -42,6 +42,7 @@ let currentIR = null;
 let prevAzimuth = 0; // For TLV493D arrow animation
 let prevPolar = 0;
 let prevMagnitude = 0;
+let prevScale = 1;
 
 let isConnected = false;
 let currentBaud = null;
@@ -444,69 +445,77 @@ const tlv493dXValue = document.getElementById("tlv493d-x-value");
         hallArc.removeAttribute("filter");
       }
     }
-
-   // Update TLV493D magnetic field card (for I2C TLV493D)
-   if (protocol === "I2C" && selectedSensor === "TLV493D" && currentMagneticX !== null && currentMagneticY !== null && currentMagneticZ !== null) {
-  const magX = parseFloat(currentMagneticX);
-  const magY = parseFloat(currentMagneticY);
-  const magZ = parseFloat(currentMagneticZ);
+// Update TLV493D magnetic field card (for I2C TLV493D)
+if (protocol === "I2C" && selectedSensor === "TLV493D" && (currentMagneticX !== null || currentMagneticY !== null || currentMagneticZ !== null)) {
+  const magX = currentMagneticX !== null ? parseFloat(currentMagneticX) : 0;
+  const magY = currentMagneticY !== null ? parseFloat(currentMagneticY) : 0;
+  const magZ = currentMagneticZ !== null ? parseFloat(currentMagneticZ) : 0;
+  
   tlv493dXValue.textContent = `X: ${magX.toFixed(2)} mT`;
   tlv493dYValue.textContent = `Y: ${magY.toFixed(2)} mT`;
   tlv493dZValue.textContent = `Z: ${magZ.toFixed(2)} mT`;
 
-      // Calculate magnetic field vector direction and magnitude
-      const magnitude = Math.sqrt(magX * magX + magY * magY + magZ * magZ);
-      const maxMagnitude = 250; // Adjust based on sensor range
-      const normalizedMagnitude = Math.min(magnitude / maxMagnitude, 1);
+  // --- NEW SIMPLIFIED LOGIC ---
+  const indicator = document.getElementById("max-axis-indicator");
+  const zIndicator = document.getElementById("z-axis-indicator");
 
-      // Calculate spherical coordinates (azimuth and polar angles)
-      const azimuth = Math.atan2(magY, magX) * 180 / Math.PI; // Y/X for XY plane rotation
-      const polar = Math.acos(magZ / (magnitude || 1)) * 180 / Math.PI; // Z angle from pole
+  if (!indicator || !zIndicator) return;
 
-      // Color based on magnitude
-      let magnitudeClass = 'magnitude-low';
-      if (magnitude > 150) {
-        magnitudeClass = 'magnitude-high';
-      } else if (magnitude > 50) {
-        magnitudeClass = 'magnitude-medium';
-      }
+  const absX = Math.abs(magX);
+  const absY = Math.abs(magY);
+  const absZ = Math.abs(magZ);
 
-      // Apply rotation and scale to arrow
-      if (tlv493dArrow) {
-        tlv493dArrow.style.transform = `rotateY(${azimuth}deg) rotateX(${polar}deg) scale(${1 + normalizedMagnitude * 0.5})`;
-        tlv493dArrow.classList.remove('magnitude-low', 'magnitude-medium', 'magnitude-high');
-        tlv493dArrow.classList.add(magnitudeClass);
+  const maxVal = Math.max(absX, absY, absZ);
+  
+  // Reset Z indicator default style
+  zIndicator.style.transform = "scale(1)";
+  zIndicator.style.fill = "#fff";
+  indicator.style.opacity = "1";
 
-        // Trigger pulse animation
-        tlv493dArrow.classList.remove('update-pulse');
-        void tlv493dArrow.offsetWidth; // Force reflow
-        tlv493dArrow.classList.add('update-pulse');
-      }
-
-      // Update arrow length based on magnitude
-      const shaftLength = 30 + normalizedMagnitude * 20; // Base length 30, up to 50
-      tlv493dArrowShaft.setAttribute('d', `M 50 50 L 50 ${50 - shaftLength}`);
-      tlv493dArrowHead.setAttribute('points', `50,${50 - shaftLength - 5} 45,${50 - shaftLength + 5} 55,${50 - shaftLength + 5}`);
-
-      // Store current angles for next update
-      prevAzimuth = azimuth;
-      prevPolar = polar;
-      prevMagnitude = magnitude;
+  if (maxVal < 1.0) { // Threshold to prevent flickering at zero
+    indicator.style.transform = `translate(0px, 0px)`;
+  } else if (maxVal === absX) {
+    // X is dominant
+    if (magX > 0) {
+      indicator.style.transform = `translate(35px, 0px)`; // Move to +X
     } else {
-      tlv493dXValue.textContent = "X: 0.00 mT";
-  tlv493dYValue.textContent = "Y: 0.00 mT";
-  tlv493dZValue.textContent = "Z: 0.00 mT";
-      if (tlv493dArrow) {
-        tlv493dArrow.style.transform = `rotateY(0deg) rotateX(0deg) scale(1)`;
-        tlv493dArrow.classList.remove('magnitude-low', 'magnitude-medium', 'magnitude-high');
-        tlv493dArrow.classList.add('magnitude-low');
-        tlv493dArrowShaft.setAttribute('d', `M 50 50 L 50 20`);
-        tlv493dArrowHead.setAttribute('points', `50,15 45,25 55,25`);
-      }
-      prevAzimuth = 0;
-      prevPolar = 0;
-      prevMagnitude = 0;
+      indicator.style.transform = `translate(-35px, 0px)`; // Move to -X
     }
+  } else if (maxVal === absY) {
+    // Y is dominant
+    if (magY > 0) {
+      indicator.style.transform = `translate(0px, -35px)`; // Move to +Y
+    } else {
+      indicator.style.transform = `translate(0px, 35px)`; // Move to -Y
+    }
+  } else {
+    // Z is dominant
+    indicator.style.transform = `translate(0px, 0px)`; // <-- CHANGED: Move dot to center
+    indicator.style.opacity = "1";                     // <-- CHANGED: Ensure dot is visible
+    zIndicator.style.transform = "scale(2.5)"; // Make the Z circle bigger
+    if (magZ > 0) {
+      zIndicator.style.fill = "#ef4444"; // Red for +Z (coming out)
+    } else {
+      zIndicator.style.fill = "#3b82f6"; // Blue for -Z (going in)
+    }
+  }
+
+} else {
+  // If no data, reset to center
+  const indicator = document.getElementById("max-axis-indicator");
+  const zIndicator = document.getElementById("z-axis-indicator");
+  if (indicator) {
+    indicator.style.transform = `translate(0px, 0px)`;
+    indicator.style.opacity = "1";
+  }
+  if (zIndicator) {
+    zIndicator.style.transform = "scale(1)";
+    zIndicator.style.fill = "#fff";
+  }
+  tlv493dXValue.textContent = `X: 0.00 mT`;
+  tlv493dYValue.textContent = `Y: 0.00 mT`;
+  tlv493dZValue.textContent = `Z: 0.00 mT`;
+}
     // Update TOFVL53L0X distance card (for I2C VL53L0X)
     if (protocol === "I2C" && selectedSensor === "VL53L0X" && currentDistance !== null) {
       const distance = parseFloat(currentDistance);

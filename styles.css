@@ -902,3 +902,39 @@ body.dark-mode  #pressure-card h4 { color: #a3bffa; }
   height: 80px;
   flex-shrink: 0; /* Prevent SVG from shrinking */
 }
+/* REMOVE all old .tlv493d-arrow styles and REPLACE with these */
+
+.tlv493d-simple-container {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.axis-line {
+  stroke: var(--text-color);
+  stroke-width: 1;
+  opacity: 0.3;
+}
+
+.axis-label {
+  fill: var(--text-color);
+  font-size: 10px;
+  font-family: sans-serif;
+  opacity: 0.6;
+}
+
+.sensor-origin {
+  stroke: var(--text-color);
+  stroke-width: 1.5;
+  fill: #fff;
+  transition: transform 0.3s ease, fill 0.3s ease;
+}
+
+.indicator-dot {
+  fill: #ef4444; /* Bright red color for the indicator */
+  stroke: #fff;
+  stroke-width: 2;
+  /* Smooth transition for movement */
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease;
+}

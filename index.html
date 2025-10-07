@@ -282,28 +282,24 @@
               </svg>
             </div>
 
-           <!-- TLV493D Magnetic Field -->
-            <div id="tlv493d-card" class="card-container" style="display: none;">
-              <h4>Magnetic Field</h4>
-              <div id="tlv493d-x-value" class="sensor-value">X: 0.00 mT</div>
-              <div id="tlv493d-y-value" class="sensor-value">Y: 0.00 mT</div>
-              <div id="tlv493d-z-value" class="sensor-value">Z: 0.00 mT</div>
-              <div class="tlv493d-arrow-container">
-                <svg class="tlv493d-arrow" width="150" height="150" viewBox="0 0 100 100">
-                  <!-- Arrow shaft (line) -->
-                  <path id="tlv493d-arrow-shaft" d="M 50 50 L 50 20" />
-                  <!-- Arrowhead (triangle) -->
-                  <polygon id="tlv493d-arrow-head" points="50,15 45,25 55,25" />
-                  <!-- Reference axes for orientation -->
-                  <line x1="50" y1="50" x2="80" y2="50" stroke="red" stroke-width="1" opacity="0.5"/>
-                  <text x="82" y="53" font-size="8" fill="red">+X</text>
-                  <line x1="50" y1="50" x2="50" y2="20" stroke="green" stroke-width="1" opacity="0.5"/>
-                  <text x="48" y="18" font-size="8" fill="green">+Y</text>
-                  <line x1="50" y1="50" x2="50" y2="50" stroke="blue" stroke-width="1" opacity="0.5" transform="rotate(90 50 50)"/>
-                  <text x="48" y="82" font-size="8" fill="blue">+Z</text>
-                </svg>
-              </div>
+        <div id="tlv493d-card" class="card-container" style="display: none;">
+            <h4>Magnetic Field</h4>
+            <div id="tlv493d-x-value" class="sensor-value">X: 0.00 mT</div>
+            <div id="tlv493d-y-value" class="sensor-value">Y: 0.00 mT</div>
+            <div id="tlv493d-z-value" class="sensor-value">Z: 0.00 mT</div>
+            <div class="tlv493d-simple-container">
+              <svg width="150" height="150" viewBox="0 0 100 100">
+                <line class="axis-line" x1="10" y1="50" x2="90" y2="50" /> <line class="axis-line" x1="50" y1="10" x2="50" y2="90" /> <text class="axis-label" x="92" y="55">+X</text>
+                <text class="axis-label" x="2" y="55">-X</text>
+                <text class="axis-label" x="45" y="8">+Y</text>
+                <text class="axis-label" x="45" y="98">-Y</text>
+                
+                <circle id="z-axis-indicator" class="sensor-origin" cx="50" cy="50" r="8" />
+
+                <circle id="max-axis-indicator" class="indicator-dot" cx="50" cy="50" r="6" />
+              </svg>
             </div>
+          </div>
 
            <!-- TOFVL53L0X Distance -->
             <div id="tof-card" class="card-container" style="display: none; height: 150px;">
