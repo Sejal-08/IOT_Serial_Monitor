@@ -82,11 +82,10 @@ body {
   /* overflow: hidden; */
   transition: background 0.4s ease, color 0.4s ease;
 }
-
 /* Navbar */
 nav {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end; /* Aligns content (nav-links) to the right */
   align-items: center;
   background: var(--nav-bg);
   position: fixed;
@@ -100,20 +99,12 @@ nav {
   border-bottom: 1px solid var(--nav-border);
 }
 
-
-.logo img {
-    width: 50px; /* Adjust size as needed */
-    height: 50px; /* Ensure equal width and height for a perfect circle */
-    object-fit: cover; /* Ensure the image fits within the circular bounds */
-    border-radius: 50%; /* Makes the image circular */
-    display: block; /* Ensures proper alignment */
-}
-
 ul.nav-links {
   list-style: none;
   display: flex;
   align-items: center;
   gap: 15px;
+  margin: 0; /* Ensure no extra margin pushes it away */
 }
 
 /* Theme Toggle */
