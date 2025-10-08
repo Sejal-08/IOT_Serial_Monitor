@@ -539,11 +539,11 @@ if (protocol === "I2C" && selectedSensor === "TLV493D" && (currentMagneticX !== 
       uvBar.style.backgroundColor = barColor;
 
       const uvRanges = [
-        { range: [0, 2], label: "Low", color: "#ffeb3b" },
-        { range: [2, 5], label: "Moderate", color: "#ff9800" },
-        { range: [6, 7], label: "High", color: "#ff5500ff" },
-        { range: [8, 10], label: "Very High", color: "#f11a0bff" },
-        { range: [11, Infinity], label: "Extreme", color: "#9c27b0" }
+        { range: [0, 1], label: "Low", color: "#ffeb3b" },
+        { range: [2, 5], label: "Moderate", color: "#f6990dff" },
+        { range: [6, 7], label: "High", color: "#fa6215ff" },
+        { range: [8, 10], label: "Very High", color: "#fd1808ff" },
+        { range: [11, Infinity], label: "Extreme", color: "#9e0f04ff" }
       ];
 
       let uvColor = "#ffeb3b";
