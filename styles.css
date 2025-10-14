@@ -122,6 +122,27 @@ ul.nav-links {
   color:  #1e2334;
 }
 
+ .interval-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: 180px; /* Adjusted width to accommodate both text and space */
+    }
+    #interval {
+      flex: 1;
+      padding-right: 80px; /* Space for the suffix on the right */
+      box-sizing: border-box;
+      min-width: 0; /* Ensures flex item can shrink */
+      overflow-x: auto; /* Enables horizontal scrollbar if needed */
+      white-space: nowrap; /* Prevents text wrapping */
+    }
+    .interval-suffix {
+      position: absolute;
+      right: 5px;
+      color: #888;
+      pointer-events: none; /* Prevents interaction with the suffix */
+      font-size: 14px; /* Matches input font size */
+    }
 /* Layout */
 .main-container {
   display: flex;
@@ -448,7 +469,7 @@ footer {
   color: var(--text-color);
 }
 
-#humidity-wave {
+#humidity-wave, #rain-wave {
   position: absolute;
   bottom: 0;
   left: 0;
@@ -458,7 +479,7 @@ footer {
   z-index: 0;
 }
 
-#humidity-wave path {
+#humidity-wave path, #rain-wave path  {
   transition: d 1.2s ease-in-out;
 }
 .card-container h4 {
@@ -654,13 +675,21 @@ body.dark-mode #accel-ball {
     min-height: 180px;
   }
 
-  #humidity-wave {
+  #humidity-wave , #rain-wave{
     max-width: 100%;
   }
 
   #output {
     min-height: 120px; /* Slightly smaller but sufficient */
   }
+
+   @keyframes raindropFall {
+        100% { transform: translateY(80px) scale(0.8); }
+    }
+
+    @keyframes mistFall {
+        100% { transform: translateY(50px); }
+    }
 }
 
 @media (max-width: 480px) {
@@ -697,7 +726,7 @@ body.dark-mode #accel-ball {
     min-height: 160px;
   }
 
-  #humidity-wave {
+  #humidity-wave,#rain-wave {
     max-width: 100%;
   }
 
@@ -882,4 +911,99 @@ body.light-mode .gauge-inner{
   stroke-width: 2;
   /* Smooth transition for movement */
   transition: transform 0.3s ease-in-out, opacity 0.3s ease;
+}
+
+#rain-gauge-card h4 {
+    color: #cbd5ff;
+    margin-bottom: 5px;
+}
+/* Raindrop Animations */
+@keyframes raindropFall {    0% {
+        transform: translateY(-20px) scale(0.8);
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(100px) scale(0.8);
+        opacity: 0;
+    }
+}
+
+@keyframes mistFall {
+    0% {
+        transform: translateY(-5px);
+        opacity: 0;
+    }
+    50% {
+        opacity: 0.5;
+    }
+    100% {
+        transform: translateY(70px);
+        opacity: 0;
+    }
+}
+
+.rain-gauge-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.rain-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+}
+
+.raindrop {
+    position: absolute;
+    width: 3px;
+    height: 10px;
+    border-radius: 50% / 60% 60% 40% 40%;
+    transform: translateY(0);
+    background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.15));
+    opacity: 0.9;
+    filter: drop-shadow(0 1px 0 rgba(0,0,0,0.15));
+    animation-name: raindropFall;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+}
+
+.raindrop::after {
+    content: "";
+    display: block;
+    width: 0.6px;
+    height: 4px;
+    margin: 0 auto;
+    background: rgba(255,255,255,0.6);
+    transform: translateY(-1px) rotate(10deg);
+    opacity: 0.5;
+}
+
+body.light-mode .raindrop {
+    fill: rgba(48, 121, 194, 0.9);
+    stroke: rgba(0, 123, 255, 0.8);
+}
+
+body.dark-mode .raindrop {
+    fill: rgba(100, 149, 237, 0.9);
+    stroke: rgba(65, 105, 225, 0.8);
+}
+
+.mist-drop {
+    transition: transform 0.1s ease, opacity 0.1s ease;
+}
+
+body.light-mode .mist-drop {
+    fill: rgba(135, 206, 250, 0.6);
+}
+
+body.dark-mode .mist-drop {
+    fill: rgba(176, 224, 230, 0.6);
 }

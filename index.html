@@ -36,9 +36,11 @@
 
         <section class="control-section">
         <h3><i class="fas fa-clock"></i> Interval Configuration</h3>
-        <div class="controls" style="display: flex; align-items: center;">
-          <input type="number" id="interval" class="input-field" placeholder="Interval" min="1" style="width: 100px;">
-          <span style="margin-left: 0px;">sec</span>
+       <div class="controls">
+          <div class="interval-wrapper">
+            <input type="number" id="interval" class="input-field" placeholder="Interval" min="1" oninput="updateIntervalDisplay()">
+            <span class="interval-suffix">(seconds)</span>
+          </div>
           <button class="action-button" onclick="setInterval()"><i class="fas fa-save"></i> Set Interval</button>
         </div>
       </section>
