@@ -16,7 +16,7 @@ let sensorStatus = {
   "RS485": { MD02: false },
   "SPI": {},
   "Analog": { Hall_Sensor: false, IR_Sensor: false },
-  "ADC": { Rain_Gauge: false}
+  "ADC": { "Rain Gauge": false}
 };
 
 let sensorData = {
@@ -157,24 +157,30 @@ const tlv493dXValue = document.getElementById("tlv493d-x-value");
     });
 
     // Display sensor data for selected sensor
-    let dataHtml = "<h4>Sensor Data</h4>";
-    if (selectedSensor && sensorData[protocol]) {
-      const sensorKeys = Object.keys(sensorData[protocol]).filter(key => key.startsWith(selectedSensor));
-      if (sensorKeys.length > 0) {
-        sensorKeys.forEach(key => {
-          let value = sensorData[protocol][key];
-          if (!isNaN(parseFloat(value))) {
-            value = parseFloat(value).toFixed(2);
-          }
-          dataHtml += `<div class="sensor-data-item"><strong>${key.replace(selectedSensor + " ", "")}:</strong> ${value}</div>`;
-        });
-      } else {
-        dataHtml += `<p>No data available for ${selectedSensor}.</p>`;
-      }
+   let dataHtml = "<h4>Sensor Data</h4>";
+if (selectedSensor && sensorData[protocol]) {
+  if (selectedSensor === "Rain Gauge") {
+    dataHtml += `<div class="sensor-data-item"><strong>Hourly Rainfall:</strong> ${sensorData[protocol]["Rainfall Hourly"] || "N/A"}</div>`;
+    dataHtml += `<div class="sensor-data-item"><strong>Daily Rainfall:</strong> ${sensorData[protocol]["Rainfall Daily"] || "N/A"}</div>`;
+    dataHtml += `<div class="sensor-data-item"><strong>Weekly Rainfall:</strong> ${sensorData[protocol]["Rainfall Weekly"] || "N/A"}</div>`;
+  } else {
+    const sensorKeys = Object.keys(sensorData[protocol]).filter(key => key.startsWith(selectedSensor + " "));
+    if (sensorKeys.length > 0) {
+      sensorKeys.forEach(key => {
+        let value = sensorData[protocol][key];
+        if (!isNaN(parseFloat(value))) {
+          value = parseFloat(value).toFixed(2);
+        }
+        dataHtml += `<div class="sensor-data-item"><strong>${key.replace(selectedSensor + " ", "")}:</strong> ${value}</div>`;
+      });
     } else {
-      dataHtml += "<p>Please select a sensor to view data.</p>";
+      dataHtml += `<p>No data available for ${selectedSensor}.</p>`;
     }
-    sensorDataDiv.innerHTML = dataHtml;
+  }
+} else {
+  dataHtml += "<p>Please select a sensor to view data.</p>";
+}
+sensorDataDiv.innerHTML = dataHtml;
 
     // Toggle visibility of sensor cards based on selected sensor and available data
     if (selectedSensor && sensorParameters[selectedSensor]) {
@@ -1151,7 +1157,7 @@ function resetSensorData() {
     "RS485": { MD02: false },
     "SPI": {},
     "Analog": { Hall_Sensor: false, IR_Sensor: false },
-    "ADC": {}
+    "ADC": { "Rain Gauge": false }
   };
 
   selectedSensor = null;
