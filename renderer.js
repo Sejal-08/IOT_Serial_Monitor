@@ -67,12 +67,10 @@ function updateSensorUI() {
   const uvltrContainer = document.getElementById("uvltr-card");
   const irContainer = document.getElementById("ir-card");
 
-  const rainGaugeHourlyCard = document.getElementById("rain-gauge-hourly-card");
-  const rainGaugeDailyCard = document.getElementById("rain-gauge-daily-card");
-  const rainGaugeWeeklyCard = document.getElementById("rain-gauge-weekly-card");
-  const rainGaugeHourlyValue = document.getElementById("rain-gauge-hourly-value");
-  const rainGaugeDailyValue = document.getElementById("rain-gauge-daily-value");
-  const rainGaugeWeeklyValue = document.getElementById("rain-gauge-weekly-value");
+  const rainGaugeCard = document.getElementById("rain-gauge-card");
+ 
+  const rainGaugeValue = document.getElementById("rain-gauge-value");
+ 
 
   const thermometerFill = document.getElementById("thermometer-fill");
   const thermometerBulb = document.getElementById("thermometer-bulb");
@@ -160,9 +158,8 @@ const tlv493dXValue = document.getElementById("tlv493d-x-value");
    let dataHtml = "<h4>Sensor Data</h4>";
 if (selectedSensor && sensorData[protocol]) {
   if (selectedSensor === "Rain Gauge") {
-    dataHtml += `<div class="sensor-data-item"><strong>Hourly Rainfall:</strong> ${sensorData[protocol]["Rainfall Hourly"] || "N/A"}</div>`;
-    dataHtml += `<div class="sensor-data-item"><strong>Daily Rainfall:</strong> ${sensorData[protocol]["Rainfall Daily"] || "N/A"}</div>`;
-    dataHtml += `<div class="sensor-data-item"><strong>Weekly Rainfall:</strong> ${sensorData[protocol]["Rainfall Weekly"] || "N/A"}</div>`;
+   dataHtml += `<div class="sensor-data-item"><strong>Rainfall:</strong> ${sensorData[protocol]["Rainfall"] || "N/A"}</div>`;
+  
   } else {
     const sensorKeys = Object.keys(sensorData[protocol]).filter(key => key.startsWith(selectedSensor + " "));
     if (sensorKeys.length > 0) {
@@ -453,14 +450,16 @@ function updatePressureCard(hpa) {
 
   // Rain Gauge cards for ADC
     if (protocol === "ADC" && selectedSensor === "Rain Gauge") {
-      /* 🌧️ Hourly Rainfall Card */
+      /* 🌧️ Rainfall Card */
       if (
-        sensorData.ADC["Rainfall Hourly"] !== undefined &&
-        !isNaN(parseFloat(sensorData.ADC["Rainfall Hourly"].replace(" mm", "")))
+        sensorData.ADC["Rainfall"] !== undefined &&
+        !isNaN(parseFloat(sensorData.ADC["Rainfall"].replace(" mm", "")))
       ) {
-        if (rainGaugeHourlyCard) rainGaugeHourlyCard.style.display = "block";
-        const rainMm = parseFloat(sensorData.ADC["Rainfall Hourly"].replace(" mm", ""));
-        if (rainGaugeHourlyValue) rainGaugeHourlyValue.textContent = `${rainMm.toFixed(2)} mm`;
+       const rainGaugeCard = document.getElementById("rain-gauge-card");  // Changed from "rain-gauge-hourly-card"
+    if (rainGaugeCard) rainGaugeCard.style.display = "block";
+    const rainMm = parseFloat(sensorData.ADC["Rainfall"].replace(" mm", ""));
+    const rainGaugeValue = document.getElementById("rain-gauge-value");  // This ID matches HTML
+    if (rainGaugeValue) rainGaugeValue.textContent = `${rainMm.toFixed(2)} mm`;
 
         // Dynamic color transition (light blue → deep blue)
         const maxMm = 25; // For hourly, reasonable max
@@ -474,17 +473,17 @@ function updatePressureCard(hpa) {
         const lightBlue = `rgb(${Math.min(r + 40, 255)}, ${Math.min(g + 40, 255)}, ${Math.min(b + 40, 255)})`;
 
         // ✅ Use an overlay div for raindrops
-        let rainOverlay = document.getElementById("rain-hourly-overlay");
+        let rainOverlay = document.getElementById("rain-overlay");
         if (!rainOverlay) {
           rainOverlay = document.createElement("div");
-          rainOverlay.id = "rain-hourly-overlay";
+          rainOverlay.id = "rain-overlay";
           rainOverlay.style.position = "absolute";
           rainOverlay.style.inset = "0";
           rainOverlay.style.overflow = "hidden";
           rainOverlay.style.pointerEvents = "none";
           rainOverlay.style.zIndex = "1";
-          if (rainGaugeHourlyCard) rainGaugeHourlyCard.style.position = "relative";
-          if (rainGaugeHourlyCard) rainGaugeHourlyCard.appendChild(rainOverlay);
+          if (rainGaugeCard) rainGaugeCard.style.position = "relative";
+          if (rainGaugeCard) rainGaugeCard.appendChild(rainOverlay);
         }
         rainOverlay.innerHTML = "";
 
@@ -493,7 +492,7 @@ function updatePressureCard(hpa) {
         const extraDrops = Math.min(Math.floor(rainMm / 2), 40);
         const numDrops = baseDrops + extraDrops;
 
-        const cardRect = rainGaugeHourlyCard ? rainGaugeHourlyCard.getBoundingClientRect() : { width: 300, height: 200 };
+        const cardRect = rainGaugeCard ? rainGaugeCard.getBoundingClientRect() : { width: 300, height: 200 };
         const width = cardRect.width;
         const height = cardRect.height;
 
@@ -538,156 +537,11 @@ function updatePressureCard(hpa) {
           rainOverlay.appendChild(drop);
         }
       } else {
-        if (rainGaugeHourlyCard) rainGaugeHourlyCard.style.display = "none";
+     const rainGaugeCard = document.getElementById("rain-gauge-card");
+    if (rainGaugeCard) rainGaugeCard.style.display = "none";
       }
 
-      /* 🌧️ Daily Rainfall Card */
-      if (
-        sensorData.ADC["Rainfall Daily"] !== undefined &&
-        !isNaN(parseFloat(sensorData.ADC["Rainfall Daily"].replace(" mm", "")))
-      ) {
-        if (rainGaugeDailyCard) rainGaugeDailyCard.style.display = "block";
-        const rainMm = parseFloat(sensorData.ADC["Rainfall Daily"].replace(" mm", ""));
-        if (rainGaugeDailyValue) rainGaugeDailyValue.textContent = `${rainMm.toFixed(2)} mm`;
-
-        // Dynamic color transition (light blue → deep blue)
-        const maxMm = 100; // Higher max for daily
-        const t = Math.min(Math.max(rainMm / maxMm, 0), 1);
-        const lowColor = { r: 30, g: 144, b: 255 };
-        const highColor = { r: 0, g: 0, b: 139 };
-        const r = Math.round(lowColor.r + (highColor.r - lowColor.r) * t);
-        const g = Math.round(lowColor.g + (highColor.g - lowColor.g) * t);
-        const b = Math.round(lowColor.b + (highColor.b - lowColor.b) * t);
-        const primaryColor = `rgb(${r}, ${g}, ${b})`;
-        const lightBlue = `rgb(${Math.min(r + 40, 255)}, ${Math.min(g + 40, 255)}, ${Math.min(b + 40, 255)})`;
-
-        // ✅ Use an overlay div for raindrops
-        let rainOverlay = document.getElementById("rain-daily-overlay");
-        if (!rainOverlay) {
-          rainOverlay = document.createElement("div");
-          rainOverlay.id = "rain-daily-overlay";
-          rainOverlay.style.position = "absolute";
-          rainOverlay.style.inset = "0";
-          rainOverlay.style.overflow = "hidden";
-          rainOverlay.style.pointerEvents = "none";
-          rainOverlay.style.zIndex = "1";
-          if (rainGaugeDailyCard) rainGaugeDailyCard.style.position = "relative";
-          if (rainGaugeDailyCard) rainGaugeDailyCard.appendChild(rainOverlay);
-        }
-        rainOverlay.innerHTML = "";
-
-        // 🔹 Configure raindrop appearance based on rainfall intensity
-        const baseDrops = 12;
-        const extraDrops = Math.min(Math.floor(rainMm / 2), 40);
-        const numDrops = baseDrops + extraDrops;
-
-        const cardRect = rainGaugeDailyCard ? rainGaugeDailyCard.getBoundingClientRect() : { width: 300, height: 200 };
-        const width = cardRect.width;
-        const height = cardRect.height;
-
-        // 🔹 Create raindrops across the whole card
-        for (let i = 0; i < numDrops; i++) {
-          const drop = document.createElement("div");
-          drop.className = "raindrop";
-          const size = 4 + Math.random() * 2;
-          drop.style.width = `${size}px`;
-          drop.style.height = `${size * 1.6}px`;
-          drop.style.background = `linear-gradient(${lightBlue}, ${primaryColor})`;
-          drop.style.opacity = "0.8";
-          drop.style.borderRadius = "50% / 60% 60% 40% 40%";
-          drop.style.position = "absolute";
-
-          const left = Math.random() * width;
-          const startY = -Math.random() * height * 0.3;
-          const fallDistance = `${height + 30}px`;
-          const duration = (1.2 + Math.random() * 2).toFixed(2) + "s";
-          const delay = (Math.random() * 2).toFixed(2) + "s";
-
-          drop.style.left = `${left}px`;
-          drop.style.top = `${startY}px`;
-          drop.style.animation = `raindropFall ${duration} linear infinite`;
-          drop.style.animationDelay = delay;
-          drop.style.setProperty("--fallDistance", fallDistance);
-
-          rainOverlay.appendChild(drop);
-        }
-      } else {
-        if (rainGaugeDailyCard) rainGaugeDailyCard.style.display = "none";
-      }
-
-      /* 🌧️ Weekly Rainfall Card */
-      if (
-        sensorData.ADC["Rainfall Weekly"] !== undefined &&
-        !isNaN(parseFloat(sensorData.ADC["Rainfall Weekly"].replace(" mm", "")))
-      ) {
-        if (rainGaugeWeeklyCard) rainGaugeWeeklyCard.style.display = "block";
-        const rainMm = parseFloat(sensorData.ADC["Rainfall Weekly"].replace(" mm", ""));
-        if (rainGaugeWeeklyValue) rainGaugeWeeklyValue.textContent = `${rainMm.toFixed(2)} mm`;
-
-        // Dynamic color transition (light blue → deep blue)
-        const maxMm = 500; // Even higher max for weekly
-        const t = Math.min(Math.max(rainMm / maxMm, 0), 1);
-        const lowColor = { r: 30, g: 144, b: 255 };
-        const highColor = { r: 0, g: 0, b: 139 };
-        const r = Math.round(lowColor.r + (highColor.r - lowColor.r) * t);
-        const g = Math.round(lowColor.g + (highColor.g - lowColor.g) * t);
-        const b = Math.round(lowColor.b + (highColor.b - lowColor.b) * t);
-        const primaryColor = `rgb(${r}, ${g}, ${b})`;
-        const lightBlue = `rgb(${Math.min(r + 40, 255)}, ${Math.min(g + 40, 255)}, ${Math.min(b + 40, 255)})`;
-
-        // ✅ Use an overlay div for raindrops
-        let rainOverlay = document.getElementById("rain-weekly-overlay");
-        if (!rainOverlay) {
-          rainOverlay = document.createElement("div");
-          rainOverlay.id = "rain-weekly-overlay";
-          rainOverlay.style.position = "absolute";
-          rainOverlay.style.inset = "0";
-          rainOverlay.style.overflow = "hidden";
-          rainOverlay.style.pointerEvents = "none";
-          rainOverlay.style.zIndex = "1";
-          if (rainGaugeWeeklyCard) rainGaugeWeeklyCard.style.position = "relative";
-          if (rainGaugeWeeklyCard) rainGaugeWeeklyCard.appendChild(rainOverlay);
-        }
-        rainOverlay.innerHTML = "";
-
-        // 🔹 Configure raindrop appearance based on rainfall intensity
-        const baseDrops = 12;
-        const extraDrops = Math.min(Math.floor(rainMm / 2), 40);
-        const numDrops = baseDrops + extraDrops;
-
-        const cardRect = rainGaugeWeeklyCard ? rainGaugeWeeklyCard.getBoundingClientRect() : { width: 300, height: 200 };
-        const width = cardRect.width;
-        const height = cardRect.height;
-
-        // 🔹 Create raindrops across the whole card
-        for (let i = 0; i < numDrops; i++) {
-          const drop = document.createElement("div");
-          drop.className = "raindrop";
-          const size = 4 + Math.random() * 2;
-          drop.style.width = `${size}px`;
-          drop.style.height = `${size * 1.6}px`;
-          drop.style.background = `linear-gradient(${lightBlue}, ${primaryColor})`;
-          drop.style.opacity = "0.8";
-          drop.style.borderRadius = "50% / 60% 60% 40% 40%";
-          drop.style.position = "absolute";
-
-          const left = Math.random() * width;
-          const startY = -Math.random() * height * 0.3;
-          const fallDistance = `${height + 30}px`;
-          const duration = (1.2 + Math.random() * 2).toFixed(2) + "s";
-          const delay = (Math.random() * 2).toFixed(2) + "s";
-
-          drop.style.left = `${left}px`;
-          drop.style.top = `${startY}px`;
-          drop.style.animation = `raindropFall ${duration} linear infinite`;
-          drop.style.animationDelay = delay;
-          drop.style.setProperty("--fallDistance", fallDistance);
-
-          rainOverlay.appendChild(drop);
-        }
-      } else {
-        if (rainGaugeWeeklyCard) rainGaugeWeeklyCard.style.display = "none";
-      }
+    
     }
 
     // Update Hall Sensor card (for Analog Hall Sensor)
@@ -1097,15 +951,13 @@ function parseSensorData(data) {
       document.getElementById("output").innerHTML += `<span class="log-error">Parsing error: ${error.message}</span><br>`;
     }
 
-   const rainMatch = line.match(/^Rain Tip Detected!\s*Hourly:\s*(\d+)\s*Daily:\s*(\d+)\s*Weekly:\s*(\d+)/);
+   const rainMatch = line.match(/^Rain Tip Detected!\s*Rainfall:\s*(\d+)/);
     if (rainMatch && protocol === "ADC") {
       sensorStatus[protocol]["Rain Gauge"] = true;
-      const hourlyTips = parseInt(rainMatch[1]);
-      const dailyTips = parseInt(rainMatch[2]);
-      const weeklyTips = parseInt(rainMatch[3]);
-      sensorData[protocol]["Rainfall Hourly"] = `${(hourlyTips * 0.5).toFixed(2)} mm`;
-      sensorData[protocol]["Rainfall Daily"] = `${(dailyTips * 0.5).toFixed(2)} mm`;
-      sensorData[protocol]["Rainfall Weekly"] = `${(weeklyTips * 0.5).toFixed(2)} mm`;
+      const Tips = parseInt(rainMatch[1]);
+    
+      sensorData[protocol]["Rainfall"] = `${(Tips * 0.5).toFixed(2)} mm`;
+   
       if (!selectedSensor && !autoSelected) {
         selectedSensor = "Rain Gauge";
         autoSelected = true;
