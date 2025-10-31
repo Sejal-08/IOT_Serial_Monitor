@@ -955,7 +955,7 @@ body.light-mode .gauge-inner{
   background: linear-gradient(135deg, #1e3a5f 0%, #162b47 100%);
   border-radius: 18px;
   padding: 18px;
-  display: flex;
+  display: none; /* 🔹 Hidden by default */
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
@@ -964,7 +964,29 @@ body.light-mode .gauge-inner{
   font-family: 'Segoe UI', sans-serif;
   position: relative;
 }
+/* -------------------------------------------------------------- */
+/*  LIGHT-MODE VARIANT  (everything stays 1-to-1, only colours)   */
+/* -------------------------------------------------------------- */
+.light .rain-gauge-card {
+  background: linear-gradient(135deg, #e0f0ff 0%, #c9e0ff 100%);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+.light .rain-header { color: #3b5a9d; }
+.light .rain-value { color: #0d1b2a; }
+.light .rain-unit { color: #5a6d80; }
 
+.light .water-wave {
+  background: linear-gradient(180deg,
+      rgba(64, 164, 255, 0.45) 0%,
+      rgba(32, 128, 255, 0.55) 50%,
+      rgba(0, 90, 255, 0.45) 100%);
+}
+
+.light .base,
+.light .pole,
+.light .support,
+.light .support::before,
+.light .roof { filter: invert(1) brightness(1.8); }
 /* === HEADER === */
 .rain-header {
   text-align: center;
@@ -1006,7 +1028,7 @@ body.light-mode .gauge-inner{
   50% { transform: scaleY(1.05) translateY(-2px); }
 }
 
-/* === SEESAW (Black Version) === */
+/* === SEESAW === */
 .seesaw-container {
   flex: 1;
   display: flex;
@@ -1018,68 +1040,77 @@ body.light-mode .gauge-inner{
   z-index: 2;
 }
 .seesaw {
-  width: 130px;
-  height: 90px;
+  width: 160px;
+  height: 100px;
   position: relative;
 }
+
+/* THICKER 3D BASE */
 .base {
   position: absolute;
-  bottom: -15px;
+  bottom: -12px;
   left: 50%;
   transform: translateX(-50%);
-  width: 130px;
-  height: 26px;
+  width: 160px;
+  height: 32px;
   background: #000;
-  border-radius: 65px / 13px;
-  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.6);
+  border-radius: 85px / 16px;
+  box-shadow: inset 0 3px 4px rgba(255,255,255,0.05),
+              0 4px 8px rgba(0,0,0,0.6);
 }
+
+/* SIDE POLES (thicker + tangent aligned) */
 .pole {
-  width: 4px;
-  height: 64px;
+  width: 25px;
+  height: 70px;
   background: #000;
   position: absolute;
   bottom: 0;
-  border-radius: 2px 2px 0 0;
+  border-radius: 50% / 5%;
 }
-.pole.left { left: 0; }
-.pole.right { right: 0; }
+.pole.left {
+  left: 0;
+  transform: rotate(-4deg) skewY(6deg);
+}
+.pole.right {
+  right: 0;
+  transform: rotate(4deg) skewY(-6deg);
+}
+
+/* CENTER SUPPORT */
 .support {
   position: absolute;
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 9px;
-  height: 56px;
+  width: 12px;
+  height: 60px;
   background: #000;
-  border-radius: 2px 2px 0 0;
+  border-radius: 4px;
 }
 .support::before {
   content: '';
   position: absolute;
-  bottom: -7px;
+  bottom: -8px;
   left: 50%;
   transform: translateX(-50%);
-  width: 20px;
-  height: 7px;
+  width: 30px;
+  height: 8px;
   background: #000;
   border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
+
+/* ROOF */
 .roof {
   position: absolute;
-  bottom: 56px;
+  bottom: 60px;
   left: 50%;
   transform: translateX(-50%) rotate(0deg);
   width: 0;
   height: 0;
-  border-left: 44px solid transparent;
-  border-right: 44px solid transparent;
-  border-bottom: 29px solid #000;
+  border-left: 50px solid transparent;
+  border-right: 50px solid transparent;
+  border-bottom: 33px solid #000;
   transform-origin: bottom center;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-  transition: transform 0.4s ease-in-out;
+  transition: transform 0.8s cubic-bezier(0.34, 0.72, 0.4, 1.2);
 }
-
-/* .roof {
-  transition: transform 0.8s cubic-bezier(0.34, 0.72, 0.4, 1.2);
-} */

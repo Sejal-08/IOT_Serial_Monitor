@@ -448,12 +448,28 @@ function updatePressureCard(hpa) {
       }
     }
 
-  /* -------------------------------------------------
-   MAIN UPDATE – runs every 10 s (or whenever your app calls it)
+ /* -------------------------------------------------
+   SHOW CARD AFTER ADC CONNECTION
+   ------------------------------------------------- */
+if (protocol === "ADC") {
+  const rainCard = document.getElementById("rain-gauge-card");
+  if (rainCard) rainCard.style.display = "flex";
+} else {
+  const rainCard = document.getElementById("rain-gauge-card");
+  if (rainCard) rainCard.style.display = "none";
+}
+
+/* -------------------------------------------------
+   MAIN UPDATE – Rain Gauge 
    ------------------------------------------------- */
 if (protocol === "ADC" && selectedSensor === "Rain Gauge") {
   const card = document.getElementById("rain-gauge-card");
   if (!card) return;
+
+  // Ensure card visible (in case of reconnect)
+  if (card.style.display === "none") {
+    card.style.display = "flex";
+  }
 
   const rainValEl = card.querySelector("#rain-value");
   const roof      = card.querySelector("#roof");
@@ -468,13 +484,12 @@ if (protocol === "ADC" && selectedSensor === "Rain Gauge") {
   rainValEl.textContent = `${rainMm.toFixed(1)} mm`;
 
   // ---------- 3. Get / create persistent state ----------
-  // All state lives on the roof element → survives script reloads
   let state = roof.dataset.state ? JSON.parse(roof.dataset.state) : null;
 
   if (!state) {
     state = {
-      lastRainfall: null,   // last total we have processed
-      direction: 1          // 1 = right, -1 = left
+      lastRainfall: null,
+      direction: 1
     };
     roof.dataset.state = JSON.stringify(state);
   }
@@ -487,13 +502,13 @@ if (protocol === "ADC" && selectedSensor === "Rain Gauge") {
     state.direction *= -1;
     const targetDeg = state.direction > 0 ? 12 : -12;
 
-    // ---- animate from wherever it is now ----
+    // ---- animate roof ----
     roof.style.transition = "transform 0.8s cubic-bezier(0.34,0.72,0.4,1.2)";
-    roof.style.transform  = `translateX(-50%) rotate(${targetDeg}deg) `;
+    roof.style.transform  = `translateX(-50%) rotate(${targetDeg}deg)`;
 
-    // ---- remember new values ----
+    // ---- save state ----
     state.lastRainfall = rainMm;
-    roof.dataset.state = JSON.stringify(state);   // persist for next call
+    roof.dataset.state = JSON.stringify(state);
   }
 }
 
