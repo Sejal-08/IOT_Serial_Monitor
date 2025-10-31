@@ -948,62 +948,138 @@ body.light-mode .gauge-inner{
     }
 }
 
+/* === CARD === */
 .rain-gauge-card {
-    position: relative;
-    overflow: hidden;
+  width: 240px;
+  height: 320px;
+  background: linear-gradient(135deg, #1e3a5f 0%, #162b47 100%);
+  border-radius: 18px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  font-family: 'Segoe UI', sans-serif;
+  position: relative;
 }
 
-.rain-overlay {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 1;
-    overflow: hidden;
+/* === HEADER === */
+.rain-header {
+  text-align: center;
+  color: #a3bffa;
+  margin-bottom: 8px;
+  z-index: 10;
+}
+.rain-header i { font-size: 1.3rem; margin-bottom: 3px; }
+.rain-value { font-size: 1.8rem; font-weight: 700; color: #fff; }
+.rain-unit { font-size: 0.75rem; color: #b0bec5; margin-top: 2px; }
+
+/* === WATER WAVE === */
+.water-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 40px;
+  background: transparent;
+  overflow: hidden;
+  z-index: 1;
+}
+.water-wave {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg,
+      rgba(64, 164, 255, 0.8) 0%,
+      rgba(32, 128, 255, 0.9) 50%,
+      rgba(0, 90, 255, 0.8) 100%);
+  border-radius: 50% 50% 0 0;
+  animation: waterRipple 4s ease-in-out infinite;
+  transform-origin: bottom;
+}
+@keyframes waterRipple {
+  0%, 100% { transform: scaleY(1) translateY(0px); }
+  50% { transform: scaleY(1.05) translateY(-2px); }
 }
 
-.raindrop {
-    position: absolute;
-    width: 3px;
-    height: 10px;
-    border-radius: 50% / 60% 60% 40% 40%;
-    transform: translateY(0);
-    background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.15));
-    opacity: 0.9;
-    filter: drop-shadow(0 1px 0 rgba(0,0,0,0.15));
-    animation-name: raindropFall;
-    animation-timing-function: linear;
-    animation-iteration-count: infinite;
+/* === SEESAW (Black Version) === */
+.seesaw-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  width: 100%;
+  padding-bottom: 10px;
+  position: relative;
+  z-index: 2;
+}
+.seesaw {
+  width: 130px;
+  height: 90px;
+  position: relative;
+}
+.base {
+  position: absolute;
+  bottom: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 130px;
+  height: 26px;
+  background: #000;
+  border-radius: 65px / 13px;
+  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.6);
+}
+.pole {
+  width: 4px;
+  height: 64px;
+  background: #000;
+  position: absolute;
+  bottom: 0;
+  border-radius: 2px 2px 0 0;
+}
+.pole.left { left: 0; }
+.pole.right { right: 0; }
+.support {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 9px;
+  height: 56px;
+  background: #000;
+  border-radius: 2px 2px 0 0;
+}
+.support::before {
+  content: '';
+  position: absolute;
+  bottom: -7px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 7px;
+  background: #000;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+.roof {
+  position: absolute;
+  bottom: 56px;
+  left: 50%;
+  transform: translateX(-50%) rotate(0deg);
+  width: 0;
+  height: 0;
+  border-left: 44px solid transparent;
+  border-right: 44px solid transparent;
+  border-bottom: 29px solid #000;
+  transform-origin: bottom center;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  transition: transform 0.4s ease-in-out;
 }
 
-.raindrop::after {
-    content: "";
-    display: block;
-    width: 0.6px;
-    height: 4px;
-    margin: 0 auto;
-    background: rgba(255,255,255,0.6);
-    transform: translateY(-1px) rotate(10deg);
-    opacity: 0.5;
-}
-
-body.light-mode .raindrop {
-    fill: rgba(48, 121, 194, 0.9);
-    stroke: rgba(0, 123, 255, 0.8);
-}
-
-body.dark-mode .raindrop {
-    fill: rgba(100, 149, 237, 0.9);
-    stroke: rgba(65, 105, 225, 0.8);
-}
-
-.mist-drop {
-    transition: transform 0.1s ease, opacity 0.1s ease;
-}
-
-body.light-mode .mist-drop {
-    fill: rgba(135, 206, 250, 0.6);
-}
-
-body.dark-mode .mist-drop {
-    fill: rgba(176, 224, 230, 0.6);
-}
+/* .roof {
+  transition: transform 0.8s cubic-bezier(0.34, 0.72, 0.4, 1.2);
+} */

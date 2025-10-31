@@ -285,31 +285,28 @@
               </svg>
             </div>
 
-             <!-- Rain Gauge -->
-            <div id="rain-gauge-card" class="wave-card-container" style="display: none;">
-              <div id="rain-overlay" class="rain-overlay" aria-hidden="true"></div>
-              <div class="rain-info" style="z-index:2; position:relative;">
-                <h4>Rainfall</h4>
-                <div class="wave-card-content">
-                  <i class="fas fa-cloud-rain"></i>
-                  <span id="rain-gauge-value" class="sensor-value"></span>
-                </div>
-                <svg id="rain-wave" width="100%" height="120" viewBox="0 0 100 120" preserveAspectRatio="none">
-                  <defs>
-                    <style>
-                      @keyframes realRaindropFall {
-                        0% { transform: translateY(-20px); opacity: 0; }
-                        10% { opacity: 1; }
-                        90% { opacity: 1; }
-                        100% { transform: translateY(120px); opacity: 0; }
-                      }
-                    </style>
-                  </defs>
-                  <g id="rainDrops"></g>
-                </svg>
+          <!-- Rain Gauge -->
+            <div id="rain-gauge-card" class="rain-gauge-card">
+            <div class="rain-header">
+              <i class="fa-solid fa-cloud-rain"></i>
+              <div id="rain-value" class="rain-value">0.0 mm</div>
+              <div class="rain-unit">mm</div>
+            </div>
+
+            <div class="seesaw-container">
+              <div class="seesaw">
+                <div class="base"></div>
+                <div class="pole left"></div>
+                <div class="pole right"></div>
+                <div class="support"></div>
+                <div id="roof" class="roof"></div>
               </div>
             </div>
 
+            <div class="water-container">
+              <div id="water-wave" class="water-wave"></div>
+            </div>
+          </div>
       <!-- LIS3DH Acceleration -->
 <div id="lis3dh-card" class="card-container" style="display: none; min-width: 300px;">
   <h4>Acceleration</h4>

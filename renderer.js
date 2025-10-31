@@ -448,101 +448,54 @@ function updatePressureCard(hpa) {
       }
     }
 
-  // Rain Gauge cards for ADC
-    if (protocol === "ADC" && selectedSensor === "Rain Gauge") {
-      /* 🌧️ Rainfall Card */
-      if (
-        sensorData.ADC["Rainfall"] !== undefined &&
-        !isNaN(parseFloat(sensorData.ADC["Rainfall"].replace(" mm", "")))
-      ) {
-       const rainGaugeCard = document.getElementById("rain-gauge-card");  // Changed from "rain-gauge-hourly-card"
-    if (rainGaugeCard) rainGaugeCard.style.display = "block";
-    const rainMm = parseFloat(sensorData.ADC["Rainfall"].replace(" mm", ""));
-    const rainGaugeValue = document.getElementById("rain-gauge-value");  // This ID matches HTML
-    if (rainGaugeValue) rainGaugeValue.textContent = `${rainMm.toFixed(2)} mm`;
+  /* -------------------------------------------------
+   MAIN UPDATE – runs every 10 s (or whenever your app calls it)
+   ------------------------------------------------- */
+if (protocol === "ADC" && selectedSensor === "Rain Gauge") {
+  const card = document.getElementById("rain-gauge-card");
+  if (!card) return;
 
-        // Dynamic color transition (light blue → deep blue)
-        const maxMm = 25; // For hourly, reasonable max
-        const t = Math.min(Math.max(rainMm / maxMm, 0), 1);
-        const lowColor = { r: 30, g: 144, b: 255 };
-        const highColor = { r: 0, g: 0, b: 139 };
-        const r = Math.round(lowColor.r + (highColor.r - lowColor.r) * t);
-        const g = Math.round(lowColor.g + (highColor.g - lowColor.g) * t);
-        const b = Math.round(lowColor.b + (highColor.b - lowColor.b) * t);
-        const primaryColor = `rgb(${r}, ${g}, ${b})`;
-        const lightBlue = `rgb(${Math.min(r + 40, 255)}, ${Math.min(g + 40, 255)}, ${Math.min(b + 40, 255)})`;
+  const rainValEl = card.querySelector("#rain-value");
+  const roof      = card.querySelector("#roof");
 
-        // ✅ Use an overlay div for raindrops
-        let rainOverlay = document.getElementById("rain-overlay");
-        if (!rainOverlay) {
-          rainOverlay = document.createElement("div");
-          rainOverlay.id = "rain-overlay";
-          rainOverlay.style.position = "absolute";
-          rainOverlay.style.inset = "0";
-          rainOverlay.style.overflow = "hidden";
-          rainOverlay.style.pointerEvents = "none";
-          rainOverlay.style.zIndex = "1";
-          if (rainGaugeCard) rainGaugeCard.style.position = "relative";
-          if (rainGaugeCard) rainGaugeCard.appendChild(rainOverlay);
-        }
-        rainOverlay.innerHTML = "";
+  // ---------- 1. Parse incoming rainfall ----------
+  const rainStr = sensorData.ADC["Rainfall"];
+  const rainMm  = parseFloat(rainStr.replace(" mm", ""));
 
-        // 🔹 Configure raindrop appearance based on rainfall intensity
-        const baseDrops = 12;
-        const extraDrops = Math.min(Math.floor(rainMm / 2), 40);
-        const numDrops = baseDrops + extraDrops;
+  if (isNaN(rainMm)) return;
 
-        const cardRect = rainGaugeCard ? rainGaugeCard.getBoundingClientRect() : { width: 300, height: 200 };
-        const width = cardRect.width;
-        const height = cardRect.height;
+  // ---------- 2. Update the number ----------
+  rainValEl.textContent = `${rainMm.toFixed(1)} mm`;
 
-        // Add CSS for animation if not already
-        if (!document.getElementById("rainfall-style")) {
-          const style = document.createElement("style");
-          style.id = "rainfall-style";
-          style.textContent = `
-            @keyframes raindropFall {
-              0% { transform: translateY(0); opacity: 1; }
-              90% { opacity: 1; }
-              100% { transform: translateY(var(--fallDistance)); opacity: 0; }
-            }
-          `;
-          document.head.appendChild(style);
-        }
+  // ---------- 3. Get / create persistent state ----------
+  // All state lives on the roof element → survives script reloads
+  let state = roof.dataset.state ? JSON.parse(roof.dataset.state) : null;
 
-        // 🔹 Create raindrops across the whole card
-        for (let i = 0; i < numDrops; i++) {
-          const drop = document.createElement("div");
-          drop.className = "raindrop";
-          const size = 4 + Math.random() * 2;
-          drop.style.width = `${size}px`;
-          drop.style.height = `${size * 1.6}px`;
-          drop.style.background = `linear-gradient(${lightBlue}, ${primaryColor})`;
-          drop.style.opacity = "0.8";
-          drop.style.borderRadius = "50% / 60% 60% 40% 40%";
-          drop.style.position = "absolute";
+  if (!state) {
+    state = {
+      lastRainfall: null,   // last total we have processed
+      direction: 1          // 1 = right, -1 = left
+    };
+    roof.dataset.state = JSON.stringify(state);
+  }
 
-          const left = Math.random() * width;
-          const startY = -Math.random() * height * 0.3;
-          const fallDistance = `${height + 30}px`;
-          const duration = (1.2 + Math.random() * 2).toFixed(2) + "s";
-          const delay = (Math.random() * 2).toFixed(2) + "s";
+  // ---------- 4. TIP DETECTION ----------
+  if (state.lastRainfall === null || rainMm > state.lastRainfall) {
+    console.log("Rain Tip Detected! Rainfall:", rainMm);
 
-          drop.style.left = `${left}px`;
-          drop.style.top = `${startY}px`;
-          drop.style.animation = `raindropFall ${duration} linear infinite`;
-          drop.style.animationDelay = delay;
-          drop.style.setProperty("--fallDistance", fallDistance);
+    // ---- flip direction ----
+    state.direction *= -1;
+    const targetDeg = state.direction > 0 ? 12 : -12;
 
-          rainOverlay.appendChild(drop);
-        }
-      } else {
-     const rainGaugeCard = document.getElementById("rain-gauge-card");
-    if (rainGaugeCard) rainGaugeCard.style.display = "none";
-      }
+    // ---- animate from wherever it is now ----
+    roof.style.transition = "transform 0.8s cubic-bezier(0.34,0.72,0.4,1.2)";
+    roof.style.transform  = `translateX(-50%) rotate(${targetDeg}deg)`;
 
-    
-    }
+    // ---- remember new values ----
+    state.lastRainfall = rainMm;
+    roof.dataset.state = JSON.stringify(state);   // persist for next call
+  }
+}
 
     // Update Hall Sensor card (for Analog Hall Sensor)
     if (protocol === "Analog" && selectedSensor === "Hall Sensor" && currentMagneticField !== null && hallValue && hallArc && hallGlow) {
