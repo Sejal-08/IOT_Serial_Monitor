@@ -948,57 +948,59 @@ body.light-mode .gauge-inner{
     }
 }
 
-/* === CARD === */
-.rain-gauge-card {
-  width: 240px;
-  height: 320px;
-  background: linear-gradient(135deg, #1e3a5f 0%, #162b47 100%);
-  border-radius: 18px;
-  padding: 18px;
-  display: none; /* 🔹 Hidden by default */
+/* === RAIN GAUGE CARD - HIDDEN UNTIL ADC CONNECTED === */
+#rain-gauge-card {
+  flex: 1;
+  max-width: 200px;
+  min-width: 150px;
+  min-height: 200px;
+  padding: 12px;
+  border-radius: 12px;
+  display: none !important; /* CRITICAL: Hidden by default */
   flex-direction: column;
-  justify-content: space-between;
   align-items: center;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-  overflow: hidden;
-  font-family: 'Segoe UI', sans-serif;
+  justify-content: flex-start;
+  background: var(--sensor-bg);
+  border: 1px solid var(--sensor-border);
+  box-shadow: var(--sensor-shadow);
+  transition: all 0.4s ease;
   position: relative;
-}
-/* -------------------------------------------------------------- */
-/*  LIGHT-MODE VARIANT  (everything stays 1-to-1, only colours)   */
-/* -------------------------------------------------------------- */
-.light .rain-gauge-card {
-  background: linear-gradient(135deg, #e0f0ff 0%, #c9e0ff 100%);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-}
-.light .rain-header { color: #3b5a9d; }
-.light .rain-value { color: #0d1b2a; }
-.light .rain-unit { color: #5a6d80; }
-
-.light .water-wave {
-  background: linear-gradient(180deg,
-      rgba(64, 164, 255, 0.45) 0%,
-      rgba(32, 128, 255, 0.55) 50%,
-      rgba(0, 90, 255, 0.45) 100%);
-}
-
-.light .base,
-.light .pole,
-.light .support,
-.light .support::before,
-.light .roof { filter: invert(1) brightness(1.8); }
-/* === HEADER === */
-.rain-header {
+  overflow: hidden;
   text-align: center;
-  color: #a3bffa;
-  margin-bottom: 8px;
-  z-index: 10;
 }
-.rain-header i { font-size: 1.3rem; margin-bottom: 3px; }
-.rain-value { font-size: 1.8rem; font-weight: 700; color: #fff; }
-.rain-unit { font-size: 0.75rem; color: #b0bec5; margin-top: 2px; }
 
-/* === WATER WAVE === */
+/* Only show when ADC is connected */
+body.adc-connected #rain-gauge-card {
+  display: flex !important;
+}
+
+#rain-gauge-card h4 {
+  margin: 0 0 8px 0;
+  font-size: 1.1em;
+  font-weight: 600;
+  color: var(--h3-color);
+  z-index: 2;
+}
+
+.rain-header {
+  z-index: 2;
+  margin-bottom: 5px;
+}
+
+.rain-value {
+  font-size: 1.6em;
+  font-weight: 700;
+  color: var(--text-color);
+  margin: 0;
+}
+
+.rain-unit {
+  font-size: 0.8em;
+  color: var(--text-color);
+  opacity: 0.8;
+  margin-top: 2px;
+}
+
 .water-container {
   position: absolute;
   bottom: 0;
@@ -1009,6 +1011,7 @@ body.light-mode .gauge-inner{
   overflow: hidden;
   z-index: 1;
 }
+
 .water-wave {
   position: absolute;
   bottom: 0;
@@ -1023,12 +1026,12 @@ body.light-mode .gauge-inner{
   animation: waterRipple 4s ease-in-out infinite;
   transform-origin: bottom;
 }
+
 @keyframes waterRipple {
   0%, 100% { transform: scaleY(1) translateY(0px); }
   50% { transform: scaleY(1.05) translateY(-2px); }
 }
 
-/* === SEESAW === */
 .seesaw-container {
   flex: 1;
   display: flex;
@@ -1039,13 +1042,13 @@ body.light-mode .gauge-inner{
   position: relative;
   z-index: 2;
 }
+
 .seesaw {
   width: 160px;
   height: 100px;
   position: relative;
 }
 
-/* THICKER 3D BASE */
 .base {
   position: absolute;
   bottom: -12px;
@@ -1059,7 +1062,6 @@ body.light-mode .gauge-inner{
               0 4px 8px rgba(0,0,0,0.6);
 }
 
-/* SIDE POLES (thicker + tangent aligned) */
 .pole {
   width: 25px;
   height: 70px;
@@ -1077,7 +1079,6 @@ body.light-mode .gauge-inner{
   transform: rotate(4deg) skewY(-6deg);
 }
 
-/* CENTER SUPPORT */
 .support {
   position: absolute;
   bottom: 0;
@@ -1100,7 +1101,6 @@ body.light-mode .gauge-inner{
   border-radius: 4px;
 }
 
-/* ROOF */
 .roof {
   position: absolute;
   bottom: 60px;
@@ -1112,5 +1112,5 @@ body.light-mode .gauge-inner{
   border-right: 50px solid transparent;
   border-bottom: 33px solid #000;
   transform-origin: bottom center;
-  transition: transform 0.8s cubic-bezier(0.34, 0.72, 0.4, 1.2);
+  transition: transform 0.8s cubic-bezier(0.34, 0.72, 0.4, 1.2);
 }

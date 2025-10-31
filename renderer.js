@@ -460,6 +460,23 @@ if (protocol === "ADC") {
 }
 
 /* -------------------------------------------------
+   SHOW CARD AFTER ADC CONNECTION
+   ------------------------------------------------- */
+if (protocol === "ADC") {
+  const rainCard = document.getElementById("rain-gauge-card");
+  if (rainCard) {
+    document.body.classList.add("adc-connected"); // ADD THIS LINE
+    rainCard.style.display = "flex";
+  }
+} else {
+  const rainCard = document.getElementById("rain-gauge-card");
+  if (rainCard) {
+    document.body.classList.remove("adc-connected"); // Remove when not ADC
+    rainCard.style.display = "none";
+  }
+}
+
+/* -------------------------------------------------
    MAIN UPDATE – Rain Gauge 
    ------------------------------------------------- */
 if (protocol === "ADC" && selectedSensor === "Rain Gauge") {
@@ -511,7 +528,6 @@ if (protocol === "ADC" && selectedSensor === "Rain Gauge") {
     roof.dataset.state = JSON.stringify(state);
   }
 }
-
     // Update Hall Sensor card (for Analog Hall Sensor)
     if (protocol === "Analog" && selectedSensor === "Hall Sensor" && currentMagneticField !== null && hallValue && hallArc && hallGlow) {
       const field = parseInt(currentMagneticField);
