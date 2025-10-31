@@ -489,7 +489,7 @@ if (protocol === "ADC" && selectedSensor === "Rain Gauge") {
 
     // ---- animate from wherever it is now ----
     roof.style.transition = "transform 0.8s cubic-bezier(0.34,0.72,0.4,1.2)";
-    roof.style.transform  = `translateX(-50%) rotate(${targetDeg}deg)`;
+    roof.style.transform  = `translateX(-50%) rotate(${targetDeg}deg) `;
 
     // ---- remember new values ----
     state.lastRainfall = rainMm;
