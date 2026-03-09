@@ -260,6 +260,8 @@ h3 {
   box-shadow: var(--focus-shadow);
 }
 
+
+
 /* Action Buttons */
 .action-button {
   padding: 10px 14px;
@@ -341,12 +343,56 @@ footer {
   transition: all 0.4s ease;
 }
 
+/* Special: Even BIGGER for Temperature, Humidity, Pressure, Light */
+#thermometer-container,
+#thermometer-f-container,
+#humidity-card,
+#pressure-card,
+#light-card,
+#lis3dh-card,
+#tof-card,
+#uvltr-card,
+#wind-direction-card,
+#wind-speed-card,
+#hall-card,
+#tlv493d-card {  /* ✅ ADDED COMMA + TLV493D */
+  min-width: 350px;
+  min-height: 520px !important;
+  padding: 36px 40px !important;
+}
+
+/* Light Card - Special Layout */
+#light-card {
+  flex: 1;
+  min-width: 300px;
+  max-width: 400px;
+  min-height: 520px;
+  padding: 25px 20px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  background: var(--sensor-bg);
+  border: 1.5px solid var(--sensor-border);
+  box-shadow: var(--sensor-shadow);
+  transition: all 0.4s ease;
+  overflow: hidden;
+  text-align: center;
+}
+
 .sensor-data-container h4 {
   margin: 0 0 10px 0;
   font-size: 1.1em;
   font-weight: 600;
   text-align: center;
   color: var(--h3-color);
+}
+body:not(.dark-mode) #light-card h4 {
+  background: linear-gradient(90deg, #1d4ed8, #3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .sensor-data-item {
@@ -371,15 +417,102 @@ footer {
   overflow-x: auto;
 }
 
-.thermometer-container,
-.wave-card-container,
-.card-container {
+
+/* BIG BEAUTIFUL THERMOMETER FOR LARGE CARDS - BOTH IDENTICAL */
+#thermometer-container,
+#thermometer-f-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px !important;
+  min-height: 340px !important;
+  /* REMOVE the width constraints from Fahrenheit */
+  /* min-width: 160px; REMOVE THIS */
+  /* max-width: 220px; REMOVE THIS */
+  animation: float 6s ease-in-out infinite; /* ADD THIS TO BOTH */
+}
+
+/* Make the SVG itself much bigger - BOTH IDENTICAL */
+#thermometer-container svg,
+#thermometer-f-container svg {
+  width: 180px !important;
+  height: 380px !important;
+  max-width: 90%;
+  margin: 0 auto;
+}
+
+/* Scale up the liquid fill and bulb - BOTH IDENTICAL */
+#thermometer-fill,
+#thermometer-f-fill {
+  transition: height 1.2s cubic-bezier(0.34, 0.72, 0.4, 1.4), y 1.2s cubic-bezier(0.34, 0.72, 0.4, 1.4);
+  animation: innerGlowPulse 2s ease-in-out infinite; /* ADD TO BOTH */
+}
+
+/* Bulb styling - BOTH IDENTICAL */
+#thermometer-bulb,
+#thermometer-f-bulb {
+  filter: drop-shadow(0 0 20px #ffeb3b);
+  animation: bulbPulse 3s ease-in-out infinite; /* ADD TO BOTH */
+}
+
+/* Make scale markings bigger and clearer - BOTH IDENTICAL */
+.thermometer text {
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  fill: #a0d8ff !important;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+}
+
+/* Bigger tick marks - BOTH IDENTICAL */
+.thermometer line {
+  stroke-width: 3px !important;
+  stroke: #6bb6ff !important;
+}
+
+/* Enhanced glowing liquid - BOTH IDENTICAL */
+#liquidGlow stop:nth-child(1),
+#liquidGlowF stop:nth-child(1) { stop-color: #ffffc8; }
+#liquidGlow stop:nth-child(2),
+#liquidGlowF stop:nth-child(2) { stop-color: #ffd700; }
+#liquidGlow stop:nth-child(3),
+#liquidGlowF stop:nth-child(3) { stop-color: #ff6b00; }
+
+/* ANIMATIONS - ADD BULB PULSE */
+@keyframes innerGlowPulse {
+  0%, 100% { opacity: 0.9; }
+  50% { opacity: 1; filter: brightness(0.8); }
+}
+
+
+/* Make title bigger too - BOTH IDENTICAL */
+#thermometer-container h4,
+#thermometer-f-container h4 {
+  font-size: 2rem !important;
+  font-weight: 800 !important;
+  margin-bottom: 20px !important;
+  background: linear-gradient(90deg, #60a5fa, #93c5fd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+body:not(.dark-mode) #thermometer-container h4,
+#thermometer-f-container h4 {
+  background: linear-gradient(90deg, #1d4ed8, #3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* FIX THE CONTAINER BASE STYLING - UPDATE THIS */
+.thermometer-container {
   flex: 1;
-  max-width: 200px;
-  min-width: 150px;
-  min-height: 200px;
-  padding: 12px;
-  border-radius: 12px;
+  max-width: 280px; /* Increased to accommodate larger thermometer */
+  min-width: 250px; /* Increased minimum width */
+  min-height: 500px; /* Increased to fit the taller thermometer */
+  padding: 20px;
+  border-radius: 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -391,53 +524,9 @@ footer {
   overflow: hidden;
 }
 
-.sensor-value, .thermometer-value, .wave-card-value {
-  font-size: 0.9em;
-  font-weight: 600;
-  text-align: center;
-  margin-bottom: 8px;
-  color: var(--text-color);
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.38);
-}
-
-/* Thermometer Styles */
-.thermometer-container h4,
-.wave-card-container h4,
-.card-container h3 {
-  margin: 0 0 10px 0;
-  font-size: 1.1em;
-  font-weight: 600;
-  color: var(--h3-color);
-   text-align: center;
-}
-
-.thermometer {
-    transition: none;
-    --glow: #b8a70f;
-    animation: none; /* remove outer glow animation */
-    filter: none; /* remove the drop-shadow outer glow */
-}
-
-#thermometer-fill {
-    fill: url(#liquidGlow);
-    animation: innerGlowPulse 2s ease-in-out infinite;
-}
-
-@keyframes innerGlowPulse {
-    0%, 100% {
-        opacity: 0.8;
-    }
-    50% {
-        opacity: 1;
-    }
-}
-
-.thermometer.shake {
-    animation: thermoGlow 2s ease-in-out infinite, thermoShake 0.18s ease-in-out;
-}
-
-.thermometer rect:not(#thermometer-fill),
-.thermometer circle:not(#thermometer-bulb) {
+/* Thermometer SVG styling - applies to BOTH */
+.thermometer rect:not(#thermometer-fill):not(#thermometer-f-fill),
+.thermometer circle:not(#thermometer-bulb):not(#thermometer-f-bulb) {
   stroke: var(--h3-color);
   fill: var(--sensor-border);
 }
@@ -452,50 +541,84 @@ footer {
   transition: fill 0.3s ease, height 0.3s ease, y 0.3s ease;
 }
 
-/* Wave Card Styles */
-.wave-card-content {
-  position: relative;
-  z-index: 1;
+/* Liquid glow gradients - BOTH IDENTICAL */
+#thermometer-fill {
+  fill: url(#liquidGlow);
+  animation: innerGlowPulse 2s ease-in-out infinite;
+}
+
+#thermometer-f-fill {
+  fill: url(#liquidGlowF);
+  animation: innerGlowPulse 2s ease-in-out infinite;
+}
+
+/* Bulb fills - BOTH IDENTICAL */
+#thermometer-bulb {
+  fill: url(#liquidGlow);
+}
+
+#thermometer-f-bulb {
+  fill: url(#liquidGlowF);
+}
+
+#sensor-visualization-section .sensor-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  align-items: stretch;
+}
+
+/* Humidity Card Styles */
+.humidity-card-container {
+  flex: 1;
+  min-width: 160px;
+  max-width: 220px;
+  min-height: 300px;
+  padding: 20px;
+  border-radius: 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  margin-bottom: 10px;
-  width: 100%;
+  justify-content: flex-start;
+  background: var(--sensor-bg);
+  border: 1.5px solid var(--sensor-border);
+  box-shadow: var(--sensor-shadow);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
 }
 
-.wave-card-content i {
-  font-size: 18px;
-  color: var(--text-color);
+.humidity-card-container h4 {
+  font-size: 2rem !important;
+  font-weight: 800 !important;
+  margin-bottom: 20px !important;
+  background: linear-gradient(90deg, #60a5fa, #93c5fd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+body:not(.dark-mode) .humidity-card-container h4 {
+  background: linear-gradient(90deg, #1d4ed8, #3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-#humidity-wave, #rain-wave {
+#humidity-wave {
   position: absolute;
   bottom: 0;
   left: 0;
   width: 100%;
-  max-width: 200px;
-  height: 70%;
-  z-index: 0;
+  height: 60%;
+  z-index: 1;
 }
 
-#humidity-wave path, #rain-wave path  {
+#humidity-wave path {
   transition: d 1.2s ease-in-out;
 }
-.card-container h4 {
-  margin: 0 0 10px 0;
-  font-size: 1.1em;
-  font-weight: 600;
-  text-align: center;
-}
 
-body.light-mode .card-container h4 {
-  color: #2d4060;
-}
-
-body.dark-mode .card-container h4 {
-  color: #a3bffa;
-}
 /* Card Bar Styles */
 .card-bar {
   width: 100%;
@@ -505,19 +628,84 @@ body.dark-mode .card-container h4 {
   transition: width 0.3s ease, background-color 0.3s ease;
 }
 
-/* Light Card Styles */
-#light-sun {
-  margin: 10px 0;
-  flex-grow: 1;
-  display: flex;
-  align-items: center;
+/* Light Card Styles - FIXED LAYOUT */
+#light-card {
+  position: relative;
+}
+
+#light-card h4 {
+  font-size: 1.8rem !important;
+  font-weight: 800 !important;
+  margin-bottom: 12px !important;
+  background: linear-gradient(90deg, #60a5fa, #93c5fd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-align: center;
+  width: 100%;
+  z-index: 10;
+  position: relative;
+}
+
+#light-value {
+  font-size: 1.4rem !important;
+  font-weight: 600 !important;
+  margin-bottom: 15px !important;
+  color: var(--text-color);
+  text-align: center;
+  width: 100%;
+  z-index: 10;
+  position: relative;
+}
+
+#light-sun, 
+#light-moon {
+  width: 140px;
+  height: 140px;
+  margin: 15px auto 0 auto;
+  display: block;
+  flex-shrink: 0;
 }
 
 /* LIS3DH Card */
-#lis3dh-card .wave-card-value {
-  font-size: 0.9em;
-  margin: 5px 0;
+#lis3dh-card {
+  flex: 1;
+  min-width: 200px;
+  max-width: 520px;
+  min-height: 800px;
+  padding: 20px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  background: var(--sensor-bg);
+  border: 1.5px solid var(--sensor-border);
+  box-shadow: var(--sensor-shadow);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
   text-align: center;
+}
+
+#lis3dh-card h4 {
+  font-size: 1.8rem !important;
+  font-weight: 800 !important;
+  margin-bottom: 12px !important;
+  background: linear-gradient(90deg, #60a5fa, #93c5fd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-align: center;
+  width: 100%;
+  z-index: 10;
+  position: relative;
+}
+body:not(.dark-mode) #lis3dh-card h4 {
+  background: linear-gradient(90deg, #1d4ed8, #3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 #lis3dh-card .card-bar {
@@ -548,72 +736,91 @@ body.dark-mode .card-container h4 {
   75% { transform: translateX(0.5px); }
 }
 
-/* Cube Styles for LIS3DH (Light Mode Defaults) */
+/* --------------------------
+   LIS3DH Acceleration Card
+---------------------------*/
+
+#lis3dh-card {
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Value Layout */
+.accel-values {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+/* 3D View Box */
+.accel-3d-box {
+  width: 180px;
+  height: 180px;
+  margin: 0 auto;
+  perspective: 600px;
+}
+
+/* Cube */
+.cube {
+  width: 150px;
+  height: 150px;
+  position: relative;
+  transform-style: preserve-3d;
+  margin: 0 auto;
+  top: 15px;
+}
+
+/* Cube faces */
 .face {
-  background: transparent;
-  border: 1px solid #333;
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  background: rgba(180, 180, 180, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
 }
 
-.axis.x {
-  background: red;
-}
+/* Face transforms */
+.front  { transform: rotateY(   0deg ) translateZ(75px); }
+.back   { transform: rotateY( 180deg ) translateZ(75px); }
+.right  { transform: rotateY(  90deg ) translateZ(75px); }
+.left   { transform: rotateY( -90deg ) translateZ(75px); }
+.top    { transform: rotateX(  90deg ) translateZ(75px); }
+.bottom { transform: rotateX( -90deg ) translateZ(75px); }
 
-.axis.y {
-  background: green;
-}
-
-.axis.z {
-  background: blue;
-}
-
-.axis-label.x {
-  color: red;
-}
-
-.axis-label.y {
-  color: green;
-}
-
-.axis-label.z {
-  color: blue;
-}
-
+/* Ball inside cube (3D effect) */
 #accel-ball {
-  background: black;
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  background: radial-gradient(circle at 30% 30%, #ff7b7b, #ff5252, #c62828);
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow:
+    0 0 8px rgba(255, 82, 82, 0.5),
+    inset -4px -4px 6px rgba(0, 0, 0, 0.35),
+    inset 3px 3px 4px rgba(255, 120, 120, 0.7);
+  transition: transform 0.12s ease-out;
 }
 
-/* Cube Styles for Dark Mode Overrides */
-body.dark-mode .face {
-  border-color: #ccc !important;
+/* Slightly reduced 3D rotation */
+@keyframes lis3dhIdleRotate {
+  0%   { transform: rotateX(0deg) rotateY(0deg); }
+  20%  { transform: rotateX(25deg) rotateY(-35deg); }
+  50%  { transform: rotateX(45deg) rotateY(55deg); }
+  80%  { transform: rotateX(-25deg) rotateY(35deg); }
+  100% { transform: rotateX(0deg) rotateY(0deg); }
 }
 
-body.dark-mode .axis.x {
-  background: #ff6666 !important;
+/* Very smooth + slow */
+#accel-cube-wrapper {
+  animation: lis3dhIdleRotate 50s ease-in-out infinite;
 }
 
-body.dark-mode .axis.y {
-  background: #66ff66 !important;
-}
 
-body.dark-mode .axis.z {
-  background: #6666ff !important;
-}
-
-body.dark-mode .axis-label.x {
-  color: #ff6666 !important;
-}
-
-body.dark-mode .axis-label.y {
-  color: #66ff66 !important;
-}
-
-body.dark-mode .axis-label.z {
-  color: #6666ff !important;
-}
-
-body.dark-mode #accel-ball {
-  background: white !important;
-}
 
 /* Responsive Design */
 @media (max-width: 1200px) {
@@ -734,148 +941,541 @@ body.dark-mode #accel-ball {
     min-height: 100px; /* Ensure logs are visible */
   }
 }
+
 #pressure-card{
-  flex:0 0 200px;
-  max-width:200px;
-  min-height:220px;
-  padding:12px;
-  border-radius:12px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  position:relative;
-  overflow:hidden;
-  transition:all .4s;
+  flex: 1;
+  min-width: 200px;
+  max-width: 340px;
+  min-height: 300px;
+  padding: 20px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  background: var(--sensor-bg);
+  border: 1.5px solid var(--sensor-border);
+  box-shadow: var(--sensor-shadow);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
 }
-body.light-mode #pressure-card{
-  background:linear-gradient(135deg,#7690e5,#b0bde3);
-  border:1px solid #e0e7ff;
-  box-shadow:0 2px 6px rgba(0,0,0,.1);
-}
-body.dark-mode #pressure-card{
-  background:linear-gradient(135deg,#1a2a4d,#2d4060);
-  border:1px solid rgba(45,65,90,.5);
-  box-shadow:0 2px 6px rgba(0,0,0,.5);
-}
+
 #pressure-card h4{
-    margin: -40px 0 0 0;
-    font-size: 1.2em;
-    font-weight: 550;
-    text-align: center;
-    margin-bottom: 50px;
+  font-size: 2rem !important;
+  font-weight: 800 !important;
+  margin-bottom: 20px !important;
+  background: linear-gradient(90deg, #60a5fa, #93c5fd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
-body.light-mode #pressure-card h4{color:#2d4060}
-body.dark-mode  #pressure-card h4{color:#a3bffa}
+body:not(.dark-mode) #pressure-card h4 {
+  background: linear-gradient(90deg, #1d4ed8, #3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
 
 .card-content .main-value{
-  margin: -40px 0 0 0;
-  font-size:0.9em;
-  font-weight:600; 
-}
-
-/* ---------- dynamic gauge gradient ---------- */
-#gaugeFillGradient {
-  --stopG: 0%;      /* green  stop  */
-  --stopO: 50%;     /* orange stop  */
-  --stopR: 100%;    /* red    stop  */
-  transition: --stopG .6s, --stopO .6s, --stopR .6s;
-}
-
-/* safari / chrome / edge */
-@supports (background: -webkit-named-image(i)) {
-  #gaugeFillGradient {
-    transition: none;   /* safari still needs JS fallback */
-  }
+  margin: 0 0 20px 0;
+  font-size: 2.2rem;
+  font-weight: 800;
+  letter-spacing: -1px;
 }
 
 /* ---------- gauge ---------- */
 .gauge-container{
-  position:relative;
-  width:180px;
-  height:180px;
+  position: relative;
+  width: 200px;
+  height: 200px;
 }
-.gauge-svg{width:100%;height:100%}
-.gauge-outer,.gauge-fill{
-  fill:none;
-  stroke-width:10;
-  stroke-linecap:round;
+.gauge-svg{
+  width: 100%;
+  height: 100%;
+}
+.gauge-outer, .gauge-fill{
+  fill: none;
+  stroke-width: 12;
+  stroke-linecap: round;
 }
 .gauge-outer{
-  stroke:#60666b;          /* very dark ring */
+  stroke: rgba(155, 155, 158, 0.1);
 }
 .gauge-fill{
-  stroke:url(#gaugeGradientLight);
-  transition:stroke-dasharray .6s ease-out;
+  stroke: url(#gaugeGradientLight);
+  transition: stroke-dasharray 0.6s ease-out;
 }
-body.dark-mode .gauge-fill{stroke:url(#gaugeGradientDark)}
+body.dark-mode .gauge-fill{
+  stroke: url(#gaugeGradientDark);
+}
 
 .gauge-inner{
-  position:absolute;
-  top:50%;left:50%;
-  transform:translate(-50%,-50%);
-  width:120px;height:120px;
-  background:#673AB7;
-  border-radius:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:#fff;
-  box-shadow:0 4px 8px rgba(0,0,0,.2);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 140px;
+  height: 140px;
+  background: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #333;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
-body.light-mode .gauge-inner{
-  background:#fff;
-  color:#333;
-  box-shadow:0 4px 8px rgba(0,0,0,.1);
+body.dark-mode .gauge-inner{
+  background: linear-gradient(135deg, #0f172a, #1e293b, #334155);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 .pressure-value{
-  font-size:1.8em;
-  font-weight:bold;
+  font-size: 1.8em;
+  font-weight: bold;
 }
 
-/* centre everything inside the Hall card */
+/* ===================================
+   HALL SENSOR - COMPLETE CSS STYLES
+   =================================== */
+
+/* Hall Card Container */
 #hall-card {
-  height: 50%;
+  flex: 1;
+  min-width: 300px;
+  max-width: 400px;
+  min-height: 520px;
+  padding: 25px 20px;
+  border-radius: 16px;
   display: flex;
   flex-direction: column;
-  align-items: center;   /* horizontal centre */
-  justify-content: center; /* vertical centre */
-  text-align: center;    /* keep title & value centred */
+  align-items: center;
+  justify-content: flex-start;
+  background: var(--sensor-bg, rgba(30, 41, 59, 0.5));
+  border: 1.5px solid var(--sensor-border, rgba(71, 85, 105, 0.5));
+  box-shadow: var(--sensor-shadow, 0 10px 30px rgba(0, 0, 0, 0.3));
+  transition: all 0.4s ease;
+  overflow: hidden;
+  text-align: center;
 }
 
-#hallCshape {
-  margin: -70px auto 0 auto ;   /* -8 px up, left/right auto, no bottom push */
-  display: block;
-  width: 70%;
-  height: auto;
+/* Hall Card Title */
+#hall-card h4 {
+  font-size: 2rem !important;
+  font-weight: 800 !important;
+  margin-bottom: 20px !important;
+  background: linear-gradient(90deg, #60a5fa, #93c5fd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
-/* IR Card */
+
+/* Hall Sensor Value Display */
+#hall-value {
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin-bottom: 20px;
+  color: var(--text-secondary, #94a3b8);
+  min-height: 30px;
+  transition: color 0.3s ease;
+}
+
+/* Animation Container */
+.hall-animation-container {
+  position: relative;
+  width: 100%;
+  max-width: 280px;
+  aspect-ratio: 1;
+  margin: 20px auto;
+}
+
+/* SVG Layers */
+.hall-lightning-layer,
+.hall-field-layer,
+.hall-magnet-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.hall-lightning-layer {
+  z-index: 3;
+  pointer-events: none;
+}
+
+.hall-field-layer {
+  z-index: 1;
+  pointer-events: none;
+}
+
+.hall-magnet-layer {
+  z-index: 2;
+  width: 100%; 
+  height: 100%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transition: all 0.3s ease;
+}
+
+/* ===================================
+   MAGNETIC WAVE ANIMATIONS
+   =================================== */
+
+@keyframes magneticWave {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(-2px);
+    opacity: 0.3;
+  }
+}
+
+.mag-wave {
+  transition: opacity 0.5s ease;
+}
+
+.mag-wave.wave-1 {
+  animation: magneticWave 2s ease-in-out infinite;
+  animation-delay: 0s;
+}
+
+.mag-wave.wave-2 {
+  animation: magneticWave 2s ease-in-out infinite;
+  animation-delay: 0.2s;
+}
+
+.mag-wave.wave-3 {
+  animation: magneticWave 2s ease-in-out infinite;
+  animation-delay: 0.4s;
+}
+
+.mag-wave.wave-4 {
+  animation: magneticWave 2s ease-in-out infinite;
+  animation-delay: 0.6s;
+}
+
+.mag-wave.wave-5 {
+  animation: magneticWave 2s ease-in-out infinite;
+  animation-delay: 0.8s;
+}
+
+#hall-magnetic-waves {
+  transition: opacity 0.5s ease;
+}
+
+/* ===================================
+   MAGNET VIBRATION ANIMATION
+   =================================== */
+
+@keyframes magnetVibration {
+  0%, 100% {
+    transform: translate(-50%, -50%) translate(0, 0) rotate(0deg);
+  }
+  25% {
+    transform: translate(-50%, -50%) translate(-1px, 1px) rotate(-0.5deg);
+  }
+  50% {
+    transform: translate(-50%, -50%) translate(1px, -1px) rotate(0.5deg);
+  }
+  75% {
+    transform: translate(-50%, -50%) translate(-1px, -1px) rotate(-0.5deg);
+  }
+}
+
+.hall-magnet-layer.vibrate {
+  animation: magnetVibration 0.1s infinite;
+}
+
+/* ===================================
+   LIGHTNING BOLT ANIMATIONS
+   =================================== */
+
+@keyframes attractToMagnet {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(1);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(
+      calc((50px - attr(data-x)) * 0.8),
+      calc((50px - attr(data-y)) * 0.8)
+    ) scale(0.3);
+  }
+}
+
+.lightning-bolt {
+  animation: attractToMagnet 1s ease-out forwards;
+  opacity: 0;
+}
+
+/* ===================================
+   POLE LIGHTNING SPARKLE ANIMATION
+   =================================== */
+
+@keyframes sparkle {
+  0%, 100% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+.pole-spark {
+  transition: opacity 0.3s ease;
+}
+
+.pole-spark.spark-1 {
+  animation: sparkle 0.5s infinite;
+}
+
+.pole-spark.spark-2 {
+  animation: sparkle 0.5s infinite 0.25s;
+}
+
+#hall-pole-lightning {
+  transition: opacity 0.3s ease;
+}
+
+/* ===================================
+   STATUS INDICATOR
+   =================================== */
+
+.hall-status-container {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hall-status-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.hall-status-dot.status-active {
+  background: #ef4444;
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.hall-status-dot.status-inactive {
+  background: #10b981;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(239, 68, 68, 0.8);
+  }
+}
+
+/* ===================================
+   RESPONSIVE DESIGN
+   =================================== */
+
+@media (max-width: 768px) {
+  #hall-card {
+    min-width: 280px;
+    min-height: 480px;
+    padding: 20px 15px;
+  }
+  
+  .hall-animation-container {
+    max-width: 240px;
+  }
+  
+  #hall-value {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  #hall-card {
+    min-width: 100%;
+    min-height: 450px;
+  }
+  
+  .hall-animation-container {
+    max-width: 220px;
+  }
+  
+  #hall-card h4 {
+    font-size: 1.1rem;
+  }
+}
+
+/* IR Sensor */
 #ir-card {
-  flex: 0 0 200px; /* Consistent width with other cards */
-  max-width: 200px;
-  min-height: 200px; /* Consistent height with other cards */
-  padding: 12px;
-  border-radius: 12px;
+  flex: 0 0 auto; /* Change from fixed width */
+  max-width: 800px;
+  width: 100%; /* Make it responsive */
+  min-height: 650px;
+  padding: 20px;
+  border-radius: 16px;
   display: flex;
   flex-direction: column;
-  align-items: center; /* Horizontal centering */
-  justify-content: center; /* Vertical centering */
+  align-items: center;
+  justify-content: center;
   background: var(--sensor-bg);
   border: 1px solid var(--sensor-border);
   box-shadow: var(--sensor-shadow);
   transition: all 0.4s ease;
-  position: relative;
-  overflow: hidden;
-  text-align: center; /* Ensure text is centered */
+  text-align: center;
+  margin: 0 auto; /* Center horizontally */
+  margin-bottom: 40px;
 }
 
-#ir-bulb {
-  margin: 10px auto; /* Center horizontally with auto margins, small vertical margin */
-  display: block; /* Ensure SVG behaves as a block element */
-  width: 80px; /* Consistent size */
-  height: 80px;
-  flex-shrink: 0; /* Prevent SVG from shrinking */
+/* Make SVG responsive */
+#ir-card svg {
+  width: 100%;
+  max-width: 650px;
+  height: auto;
+  margin: 20px auto; /* Center the SVG */
+  display: block;
 }
+
+#ir-card h4 {
+  font-size: 2rem !important;
+  font-weight: 800 !important;
+  margin-bottom: 20px !important;
+  background: linear-gradient(90deg, #60a5fa, #93c5fd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* LED Glow Animation */
+@keyframes led-pulse {
+  0%, 100% { 
+    opacity: 0.5; 
+    filter: drop-shadow(0 0 6px rgba(255, 0, 0, 0.7));
+  }
+  50% { 
+    opacity: 1; 
+    filter: drop-shadow(0 0 16px rgba(255, 0, 0, 1));
+  }
+}
+
+@keyframes receiver-pulse {
+  0%, 100% { 
+    opacity: 0.5; 
+    filter: drop-shadow(0 0 6px rgba(255, 235, 59, 0.7));
+  }
+  50% { 
+    opacity: 1; 
+    filter: drop-shadow(0 0 16px rgba(255, 235, 59, 1));
+  }
+}
+
+/* Outgoing Beam Dots Animation (LED to Object) */
+@keyframes beam-travel {
+  0% { 
+    opacity: 0; 
+    transform: translateX(-20px); 
+  }
+  20% { 
+    opacity: 1; 
+  }
+  80% { 
+    opacity: 1; 
+  }
+  100% { 
+    opacity: 0; 
+    transform: translateX(20px); 
+  }
+}
+
+/* Reflected Beam Dots Animation (Object to Photodiode) */
+@keyframes beam-reflected {
+  0% { 
+    opacity: 0; 
+    transform: translate(15px, -10px); 
+  }
+  20% { 
+    opacity: 1; 
+  }
+  80% { 
+    opacity: 1; 
+  }
+  100% { 
+    opacity: 0; 
+    transform: translate(-15px, 10px); 
+  }
+}
+
+/* Ray Gradient Animations */
+@keyframes ray-fade-out {
+  0% { opacity: 0; }
+  25% { opacity: 0.5; }
+  75% { opacity: 0.5; }
+  100% { opacity: 0; }
+}
+
+@keyframes ray-fade-reflected {
+  0% { opacity: 0; }
+  25% { opacity: 0.6; }
+  75% { opacity: 0.6; }
+  100% { opacity: 0; }
+}
+
+/* Apply Animations */
+.ir-active #ir-led-glow {
+  animation: led-pulse 2s infinite ease-in-out;
+}
+
+.ir-detected #ir-receiver-glow {
+  animation: receiver-pulse 2s infinite ease-in-out;
+}
+
+/* Outgoing beam (red dots) */
+.ir-active #ir-beam-out circle {
+  animation: beam-travel 2.5s infinite ease-in-out;
+}
+
+.ir-active #ir-beam-out circle:nth-child(1) { animation-delay: 0s; }
+.ir-active #ir-beam-out circle:nth-child(2) { animation-delay: 0.15s; }
+.ir-active #ir-beam-out circle:nth-child(3) { animation-delay: 0.3s; }
+.ir-active #ir-beam-out circle:nth-child(4) { animation-delay: 0.45s; }
+.ir-active #ir-beam-out circle:nth-child(5) { animation-delay: 0.6s; }
+
+/* Reflected beam (yellow dots) */
+.ir-detected #ir-beam-reflected circle {
+  animation: beam-reflected 2.5s infinite ease-in-out;
+}
+
+.ir-detected #ir-beam-reflected circle:nth-child(1) { animation-delay: 0.75s; }
+.ir-detected #ir-beam-reflected circle:nth-child(2) { animation-delay: 0.95s; }
+.ir-detected #ir-beam-reflected circle:nth-child(3) { animation-delay: 1.15s; }
+.ir-detected #ir-beam-reflected circle:nth-child(4) { animation-delay: 1.35s; }
+.ir-detected #ir-beam-reflected circle:nth-child(5) { animation-delay: 1.55s; }
+
+/* Ray gradient paths */
+.ir-active #ray-gradient-out {
+  animation: ray-fade-out 2.5s infinite ease-in-out;
+}
+
+.ir-detected #ray-gradient-reflected {
+  animation: ray-fade-reflected 2.5s infinite ease-in-out 0.75s;
+}
+
+
 /* REMOVE all old .tlv493d-arrow styles and REPLACE with these */
 
 .tlv493d-simple-container {
@@ -918,7 +1518,8 @@ body.light-mode .gauge-inner{
     margin-bottom: 5px;
 }
 /* Raindrop Animations */
-@keyframes raindropFall {    0% {
+@keyframes raindropFall {    
+  0% {
         transform: translateY(-20px) scale(0.8);
         opacity: 0;
     }
@@ -948,65 +1549,87 @@ body.light-mode .gauge-inner{
     }
 }
 
-/* === RAIN GAUGE CARD - HIDDEN UNTIL ADC CONNECTED === */
+.rain-gauge-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.rain-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+}
+
+
+/* === RAIN GAUGE CARD - ULTRA BIG & EPIC ANIMATION === */
 #rain-gauge-card {
   flex: 1;
-  max-width: 200px;
-  min-width: 150px;
-  min-height: 200px;
-  padding: 12px;
-  border-radius: 12px;
-  display: none !important; /* CRITICAL: Hidden by default */
+  display: flex;           /* ← ADD THIS */
+  max-width: 800px;        /* MASSIVELY increased */
+  min-width: 280px;
+  min-height: 620px;       /* huge vertical presence */
+  padding: 28px 20px;
+  border-radius: 20px;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
   background: var(--sensor-bg);
-  border: 1px solid var(--sensor-border);
-  box-shadow: var(--sensor-shadow);
-  transition: all 0.4s ease;
+  border: 1.5px solid var(--sensor-border);
+  box-shadow: var(--sensor-shadow), 0 20px 40px rgba(0,0,0,0.25);
+  transition: all 0.5s ease;
   position: relative;
   overflow: hidden;
   text-align: center;
+  margin-top: 20px;
 }
 
-/* Only show when ADC is connected */
-body.adc-connected #rain-gauge-card {
-  display: flex !important;
-}
 
 #rain-gauge-card h4 {
-  margin: 0 0 8px 0;
-  font-size: 1.1em;
-  font-weight: 600;
+  margin: 0 0 14px 0;
+  font-size: 1.5em;
+  font-weight: 700;
   color: var(--h3-color);
   z-index: 2;
+  letter-spacing: 0.5px;
+}
+
+body:not(.dark-mode) #rain-gauge-card h4 {
+  background: linear-gradient(90deg, #1d4ed8, #3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .rain-header {
   z-index: 2;
-  margin-bottom: 5px;
+  margin-bottom: 12px;
 }
 
 .rain-value {
-  font-size: 1.6em;
-  font-weight: 700;
+  font-size: 3.2em;        /* HUGE numbers */
+  font-weight: 800;
   color: var(--text-color);
   margin: 0;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
 
 .rain-unit {
-  font-size: 0.8em;
+  font-size: 1.1em;
   color: var(--text-color);
-  opacity: 0.8;
-  margin-top: 2px;
+  opacity: 0.85;
+  margin-top: 6px;
+  font-weight: 500;
 }
 
+/* Massive water animation */
 .water-container {
   position: absolute;
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 40px;
+  height: 180px;           /* was 100px → now EPIC */
   background: transparent;
   overflow: hidden;
   z-index: 1;
@@ -1017,100 +1640,2286 @@ body.adc-connected #rain-gauge-card {
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 100%;
+  height: 70%;            /* overscaled for huge waves */
   background: linear-gradient(180deg,
-      rgba(64, 164, 255, 0.8) 0%,
-      rgba(32, 128, 255, 0.9) 50%,
-      rgba(0, 90, 255, 0.8) 100%);
+      rgba(50, 180, 255, 0.92) 0%,
+      rgba(20, 140, 255, 0.98) 45%,
+      rgba(0, 100, 230, 1) 100%);
   border-radius: 50% 50% 0 0;
-  animation: waterRipple 4s ease-in-out infinite;
+  /* animation: waterRipple 10s ease-in-out infinite; */
   transform-origin: bottom;
+  box-shadow: 0 -10px 30px rgba(0,100,255,0.4);
 }
 
-@keyframes waterRipple {
+/* @keyframes waterRipple {
   0%, 100% { transform: scaleY(1) translateY(0px); }
-  50% { transform: scaleY(1.05) translateY(-2px); }
-}
+  50%      { transform: scaleY(1.28) translateY(-14px); } 
+} */
 
+/* Giant seesaw area */
 .seesaw-container {
   flex: 1;
   display: flex;
   justify-content: center;
   align-items: flex-end;
   width: 100%;
-  padding-bottom: 10px;
+  padding-bottom: 40px;
   position: relative;
   z-index: 2;
 }
 
 .seesaw {
-  width: 160px;
-  height: 100px;
+  width: 360px;            /* was 240px → now gigantic */
+  height: 240px;
   position: relative;
 }
 
+/* Ground base - beefy */
 .base {
   position: absolute;
-  bottom: -12px;
+  bottom: -24px;
   left: 50%;
   transform: translateX(-50%);
-  width: 160px;
-  height: 32px;
+  width: 360px;
+  height: 68px;
   background: #000;
-  border-radius: 85px / 16px;
-  box-shadow: inset 0 3px 4px rgba(255,255,255,0.05),
-              0 4px 8px rgba(0,0,0,0.6);
+  border-radius: 180px / 34px;
+  box-shadow: inset 0 6px 10px rgba(255,255,255,0.08),
+              0 10px 20px rgba(0,0,0,0.8);
 }
 
+/* Massive poles */
 .pole {
-  width: 25px;
-  height: 70px;
+  width: 56px;
+  height: 170px;
   background: #000;
   position: absolute;
   bottom: 0;
-  border-radius: 50% / 5%;
+  border-radius: 50% / 8%;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.6);
 }
-.pole.left {
-  left: 0;
-  transform: rotate(-4deg) skewY(6deg);
-}
-.pole.right {
-  right: 0;
-  transform: rotate(4deg) skewY(-6deg);
-}
+
+.pole.left  { left: 0;   transform: rotate(-6deg) skewY(8deg); }
+.pole.right { right: 0;  transform: rotate(6deg) skewY(-8deg); }
 
 .support {
   position: absolute;
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 12px;
-  height: 60px;
+  width: 28px;
+  height: 145px;
   background: #000;
-  border-radius: 4px;
+  border-radius: 10px;
+  box-shadow: inset 0 2px 6px rgba(255,255,255,0.1);
 }
+
 .support::before {
   content: '';
   position: absolute;
-  bottom: -8px;
+  bottom: -18px;
   left: 50%;
   transform: translateX(-50%);
-  width: 30px;
-  height: 8px;
+  width: 68px;
+  height: 18px;
   background: #000;
-  border-radius: 4px;
+  border-radius: 10px;
 }
 
+/* ENORMOUS roof with dramatic tilt */
 .roof {
   position: absolute;
-  bottom: 60px;
+  bottom: 145px;
   left: 50%;
   transform: translateX(-50%) rotate(0deg);
   width: 0;
   height: 0;
-  border-left: 50px solid transparent;
-  border-right: 50px solid transparent;
-  border-bottom: 33px solid #000;
+  border-left: 120px solid transparent;   /* was 78px → now huge */
+  border-right: 120px solid transparent;
+  border-bottom: 80px solid #000;          /* massive roof */
   transform-origin: bottom center;
-  transition: transform 0.8s cubic-bezier(0.34, 0.72, 0.4, 1.2);
+  transition: transform 1s cubic-bezier(0.25, 0.8, 0.25, 1.4);
+  /* box-shadow: 0 8px 20px rgba(0,0,0,0.5); */
+}
+
+/* Extra dramatic tilt classes (add via JS based on rain intensity) */
+#rain-gauge-card.raining .roof {
+  transform: translateX(-50%) rotate(16deg);
+}
+#rain-gauge-card.heavy-rain .roof {
+  transform: translateX(-50%) rotate(-24deg);
+}
+#rain-gauge-card.storm .roof {
+  transform: translateX(-50%) rotate(28deg);
+  animation: stormShake 0.3s ease-in-out infinite alternate;
+}
+
+@keyframes stormShake {
+  from { transform: translateX(-50%) rotate(24deg); }
+  to   { transform: translateX(-50%) rotate(32deg); }
+}
+
+
+/* Wind Sensor Cards */
+#wind-direction-card,
+#wind-speed-card {
+  flex: 0 0 200px;
+  max-width: 200px;
+  min-height: 250px;
+  padding: 12px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--sensor-bg);
+  border: 1px solid var(--sensor-border);
+  box-shadow: var(--sensor-shadow);
+  transition: all 0.4s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.compass-container,
+.anemometer-container {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Compass animation */
+#wind-direction-arrow {
+  transition: transform 0.5s ease-out;
+}
+
+/* Anemometer animation */
+#anemometer-cups {
+  transition: transform 0.5s linear;
+  transform-origin: center;
+}
+
+/* Wind speed bar styles */
+#wind-speed-bar {
+  height: 8px;
+  border-radius: 4px;
+  transition: width 0.3s ease, background 0.3s ease;
+  margin-top: 10px;
+}
+
+/* Responsive adjustments for wind cards */
+@media (max-width: 768px) {
+  #wind-direction-card,
+  #wind-speed-card {
+    max-width: 180px;
+    min-height: 220px;
+  }
+}
+
+@media (max-width: 480px) {
+  #wind-direction-card,
+  #wind-speed-card {
+    max-width: 160px;
+    min-height: 200px;
+  }
+}
+
+/* Add pulsing effect for strong winds */
+.wind-gust {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
+/* Compass glow for direction changes */
+.compass-glow {
+  filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.5));
+  transition: filter 0.3s ease;
+}
+
+/* FINAL PERFECT COMPASS - needle closer to center */
+/* FINAL PERFECT COMPASS - with elegant thin black border */
+.wind-compass {
+  position: relative;
+  width: 170px;
+  height: 170px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+  overflow: hidden;
+  border: 4.0px solid #040608;   /* ← ONLY THIS LINE ADDED - beautiful thin black border */
+}
+
+.outer-ring { position: absolute; inset: 8px; border-radius: 50%; background: white; }
+.inner-ring { position: absolute; inset: 55px; border-radius: 50%; background: white; box-shadow: inset 0 4px 12px rgba(0.1,0.1,0.1,0.1); }
+
+.rose { position: absolute; top: 50%; left: 50%; width: 140px; height: 140px; margin: -45px 0 0 -70px; }
+.line { position: absolute; top: 50%; left: 50%; width: 1px; height: 50px; margin: -50px 0 0 -0.5px; background: #cbd5e1; transform-origin: center center; }
+
+.dir {
+  position: absolute;
+  font: bold 14px Arial, sans-serif;
+  color: #64748b;
+  transform: translate(-20%, -70%);
+}
+.N  { top: 7%; left: 50%; }
+.NE { top: 19%; right: 14%; }
+.E  { top: 50%; right: 1%; }
+.SE { bottom: 10%; right: 10%; }
+.S  { bottom: -5%; left: 50%; }
+.SW { bottom: 10%; left: 17%; }
+.W  { top: 50%; left: 4%; }
+.NW { top: 19%; left: 19%; }
+
+/* UPDATED: Needle - much closer to center */
+/* ←←← ONLY THIS ONE LINE CHANGED →→→ */
+.needle {
+  position: absolute;
+  top: 50%; 
+  left: 50%;
+  width: 8px;
+  height: 56px;                    /* ← made shorter (was 70px) */
+  margin: -28px 0 0 -4px;          /* ← auto-adjusted */
+  transform-origin: center center;
+  transition: transform 1.3s cubic-bezier(0.32, 0, 0.18, 1);
+  z-index: 10;
+}
+.north {
+  width: 0; 
+  height: 0;
+  border-left: 9px solid transparent;     /* ← slightly smaller */
+  border-right: 9px solid transparent;
+  border-bottom: 28px solid #ef4444;       /* ← 28px (half of total height) */
+  position: absolute;
+  top: -28px;                              /* ← now touches center perfectly */
+  left: -9px;
+  filter: drop-shadow(0 3px 5px rgba(0,0,0,0.3));
+}
+.south {
+  width: 0; 
+  height: 0;
+  border-left: 9px solid transparent;     /* ← same as north */
+  border-right: 9px solid transparent;
+  border-top: 28px solid #94a3b8;          /* ← exactly same length */
+  position: absolute;
+  bottom: -28px;                           /* ← touches center perfectly */
+  left: -9px;
+  filter: drop-shadow(0 -3px 5px rgba(0,0,0,0.3));
+}
+.pivot {
+  position: absolute;
+  width: 18px; 
+  height: 18px;
+  background: #1e293b;
+  border-radius: 50%;
+  top: 50%; 
+  left: 50%;
+  margin: -9px 0 0 -9px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+  z-index: 20;
+}
+.pivot::after {
+  content: ''; 
+  position: absolute;
+  width: 6px; 
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 50%;
+  top: 6px; 
+  left: 6px;
+  opacity: 0.9;
+}
+
+/* Make Wind Direction value exactly same size as Wind Speed value */
+#wind-direction-value {
+  font-size: 1.0em !important;
+  color: #ffffff !important;
+  margin: 4px 0 12px !important;
+}
+
+
+/* ====================== PERFECT RAINDROP – FALLS TO BOTTOM + HITS WATER ====================== */
+.raindrop {
+  position: absolute;
+  width: 3.2px;
+  height: 12px;
+  background: linear-gradient(180deg,
+    rgba(140, 215, 255, 0.98) 0%,
+    rgba(100, 185, 255, 0.95) 30%,
+    rgba(70, 160, 240, 0.88) 60%,
+    rgba(50, 140, 230, 0.75) 90%,
+    transparent 100%
+  );
+  border-radius: 0 0 50% 50%;           /* Perfect round bottom */
+  clip-path: polygon(50% 0%, 100% 85%, 100% 100%, 0% 100%, 0% 85%);
+  /* Sharp top + smooth rounded bottom */
+  box-shadow: 
+    inset 0 1px 2px rgba(255,255,255,0.6),
+    inset 0 -1px 2px rgba(0,100,200,0.3),
+    0 2px 5px rgba(0,0,0,0.22);
+  opacity: 0;
+  animation: raindropFall linear infinite;
+  pointer-events: none;
+  z-index: 3;                           /* Above water wave */
+}
+
+/* Thin white highlight streak (real water drop look) */
+.raindrop::after {
+  content: "";
+  position: absolute;
+  top: 1px;
+  left: 50%;
+  width: 0.8px;
+  height: 5px;
+  background: rgba(255,255,255,0.92);
+  border-radius: 1px;
+  transform: translateX(-50%) rotate(6deg);
+}
+
+/* Dark mode – brighter drops */
+body.dark-mode .raindrop {
+  background: linear-gradient(180deg,
+    rgba(160, 230, 255, 1) 0%,
+    rgba(120, 200, 255, 0.98) 35%,
+    rgba(90, 180, 250, 0.92) 65%,
+    rgba(70, 160, 240, 0.80) 90%,
+    transparent 100%
+  );
+}
+
+/* FIXED: Now drops fall COMPLETELY to the bottom of the card */
+@keyframes raindropFall {
+  0%   { 
+    transform: translateY(-60px); 
+    opacity: 0; 
+  }
+  8%   { 
+    opacity: 0.98; 
+  }
+  92%  { 
+    opacity: 0.98; 
+    transform: translateY(480px);   /* Increased travel distance */
+  }
+  100% { 
+    transform: translateY(520px);   /* Goes well below visible area */
+    opacity: 0; 
+  }
+}
+
+/* Optional: Add tiny splash ripple when heavy rain (add class via JS) */
+#rain-gauge-card.heavy-rain .raindrop {
+  animation-duration: 0.9s;   /* faster drops */
+}
+#rain-gauge-card.storm .raindrop {
+  animation-duration: 0.6s;
+  width: 4px;
+  height: 15px;
+}
+
+/* Refresh Button - matches theme toggle style */
+.refresh-button {
+  background: none;
+  border: none;
+  color: #f5f7ff;
+  font-size: 1.4rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, color 0.3s;
+  padding: 8px;
+  border-radius: 50%;
+}
+
+.refresh-button:hover {
+  transform: rotate(360deg) scale(1.1);
+  color: #a3bffa;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.refresh-button:active {
+  transform: rotate(360deg) scale(0.95);
+}
+
+/* Optional: spinning animation when clicked (pure CSS) */
+.refresh-button.spin i {
+  animation: spin 1s linear;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+#thermometer-container {
+  display: flex;
+}
+
+.status-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.5px;
+  
+  /* Real glass effect */
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  transition: all 0.5s cubic-bezier(0.34, 0.72, 0.4, 1.4);
+  transform: translateY(0);
+}
+
+/* Not Connected – Red glass */
+.status-box {
+  color: #ff6b6b;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+/* Connected – Green glass */
+.sensors-connected .status-box {
+  color: #72f6a1;
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(74, 222, 128, 0.3);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 0 30px rgba(34, 197, 94, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+/* The dot */
+#status-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  box-shadow: 
+    0 0 15px #ff6b6b,
+    0 0 30px rgba(255, 107, 107, 0.4);
+  animation: pulse-red 2.5s infinite;
+}
+
+.sensors-connected #status-dot {
+  background: #34d399;
+  box-shadow: 
+    0 0 20px #34d399,
+    0 0 40px rgba(52, 211, 153, 0.5);
+  animation: glow-green 3s infinite alternate;
+}
+
+/* Animations */
+@keyframes pulse-red {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.15); }
+}
+
+/* ====================== WEATHER SHIELD SPECIAL LAYOUT ====================== */
+.weather-shield-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 16px; /* Reduced from 20px */
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px; /* Reduced from 20px */
+  min-height: 680px; /* Reduced from 800px */
+}
+
+.weather-shield-grid .sensor-card {
+  min-width: unset !important;
+  max-width: unset !important;
+  width: 100% !important;
+  height: 100%;
+  min-height: 300px; /* Reduced from 360px */
+  max-height: 340px; /* Reduced from 480px */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 18px 15px !important; /* Reduced padding */
+  border-radius: 16px;
+  background: var(--sensor-bg);
+  border: 1.5px solid var(--sensor-border);
+  box-shadow: var(--sensor-shadow);
+  overflow: hidden; /* Changed back to hidden */
+}
+
+/* Specific sizing for Weather Shield cards */
+.weather-shield-grid #thermometer-container,
+.weather-shield-grid #humidity-card,
+.weather-shield-grid #pressure-card,
+.weather-shield-grid #light-card {
+  min-height: 300px !important;
+  max-height: 340px !important;
+}
+
+/* Adjust thermometer for grid layout - COMPACT */
+.weather-shield-grid #thermometer-container {
+  padding-top: 12px !important;
+}
+
+.weather-shield-grid #thermometer-container svg {
+  width: 110px !important; /* Reduced from 130px */
+  height: 240px !important; /* Reduced from 300px */
+  margin-top: 5px;
+}
+
+.weather-shield-grid #thermometer-container h4 {
+  font-size: 1.3rem !important; /* Reduced from 1.5rem */
+  margin-bottom: 6px !important;
+}
+
+.weather-shield-grid .sensor-value {
+  font-size: 1.2rem !important; /* Reduced from 1.4rem */
+  margin-bottom: 8px !important;
+}
+
+/* Adjust humidity wave for grid - COMPACT */
+.weather-shield-grid #humidity-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.weather-shield-grid #humidity-card h4 {
+  font-size: 1.3rem !important;
+  margin-bottom: 6px !important;
+}
+
+.weather-shield-grid #humidity-wave {
+  height: 45%;
+}
+
+/* FIX PRESSURE GAUGE - COMPACT VERSION */
+.weather-shield-grid #pressure-card {
+  padding: 15px !important;
+  justify-content: center !important;
+}
+
+.weather-shield-grid #pressure-card h4 {
+  font-size: 1.3rem !important; /* Reduced */
+  margin-bottom: 8px !important;
+}
+
+.weather-shield-grid #pressure-card .card-content {
+  margin-bottom: 10px;
+}
+
+.weather-shield-grid #pressure-card .main-value {
+  font-size: 1.3rem !important; /* Reduced */
+  margin-bottom: 10px !important;
+}
+
+.weather-shield-grid .gauge-container {
+  width: 160px !important; /* Reduced from 200px */
+  height: 160px !important;
+  margin: 0 auto;
+}
+
+.weather-shield-grid .gauge-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.weather-shield-grid .gauge-inner {
+  width: 120px !important; /* Reduced from 150px */
+  height: 120px !important;
+}
+
+.weather-shield-grid .pressure-value {
+  font-size: 1.4em !important; /* Reduced */
+}
+
+/* Weather Shield - Light Card Specific */
+.weather-shield-grid #light-card {
+  justify-content: flex-start !important;
+  padding: 20px 15px !important;
+}
+
+.weather-shield-grid #light-card h4 {
+  font-size: 1.3rem !important;
+  margin-bottom: 8px !important;
+}
+
+.weather-shield-grid #light-value {
+  font-size: 1.2rem !important;
+  margin-bottom: 10px !important;
+}
+
+.weather-shield-grid #light-sun,
+.weather-shield-grid #light-moon {
+  width: 110px;
+  height: 110px;
+  margin: 10px auto 0 auto;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .weather-shield-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    min-height: auto;
+  }
+  
+  .weather-shield-grid .sensor-card {
+    min-height: 280px;
+    max-height: 340px;
+  }
+}
+
+/* UART Logs Section - Improved Spacing and Size */
+#uart-logs-section {
+  margin-top: 20px; /* Gap from Sensor Data box */
+  display: flex;
+  flex-direction: column;
+  flex: 1; /* Take remaining space */
+  min-height: 250px; /* Minimum height */
+}
+
+#uart-logs-section h3 {
+  margin-bottom: 12px;
+}
+
+#uart-logs-section .controls {
+  margin-bottom: 12px;
+}
+
+/* UART Output Box - Compact with Scroll */
+.uart-output-compact,
+#output {
+  flex: 1; /* Expand to fill available space */
+  width: 100%;
+  min-height: 200px; /* Minimum height */
+  max-height: 400px; /* Maximum height before scroll */
+  border-radius: 12px;
+  padding: 12px;
+  overflow-y: auto; /* Enable vertical scrolling */
+  overflow-x: hidden; /* Hide horizontal scroll */
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+  line-height: 1.4;
+  background: var(--output-bg);
+  color: var(--text-color);
+  border: 1px solid var(--output-border);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.5);
+  word-wrap: break-word; /* Wrap long lines */
+}
+
+/* Custom Scrollbar for UART Logs */
+.uart-output-compact::-webkit-scrollbar,
+#output::-webkit-scrollbar {
+  width: 8px;
+}
+
+.uart-output-compact::-webkit-scrollbar-track,
+#output::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+}
+
+.uart-output-compact::-webkit-scrollbar-thumb,
+#output::-webkit-scrollbar-thumb {
+  background: var(--action-bg);
+  border-radius: 10px;
+  transition: background 0.3s ease;
+}
+
+.uart-output-compact::-webkit-scrollbar-thumb:hover,
+#output::-webkit-scrollbar-thumb:hover {
+  background: var(--action-hover-bg);
+}
+
+/* Firefox Scrollbar */
+.uart-output-compact,
+#output {
+  scrollbar-width: thin;
+  scrollbar-color: var(--action-bg) rgba(0, 0, 0, 0.2);
+}
+
+/* Ensure left panel uses available space properly */
+.left-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Make sure control sections don't push UART logs out */
+.control-section:not(#uart-logs-section) {
+  flex-shrink: 0; /* Don't shrink other sections */
+}
+
+/* Custom Scrollbar for UART Logs - Blended with UI */
+.uart-output-compact::-webkit-scrollbar,
+#output::-webkit-scrollbar {
+  width: 10px;
+}
+
+.uart-output-compact::-webkit-scrollbar-track,
+#output::-webkit-scrollbar-track {
+  background: linear-gradient(180deg, rgba(45, 65, 96, 0.3), rgba(27, 42, 73, 0.5));
+  border-radius: 10px;
+  border: 1px solid rgba(107, 138, 247, 0.15);
+}
+
+.uart-output-compact::-webkit-scrollbar-thumb,
+#output::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #4b6cb7, #6b8af7, #4b6cb7);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 
+    0 2px 8px rgba(107, 138, 247, 0.3),
+    inset 0 1px 2px rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.uart-output-compact::-webkit-scrollbar-thumb:hover,
+#output::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #6b8af7, #8aa4ff, #6b8af7);
+  box-shadow: 
+    0 4px 12px rgba(107, 138, 247, 0.5),
+    inset 0 1px 3px rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.uart-output-compact::-webkit-scrollbar-thumb:active,
+#output::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(180deg, #5a7ae0, #7a9aff, #5a7ae0);
+}
+
+/* Firefox Scrollbar - Blended */
+.uart-output-compact,
+#output {
+  scrollbar-width: thin;
+  scrollbar-color: #6b8af7 rgba(45, 65, 96, 0.4);
+}
+
+/* Also apply to left panel main scrollbar */
+.left-panel::-webkit-scrollbar {
+  width: 10px;
+}
+
+.left-panel::-webkit-scrollbar-track {
+  background: linear-gradient(180deg, rgba(45, 65, 96, 0.2), rgba(27, 42, 73, 0.4));
+  border-radius: 10px;
+}
+
+.left-panel::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #4b6cb7, #6b8af7, #4b6cb7);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 
+    0 2px 8px rgba(107, 138, 247, 0.3),
+    inset 0 1px 2px rgba(255, 255, 255, 0.2);
+}
+
+.left-panel::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #6b8af7, #8aa4ff, #6b8af7);
+  box-shadow: 
+    0 4px 12px rgba(107, 138, 247, 0.5),
+    inset 0 1px 3px rgba(255, 255, 255, 0.3);
+}
+
+/* Dark mode scrollbar adjustments */
+body.dark-mode .uart-output-compact::-webkit-scrollbar-thumb,
+body.dark-mode #output::-webkit-scrollbar-thumb,
+body.dark-mode .left-panel::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #2a4370, #4b6cb7, #2a4370);
+  box-shadow: 
+    0 2px 8px rgba(42, 67, 112, 0.5),
+    inset 0 1px 2px rgba(255, 255, 255, 0.15);
+}
+
+body.dark-mode .uart-output-compact::-webkit-scrollbar-thumb:hover,
+body.dark-mode #output::-webkit-scrollbar-thumb:hover,
+body.dark-mode .left-panel::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #4b6cb7, #6b8af7, #4b6cb7);
+  box-shadow: 
+    0 4px 12px rgba(107, 138, 247, 0.4),
+    inset 0 1px 3px rgba(255, 255, 255, 0.25);
+}
+
+/* VL53L0X Distance Sensor Card */
+#tof-card {
+  flex: 0 0 240px;
+  max-width: 240px;
+  min-height: 200px;
+  padding: 12px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  background: var(--sensor-bg);
+  border: 1px solid var(--sensor-border);
+  box-shadow: var(--sensor-shadow);
+  transition: all 0.4s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* TOF card appear/disappear animation */
+.tof-animate {
+  display: none;
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
+  max-height: 0;
+  opacity: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+/* TOF Header - Title and Value at Top */
+.tof-header {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+#tof-card h4 {
+  font-size: 2rem !important;
+  font-weight: 800 !important;
+  margin-bottom: 20px !important;
+  background: linear-gradient(90deg, #60a5fa, #93c5fd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+body:not(.dark-mode) #tof-card h4 {
+  background: linear-gradient(90deg, #1d4ed8, #3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.tof-animate.show {
+  display: flex;
+  max-height: 300px;
+  opacity: 1;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+
+/* Sensor pulse animation */
+@keyframes sensorPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.sensor-pulse {
+  animation: sensorPulse 1.5s ease-in-out infinite;
+}
+
+/* Wave expand animation */
+@keyframes waveExpand {
+  0% {
+    r: 5;
+    opacity: 0.8;
+  }
+  100% {
+    r: 30;
+    opacity: 0;
+  }
+}
+
+/* Person movement transition */
+#tof-person {
+  transition: transform 0.5s ease-out;
+}
+
+/* Distance line transition */
+#tof-distance-line {
+  transition: x2 0.5s ease-out, stroke 0.3s ease;
+}
+
+/* TOF value styling */
+#tof-value {
+  font-size: 1.5em;
+  font-weight: bold;
+  color: var(--text-color);
+  margin-bottom: 10px;
+  transition: color 0.3s ease;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  #tof-card {
+    max-width: 200px;
+    min-height: 180px;
+  }
+}
+
+@media (max-width: 480px) {
+  #tof-card {
+    max-width: 180px;
+    min-height: 160px;
+  }
+}
+
+/* UV Card Styling */
+#uvltr-card .sensor-card {
+  flex: 1;
+  min-width: 300px;
+  max-width: 400px;
+  min-height: 520px;
+  padding: 25px 20px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  background: var(--sensor-bg);
+  border: var(--sensor-border);
+  box-shadow: var(--sensor-shadow);
+  transition: all 0.4s ease;
+  overflow: hidden;
+  text-align: center;
+}
+
+#uvltr-card h4 {
+  font-size: 2rem !important;
+  font-weight: 800 !important;
+  margin-bottom: 20px !important;
+  background: linear-gradient(90deg, #60a5fa, #93c5fd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+
+#uvltr-card .sensor-value {
+  margin-bottom: 15px;
+  font-size: 2rem;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+  transition: color 0.3s ease;
+  color: #e2e8f0;
+}
+
+#uvltr-card .sensor-visualization {
+  margin: 25px 0;
+  padding: 10px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* Light mode specific styling for sensor visualization */
+body:not(.dark-mode) #uvltr-card .sensor-visualization {
+  background: rgba(0, 0, 0, 0.05);
+  border: 2px solid rgba(96, 165, 250, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+#uv-sun {
+  display: block;
+  margin-top: 15px;
+  filter: drop-shadow(0 4px 12px rgba(255, 152, 0, 0.3));
+  animation: sunPulse 3s ease-in-out infinite;
+}
+
+/* Enhanced sun animation for light mode */
+body:not(.dark-mode) #uv-sun {
+  filter: drop-shadow(0 6px 20px rgba(255, 152, 0, 0.6));
+}
+
+@keyframes sunPulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 4px 12px rgba(255, 152, 0, 0.3));
+  }
+  50% {
+    transform: scale(1.05);
+    filter: drop-shadow(0 6px 20px rgba(255, 152, 0, 0.5));
+  }
+}
+
+/* Light mode sun pulse - more visible */
+body:not(.dark-mode) #uv-sun {
+  animation: sunPulseLightMode 3s ease-in-out infinite;
+}
+
+@keyframes sunPulseLightMode {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 6px 20px rgba(255, 152, 0, 0.6));
+  }
+  50% {
+    transform: scale(1.08);
+    filter: drop-shadow(0 8px 28px rgba(255, 152, 0, 0.8));
+  }
+}
+
+/* UV Scale Styling */
+.uv-scale-container {
+  width: 100%;
+  margin-top: 15px;
+  padding: 10px 0;
+}
+
+.uv-scale {
+  display: flex;
+  height: 20px;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Light mode UV scale with enhanced border */
+body:not(.dark-mode) .uv-scale {
+  border: 2px solid rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.scale-segment {
+  flex: 1;
+  height: 100%;
+  transition: transform 0.3s ease;
+}
+
+.scale-segment:hover {
+  transform: scaleY(1.2);
+}
+
+.uv-scale-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: #94a3b8;
+  margin-top: 4px;
+  font-weight: 600;
+}
+
+/* Light mode labels - darker and more visible */
+body:not(.dark-mode) .uv-scale-labels {
+  color: #475569;
+  font-weight: 700;
+}
+
+/* UV Level Indicator */
+.uv-level {
+  margin-top: 15px;
+  padding: 8px 20px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 1rem;
+  background: rgba(255, 152, 0, 0.1);
+  border: 1px solid rgba(255, 152, 0, 0.3);
+  color: #ff9800;
+  transition: all 0.3s ease;
+}
+
+/* Animation for card appearance */
+@keyframes uvCardAppear {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+#uvltr-card.show {
+  display: block;
+  animation: uvCardAppear 0.5s ease-out;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  #uvltr-card {
+    width: 100%;
+    max-width: 320px;
+  }
+  
+  #uvltr-card .sensor-card {
+    min-height: 350px;
+  }
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 200%; }
+}
+
+.uv-container {
+  width: 100%;
+  max-width: 500px;
+  position: relative;
+}
+
+/* Labels above */
+.uv-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+/* Light mode labels enhancement */
+body:not(.dark-mode) .uv-labels {
+  color: #475569;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+}
+
+/* The bar itself - exact shape you asked for */
+.uv-bar {
+  height: 30px;
+  border-radius: 10px;
+  background: linear-gradient(to right,
+    #289e28 0%, 
+    #52b202 15%, 
+    #ffeb3b 27%, 
+    #f6990d 45%, 
+    #fa6215 63%, 
+    #fd1808 78%, 
+    #9e0f04 100%
+  );
+  border: 1px solid #424242;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Light mode bar - enhanced border and shadow */
+body:not(.dark-mode) .uv-bar {
+  border: 2px solid #1e293b;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), inset 0 1px 3px rgba(255, 255, 255, 0.3);
+}
+
+/* Triangle pointer - exactly like the black & white version */
+.pointer {
+  position: absolute;
+  bottom: -22px;
+  left: 15%;
+  transform: translateX(-50%);
+  margin-top: 20px;
+  animation: pointerBounce 2s ease-in-out infinite;
+}
+
+@keyframes pointerBounce {
+  0%, 100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(-50%) translateY(-3px);
+  }
+}
+
+/* Light mode pointer - enhanced shadow */
+body:not(.dark-mode) .pointer svg {
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.4));
+}
+
+.pointer svg {
+  width: 30px;
+  height: 25px;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+}
+
+/* Add glow effect to pointer in light mode */
+body:not(.dark-mode) .pointer {
+  animation: pointerBounceGlow 2s ease-in-out infinite;
+}
+
+@keyframes pointerBounceGlow {
+  0%, 100% {
+    transform: translateX(-50%) translateY(0);
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  }
+  50% {
+    transform: translateX(-50%) translateY(-3px);
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
+  }
+}
+
+/* Enhanced sensor value visibility in light mode */
+body:not(.dark-mode) #uvltr-card .sensor-value {
+  color: #1e293b;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Enhanced title visibility in light mode */
+body:not(.dark-mode) #uvltr-card h4 {
+  background: linear-gradient(90deg, #2563eb, #3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+/* Add to your existing CSS */
+.pointer {
+  position: absolute;
+  bottom: -22px;
+  left: 0%;
+  transform: translateX(-50%);
+  margin-top: 20px;
+  transition: left 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Light mode pointer - enhanced with smooth animation */
+body:not(.dark-mode) .pointer {
+  animation: pointerBounceGlow 2s ease-in-out infinite;
+  transition: left 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Ensure sun elements have smooth color transitions */
+#uv-sun stop {
+  transition: stop-color 0.8s ease;
+}
+
+/* TLV493D Card - Remove ALL display properties, let JS control it */
+#tlv493d-card {
+  /* NO display property here! JS will control it */
+  flex: 1;
+  min-width: 300px;
+  max-width: 400px;
+  min-height: 520px;
+  padding: 25px 20px;
+  border-radius: 16px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  background: var(--sensor-bg);
+  border: 1.5px solid var(--sensor-border);
+  box-shadow: var(--sensor-shadow);
+  transition: all 0.4s ease;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+}
+
+#tlv493d-card h4 {
+  font-size: 2rem !important;
+  font-weight: 800 !important;
+  margin-bottom: 20px !important;
+  background: linear-gradient(90deg, #60a5fa, #93c5fd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+body:not(.dark-mode) #tlv493d-card h4 {
+  background: linear-gradient(90deg, #1d4ed8, #3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+#tlv493d-vector-svg {
+  width: 200px;
+  height: 200px;
+  max-width: 90%;
+  margin: 20px auto;
+  display: block;
+}
+
+/* ============================================
+   DISCONNECT MODAL STYLES
+   ============================================ */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(5px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-container {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  width: 90%;
+  max-width: 450px;
+  overflow: hidden;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: white;
+}
+
+.modal-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.modal-title i {
+  font-size: 1.4rem;
+}
+
+.close-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  font-size: 1.2rem;
+}
+
+.close-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: rotate(90deg);
+}
+
+.modal-body {
+  padding: 32px 24px;
+}
+
+.modal-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.message-icon {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  animation: iconPulse 2s infinite;
+}
+
+@keyframes iconPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(251, 191, 36, 0);
+  }
+}
+
+.message-text {
+  flex: 1;
+}
+
+.message-text h3 {
+  margin: 0 0 8px 0;
+  color: #1e293b;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.message-text p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.btn {
+  padding: 12px 28px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-cancel {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.btn-cancel:hover {
+  background: #e2e8f0;
+  color: #475569;
+  transform: translateY(-2px);
+}
+
+.btn-ok {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.btn-ok:hover {
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+  transform: translateY(-2px);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+/* Dark Mode Support */
+.dark-mode .modal-container {
+  background: #1e293b;
+  border: 1px solid #334155;
+}
+
+.dark-mode .message-text h3 {
+  color: #f1f5f9;
+}
+
+.dark-mode .message-text p {
+  color: #94a3b8;
+}
+
+.dark-mode .btn-cancel {
+  background: #334155;
+  color: #cbd5e1;
+}
+
+.dark-mode .btn-cancel:hover {
+  background: #475569;
+  color: #f1f5f9;
+}
+
+/* Buzzer Card */
+#buzzer-card {
+  flex: 0 0 550px;
+  width: 100%;
+  max-width: 500px;
+  min-height: 350px;
+  padding: 20px 20px 30px;           /* slightly less top padding → more top space feels higher */
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;       /* changed from center → content starts higher */
+  background: var(--sensor-bg);
+  border: 1px solid var(--sensor-border);
+  box-shadow: var(--sensor-shadow);
+  transition: all 0.4s ease;
+  text-align: center;
+  margin: 0 auto;
+  margin-bottom: 50px;
+}
+
+#buzzer-card h4 {
+  font-size: 2rem !important;
+  font-weight: 800 !important;
+  margin: 8px 0 16px 0 !important;   /* tighter spacing: title comes higher */
+  background: linear-gradient(90deg, #60a5fa, #93c5fd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+body:not(.dark-mode) #buzzer-card h4 {
+  background: linear-gradient(90deg, #1d4ed8, #3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Relay Animations */
+@keyframes relay-glow {
+  0%, 100% { 
+    opacity: 0.6;
+    filter: drop-shadow(0 0 10px rgba(255, 235, 59, 0.7));
+  }
+  50% { 
+    opacity: 1;
+    filter: drop-shadow(0 0 20px rgba(255, 235, 59, 1));
+  }
+}
+
+@keyframes bulb-glow {
+  0%, 100% { 
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes relay-click {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(2px); }
+  75% { transform: translateX(-1px); }
+  100% { transform: translateX(0); }
+}
+
+/* Buzzer Animations */
+@keyframes sound-waves {
+  0% { 
+    opacity: 0;
+    transform: translateX(0) scale(1);
+  }
+  20% { 
+    opacity: 1;
+    transform: translateX(5px) scale(1.05);
+  }
+  80% { 
+    opacity: 1;
+    transform: translateX(15px) scale(1.1);
+  }
+  100% { 
+    opacity: 0;
+    transform: translateX(25px) scale(1.15);
+  }
+}
+
+@keyframes buzzer-vibrate {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(1px); }
+  50% { transform: translateX(-1px); }
+  75% { transform: translateX(1px); }
+}
+
+@keyframes buzzer-pulse {
+  0%, 100% { 
+    opacity: 0.8;
+    box-shadow: 0 0 10px rgba(96, 165, 250, 0.5);
+  }
+  50% { 
+    opacity: 1;
+    box-shadow: 0 0 20px rgba(96, 165, 250, 0.8);
+  }
+}
+
+/* Apply Buzzer Animations */
+.buzzer-active #buzzer-waves path {
+  animation: sound-waves 2s infinite ease-in-out;
+}
+
+.buzzer-active #buzzer-waves path:nth-child(1) { animation-delay: 0s; }
+.buzzer-active #buzzer-waves path:nth-child(2) { animation-delay: 0.3s; }
+.buzzer-active #buzzer-waves path:nth-child(3) { animation-delay: 0.6s; }
+
+.buzzer-active rect {
+  animation: buzzer-vibrate 0.1s infinite;
+}
+
+.buzzer-active {
+  animation: buzzer-pulse 1.5s infinite ease-in-out;
+}
+
+/* Blinky Card */
+#blinky-card {
+  flex: 0 0 650px;
+  width: 100%;
+  max-width: 650px;
+  min-height: 500px;
+  padding: 30px;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--sensor-bg);
+  border: 1px solid var(--sensor-border);
+  box-shadow: var(--sensor-shadow);
+  transition: all 0.4s ease;
+  text-align: center;
+  margin: 0 auto;
+  overflow: hidden; /* Prevent anything from going outside */
+  margin-bottom: 30px;
+}
+
+#blinky-card h4 {
+  font-size: 2rem !important;
+  font-weight: 800 !important;
+  margin-bottom: 20px !important;
+  background: linear-gradient(90deg, #60a5fa, #93c5fd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+#blinky-value {
+  margin-bottom: 30px;
+  padding: 10px 25px;
+  border-radius: 30px;
+  background: rgba(120, 144, 156, 0.1);
+  border: 2px solid #78909C;
+  font-size: 1.6rem !important;
+  font-weight: 700 !important;
+  transition: all 0.3s ease;
+}
+
+/* === ANIMATIONS === */
+
+/* Switch Knob Move to ON - CORRECTED */
+@keyframes moveSwitchOn {
+  from {
+    transform: translateX(0);
+    fill: #78909C;
+  }
+  to {
+    transform: translateX(80px); /* Moves from OFF to ON position */
+    fill: #4CAF50;
+  }
+}
+
+/* Switch Knob Move to OFF - CORRECTED */
+@keyframes moveSwitchOff {
+  from {
+    transform: translateX(80px); /* Starts from ON position */
+    fill: #4CAF50;
+  }
+  to {
+    transform: translateX(0); /* Moves back to OFF position */
+    fill: #78909C;
+  }
+}
+
+/* Switch Glow Move - CORRECTED */
+@keyframes moveSwitchGlowOn {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(80px); /* Same as switch knob */
+  }
+}
+
+@keyframes moveSwitchGlowOff {
+  from {
+    transform: translateX(80px); /* Same as switch knob */
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* Switch Glow Pulse - CORRECTED */
+@keyframes switchGlowPulse {
+  0%, 100% {
+    opacity: 0.5;
+    r: 20;
+  }
+  50% {
+    opacity: 0.8;
+    r: 25;
+  }
+}
+
+/* Bulb Glow - CORRECTED */
+@keyframes bulbGlow {
+  0%, 100% {
+    opacity: 0.6;
+    filter: drop-shadow(0 0 20px #FFEB3B);
+  }
+  50% {
+    opacity: 1;
+    filter: drop-shadow(0 0 40px #FFEB3B);
+  }
+}
+
+/* Filament Flicker - CORRECTED */
+@keyframes filamentFlicker {
+  0%, 100% {
+    stroke: #FF9800;
+    stroke-width: 2;
+  }
+  50% {
+    stroke: #FFC107;
+    stroke-width: 3;
+  }
+}
+
+/* Light Rays - CORRECTED */
+@keyframes lightRays {
+  0%, 100% {
+    stroke-opacity: 0.9;
+  }
+  50% {
+    stroke-opacity: 0.8;
+  }
+}
+
+/* Energy Particles Movement - CORRECTED */
+@keyframes moveEnergy1 {
+  0% {
+    transform: translateX(0);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(60px);
+    opacity: 0;
+  }
+}
+
+@keyframes moveEnergy2 {
+  0% {
+    transform: translateX(0);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(70px);
+    opacity: 0;
+  }
+}
+
+/* Dotted to Solid - CORRECTED */
+@keyframes dottedToSolid {
+  to {
+    stroke-dasharray: 0, 0;
+    stroke: #4CAF50;
+    stroke-width: 4;
+  }
+}
+
+/* === WHEN BLINKY IS ON === */
+.blinky-on #blinky-value {
+  background: rgba(76, 175, 80, 0.2);
+  border-color: #4CAF50;
+  color: #4CAF50;
+  box-shadow: 0 0 15px rgba(76, 175, 80, 0.3);
+}
+
+.blinky-on #switch-knob {
+  animation: moveSwitchOn 0.4s ease-out forwards !important;
+}
+
+.blinky-on #switch-glow {
+  animation: 
+    moveSwitchGlowOn 0.4s ease-out forwards,
+    switchGlowPulse 1.5s infinite ease-in-out 0.4s;
+  opacity: 0.5;
+}
+
+.blinky-on #bulb-glow {
+  animation: bulbGlow 2s infinite ease-in-out;
+  opacity: 0.8;
+}
+
+.blinky-on #bulb-filament {
+  animation: filamentFlicker 1s infinite ease-in-out;
+}
+
+.blinky-on #light-rays {
+  opacity: 1;
+}
+
+.blinky-on #light-rays line {
+  animation: lightRays 2s infinite ease-in-out;
+}
+
+.blinky-on #light-rays line:nth-child(1) { animation-delay: 0s; }
+.blinky-on #light-rays line:nth-child(2) { animation-delay: 0.3s; }
+.blinky-on #light-rays line:nth-child(3) { animation-delay: 0.6s; }
+.blinky-on #light-rays line:nth-child(4) { animation-delay: 0.9s; }
+.blinky-on #light-rays line:nth-child(5) { animation-delay: 1.2s; }
+
+/* Energy Particles */
+.blinky-on #energy-particles-1,
+.blinky-on #energy-particles-2 {
+  opacity: 1;
+}
+
+.blinky-on #energy-particles-1 circle:nth-child(1) {
+  animation: moveEnergy1 2s infinite linear;
+}
+.blinky-on #energy-particles-1 circle:nth-child(2) {
+  animation: moveEnergy1 2s infinite linear 0.5s;
+}
+.blinky-on #energy-particles-1 circle:nth-child(3) {
+  animation: moveEnergy1 2s infinite linear 1s;
+}
+
+.blinky-on #energy-particles-2 circle:nth-child(1) {
+  animation: moveEnergy2 2s infinite linear;
+}
+.blinky-on #energy-particles-2 circle:nth-child(2) {
+  animation: moveEnergy2 2s infinite linear 0.4s;
+}
+.blinky-on #energy-particles-2 circle:nth-child(3) {
+  animation: moveEnergy2 2s infinite linear 0.8s;
+}
+.blinky-on #energy-particles-2 circle:nth-child(4) {
+  animation: moveEnergy2 2s infinite linear 1.2s;
+}
+
+/* Wires become solid green */
+.blinky-on #wire-1,
+.blinky-on #wire-2 {
+  animation: dottedToSolid 0.5s ease-out forwards;
+}
+
+/* === WHEN BLINKY IS OFF === */
+.blinky-off #blinky-value {
+  background: rgba(120, 144, 156, 0.1);
+  border-color: #78909C;
+  color: #78909C;
+  box-shadow: none;
+}
+
+.blinky-off #switch-knob {
+  animation: moveSwitchOff 0.4s ease-out forwards !important;
+}
+
+.blinky-off #switch-glow {
+  animation: moveSwitchGlowOff 0.4s ease-out forwards;
+  opacity: 0;
+}
+
+.blinky-off #bulb-glow {
+  opacity: 0;
+  animation: none;
+}
+
+.blinky-off #bulb-filament {
+  stroke: #9E9E9E;
+  animation: none;
+}
+
+.blinky-off #light-rays {
+  opacity: 0;
+}
+
+.blinky-off #energy-particles-1,
+.blinky-off #energy-particles-2 {
+  opacity: 0;
+}
+
+.blinky-off #wire-1,
+.blinky-off #wire-2 {
+  stroke-dasharray: 5,5;
+  stroke: #78909C;
+  stroke-width: 3;
+  animation: none;
+}
+
+/* Minimal version - just add these to your existing CSS */
+#power-source circle {
+  fill: linear-gradient(135deg, #546E7A, #78909C, #37474F);
+  filter: drop-shadow(0 0 10px rgba(33, 150, 243, 0.4));
+}
+
+.blinky-on #power-source circle {
+  filter: drop-shadow(0 0 20px rgba(33, 150, 243, 0.8));
+  animation: steelShine 2s infinite ease-in-out;
+}
+
+@keyframes steelShine {
+  0%, 100% {
+    filter: drop-shadow(0 0 10px rgba(33, 150, 243, 0.5)) brightness(1);
+  }
+  50% {
+    filter: drop-shadow(0 0 25px rgba(33, 150, 243, 0.9)) brightness(1.2);
+  }
+}
+
+.blinky-on #power-source line {
+  stroke: #64B5F6;
+  filter: drop-shadow(0 0 5px rgba(100, 181, 246, 0.7));
+}
+
+
+    #relay-card {
+      flex: 1;
+      min-width: 400px;
+      max-width: 600px;
+      min-height: 520px;
+      padding: 30px 20px;
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(30, 41, 59, 0.5);
+      border: 1.5px solid rgba(148, 163, 184, 0.2);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+      transition: all 0.4s ease;
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+      backdrop-filter: blur(10px);
+    }
+
+    #relay-card h4 {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 20px;
+      background: linear-gradient(90deg, #60a5fa, #93c5fd);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.5px;
+    }
+
+    #relay-value {
+      font-size: 2.2rem;
+      font-weight: 800;
+      margin-bottom: 30px;
+      padding: 12px 30px;
+      border-radius: 50px;
+      background: rgba(248, 113, 113, 0.15);
+      border: 2px solid #f87171;
+      transition: all 0.4s ease;
+      color: #f87171;
+      text-shadow: 0 0 10px rgba(248, 113, 113, 0.3);
+    }
+
+    #relay-value.on {
+      background: rgba(52, 211, 153, 0.2);
+      border-color: #34d399;
+      color: #34d399;
+      box-shadow: 0 0 20px rgba(52, 211, 153, 0.3);
+      text-shadow: 0 0 10px rgba(52, 211, 153, 0.5);
+    }
+
+    svg {
+      width: 100%;
+      max-width: 500px;
+      height: auto;
+      filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+    }
+
+    /* Relay Components Transitions */
+    #relay-coil {
+      transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      opacity: 0.7;
+    }
+
+    #relay-coil.active {
+      opacity: 1;
+      filter: url(#relayGlow);
+    }
+
+    #relay-core {
+      transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    #relay-spring {
+      transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    #relay-arm {
+      transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    #relay-spark {
+      transition: opacity 0.3s ease;
+      opacity: 0;
+    }
+
+    #relay-spark.active {
+      opacity: 1;
+      animation: sparkle 0.6s ease-out;
+    }
+
+    @keyframes sparkle {
+      0%, 100% { opacity: 0; }
+      50% { opacity: 1; }
+    }
+
+    #switch-knob {
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    #switch-knob:hover {
+      transform: scale(1.1);
+    }
+
+    #switch-glow {
+      transition: opacity 0.3s ease;
+    }
+
+    #bulb-glow {
+      transition: opacity 0.5s ease;
+    }
+
+    #bulb-filament {
+      transition: all 0.3s ease;
+    }
+
+    #light-rays {
+      transition: opacity 0.5s ease;
+      animation: rotate 4s linear infinite;
+      transform-origin: 400px 150px;
+    }
+
+   
+
+    #energy-particles-1, #energy-particles-2 {
+      transition: opacity 0.3s ease;
+    }
+
+    #energy-particles-1.active {
+      animation: flow1 1.5s ease-in-out infinite;
+    }
+
+    #energy-particles-2.active {
+      animation: flow2 1.5s ease-in-out infinite;
+    }
+
+    @keyframes flow1 {
+      0% { transform: translateX(0); opacity: 0; }
+      50% { opacity: 1; }
+      100% { transform: translateX(60px); opacity: 0; }
+    }
+
+    @keyframes flow2 {
+      0% { transform: translateX(0); opacity: 0; }
+      50% { opacity: 1; }
+      100% { transform: translateX(65px); opacity: 0; }
+    }
+
+    .wire-active {
+      stroke: #4CAF50 !important;
+      stroke-width: 4 !important;
+      animation: pulse-wire 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-wire {
+      0%, 100% { opacity: 0.8; }
+      50% { opacity: 1; }
+    }
+
+    .instruction {
+      margin-top: 20px;
+      color: rgba(148, 163, 184, 0.8);
+      font-size: 0.9rem;
+      animation: fade-in 1s ease-in;
+    }
+
+    @keyframes fade-in {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+/* VCNL4040 Ambient Light Card */
+#vcnl-lux-card {
+  flex: 1;
+  min-width: 300px;
+  max-width: 400px;
+  min-height: 520px;
+  padding: 30px 20px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  background: var(--sensor-bg);
+  border: 1.5px solid var(--sensor-border);
+  box-shadow: var(--sensor-shadow);
+  transition: all 0.4s ease;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+}
+
+#vcnl-lux-card h4 {
+  font-size: 2rem !important;
+  font-weight: 800 !important;
+  margin-bottom: 20px !important;
+  background: linear-gradient(90deg, #60a5fa, #93c5fd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-align: center;
+  width: 100%;
+}
+
+body:not(.dark-mode) #vcnl-lux-card h4 {
+  background: linear-gradient(90deg, #1d4ed8, #3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+#vcnl-lux-value {
+  font-size: 1.8rem !important;
+  font-weight: 700 !important;
+  margin-bottom: 20px;
+  color: var(--text-color);
+  letter-spacing: -1px;
+}
+
+/* Lux Gauge Styling */
+#vcnl-lux-card svg {
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.2));
+}
+
+#vcnl-lux-arc {
+  transition: d 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#vcnl-sun-group {
+  transition: opacity 1s ease;
+}
+
+#vcnl-lux-level {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #94a3b8;
+  margin-top: 20px;
+  min-height: 30px;
+}
+/* Enhance sun group */
+#vcnl-sun-group {
+  transition: opacity 1.2s ease, filter 1.2s ease;
+}
+
+/* Make arc super smooth */
+#vcnl-lux-arc {
+  transition: stroke-dashoffset 1.4s cubic-bezier(0.4, 0, 0.2, 1),
+              d 1.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Glow boost when bright */
+.sun-bright #vcnl-sun-group {
+  filter: brightness(1.4) drop-shadow(0 0 30px #fef08a);
+}
+#vcnl-sun-group {
+  transform-origin: center center;
+}
+
+#vcnl-lux-arc {
+  transform-origin: 140px 140px; /* explicit center for arc */
+}
+
+/* 2. Apply THE ONLY correct transform – via style (stronger than attribute in many cases) */
+#vcnl-sun-group {
+  transform: translate(140px, 140px) !important;  /* ← This wins */
+  transform-origin: center center !important;
+  transform-box: fill-box !important;             /* Makes transform respect content box */
+  will-change: transform;                         /* Hint to GPU – smoother & more accurate */
+}
+
+/* 3. Make sure wrapper never clips or offsets */
+#vcnl-lux-card > div[style*="width: 280px"] {
+  overflow: visible !important;
+  clip-path: none !important;
+  margin: 20px auto !important;
+  padding: 0 !important;
+  box-sizing: border-box;
+}
+
+/* 4. SVG itself must not have any sneaky offset */
+#vcnl-lux-card svg {
+  display: block !important;
+  margin: 0 auto !important;
+  transform: none !important;                     /* Prevent any parent transform leak */
+  overflow: visible !important;
+}
+
+/* 5. Safety net: force center in case of browser bugs */
+.vcnl-lux-card .sun-group-wrapper {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* ────────────────────────────────────────────────
+   Make RIGHT PANEL scrollable (this fixes your issue)
+───────────────────────────────────────────────── */
+.right-panel {
+  overflow-y: auto !important;          /* ← Key line: enable vertical scroll */
+  overflow-x: hidden;                   /* prevent horizontal scroll mess */
+  -webkit-overflow-scrolling: touch;    /* smooth iOS scrolling */
+  scrollbar-width: thin;                /* Firefox nice scrollbar */
+  scrollbar-color: #667eea rgba(30, 41, 59, 0.4);
+}
+
+/* Optional: beautiful custom scrollbar that matches your blue theme */
+.right-panel::-webkit-scrollbar {
+  width: 10px;
+}
+
+.right-panel::-webkit-scrollbar-track {
+  background: rgba(30, 41, 59, 0.5);
+  border-radius: 10px;
+  margin: 4px;
+}
+
+.right-panel::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #667eea, #7c3aed);
+  border-radius: 10px;
+  border: 3px solid rgba(30, 41, 59, 0.6); /* inner border so it doesn't touch edge */
+}
+
+.right-panel::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #7c3aed, #a78bfa);
+}
+
+/* Make sure inner content can grow and trigger scroll */
+.right-panel .container {
+  min-height: 100%;                     /* important */
+  display: flex;
+  flex-direction: column;
+}
+
+#sensor-visualization-section {
+  flex: 1 1 auto;                       /* grow + shrink + auto basis */
+  overflow-y: visible;                  /* let children be visible, but parent scrolls */
+  padding-bottom: 20px;                 /* breathing room at bottom */
+}
+
+/* Bonus: ensure cards don't force weird wrapping on small height */
+.sensor-cards {
+  min-height: fit-content;              /* prevent collapse */
 }

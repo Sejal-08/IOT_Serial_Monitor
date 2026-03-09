@@ -28,7 +28,7 @@ async function sendCommand(message) {
       port.write(command, (err) => (err ? reject(err) : resolve()));
     });
 
-    return `Successfully sent: ${message}`;
+    return `Successfully sent:${message}`;
   } catch (error) {
     console.error(`Failed to send command "${message}":`, error);
     return { error: `Failed to send data: ${error.message}` };
@@ -49,7 +49,7 @@ function createWindow() {
   });
 
   Menu.setApplicationMenu(null);
-  mainWindow.loadFile("index.html");
+  mainWindow.loadFile('login.html'); // Instead of 'index.html'
 }
 
 /**
@@ -170,5 +170,5 @@ ipcMain.handle("get-interval", () => sendCommand("GET_INTERVAL"));
 ipcMain.handle("set-interval", (event, interval) => {
   const i = parseInt(interval);
   if (isNaN(i) || i <= 0) return { error: "Invalid interval" };
-  return sendCommand(`Interval Configuration : ${i}`);
+  return sendCommand(`SET_INTERVAL:${i}`);          // ← cleanest and most common
 });

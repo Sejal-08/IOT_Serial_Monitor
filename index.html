@@ -1,18 +1,96 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>IOT Serial Monitor</title>
+  <title>Serial Monitor</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body class="light-mode">
+  <script>
+  // Check if user has selected a device
+  window.addEventListener('DOMContentLoaded', () => {
+    const deviceConnected = localStorage.getItem('deviceConnected');
+    const selectedDevice = localStorage.getItem('selectedDevice');
+    
+    // If no device selected, redirect to login
+    if (!deviceConnected || !selectedDevice) {
+      window.location.href = 'login.html';
+      return;
+    }
+    
+    
+    // Display selected device in the interface
+    console.log(`Connected Device: ${selectedDevice.toUpperCase()}`);
+    
+    // Optional: Show device badge in UI
+    const nav = document.querySelector('nav ul.nav-links');
+    if (nav) {
+      const deviceBadge = document.createElement('li');
+      deviceBadge.innerHTML = `
+        <div style="background: #667eea; color: white; padding: 8px 15px; border-radius: 20px; font-size: 0.9rem; display: flex; align-items: center; gap: 8px;">
+          <i class="fas fa-microchip"></i>
+          <span>${selectedDevice.toUpperCase()}</span>
+        </div>
+      `;
+      nav.insertBefore(deviceBadge, nav.firstChild);
+    }
+  });
+</script>
   <nav>
     <ul class="nav-links">
       <li>
-        <button class="theme-toggle" onclick="toggleTheme()"><i class="fas fa-moon"></i></button>
-      </li>
+  <button class="refresh-button" onclick="location.reload()" title="Refresh Page">
+    <i class="fas fa-sync-alt"></i>
+  </button>
+</li>
+<li>
+  <button class="theme-toggle" onclick="toggleTheme()"><i class="fas fa-moon"></i></button>
+</li>
+<li>
+  <button class="action-button" onclick="logoutDevice()" title="Change Device">
+    <i class="fas fa-sign-out-alt"></i> Change Device
+  </button>
+</li>
     </ul>
   </nav>
+
+<!-- Disconnect Modal -->
+<div class="modal-overlay" id="disconnectModal" style="display: none;">
+  <div class="modal-container">
+    <div class="modal-header">
+      <div class="modal-title">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span>Disconnect Device</span>
+      </div>
+      <button class="close-btn" onclick="hideDisconnectModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="modal-message">
+        <div class="message-icon">
+          <i class="fas fa-plug"></i>
+        </div>
+        <div class="message-text">
+          <h3>Are you sure?</h3>
+          <p>You are about to disconnect and change device. All current connections will be closed.</p>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-cancel" onclick="hideDisconnectModal()">
+          <i class="fas fa-times"></i>
+          Cancel
+        </button>
+        <button class="btn btn-ok" onclick="confirmDisconnect()">
+          <i class="fas fa-check"></i>
+          OK
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
   <div class="main-container">
     <div class="left-panel">
@@ -41,7 +119,7 @@
             <input type="number" id="interval" class="input-field" placeholder="Interval" min="1" oninput="updateIntervalDisplay()">
             <span class="interval-suffix">(seconds)</span>
           </div>
-          <button class="action-button" onclick="setInterval()"><i class="fas fa-save"></i> Set Interval</button>
+         <button class="action-button" onclick="setDeviceInterval()"><i class="fas fa-save"></i> Set Interval</button>
         </div>
       </section>
 
@@ -54,93 +132,218 @@
       </section>
 
       <section class="control-section" id="sensors-section">
-        <h3><i class="fas fa-microchip"></i> Sensor Protocols</h3>
-        <div class="controls">
-          <select id="sensor-select" class="input-field" onchange="updateSensorUI()">
-            <option value="" disabled selected>Select a Sensor Protocol</option>
-            <option value="I2C">I2C</option>
-             <option value="ADC">ADC</option>
-            <option value="RS485">RS485</option>
-            <option value="SPI">SPI</option>
-            <option value="Analog">Analog</option>
-          </select>
-        </div>
-        <div class="controls">
-          <select id="sensor-dropdown" class="input-field" onchange="selectSensor(this.value)">
-            <option value="" disabled selected>Select a Sensor</option>
-          </select>
-        </div>
+  <h3><i class="fas fa-microchip"></i> Sensor Protocols</h3>
+  
+  <div class="controls">
+    <select 
+      id="sensor-select" 
+      class="input-field" 
+      onchange="updateSensorUI()"
+      style="border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"
+    >
+      <option value="" disabled selected>Select a Sensor Protocol</option>
+      <option value="I2C">I2C</option>
+      <option value="ADC">ADC</option>
+      <option value="RS232">RS232</option>
+      <option value="Analog">Analog</option>
+      <option value="GPIO">GPIO</option>
+    </select>
+  </div>
+  
+  <div class="controls">
+    <select 
+      id="sensor-dropdown" 
+      class="input-field" 
+      onchange="selectSensor(this.value)"
+      style="border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"
+    >
+      <option value="" disabled selected>Select a Sensor</option>
+    </select>
+  </div>
+</section>
+
         <div id="sensor-data" class="sensor-data-container">
           <!-- Selected sensor data will be dynamically inserted here -->
         </div>
       </section>
-    </div>
+      <!-- MOVED UART LOGS TO LEFT PANEL -->
+        <section class="control-section" id="uart-logs-section">
+          <h3><i class="fas fa-file-alt"></i> UART Logs</h3>
+          <div class="controls">
+            <button class="action-button small" onclick="clearOutput()"><i class="fas fa-trash"></i> Clear</button>
+          </div>
+          <div id="output" class="uart-output-compact"></div>
+        </section>
+     </div>
 
     <div class="right-panel">
       <div class="container">
-        <section class="control-section" id="sensor-visualization-section" style="display: none;">
+        <section class="control-section" id="sensor-visualization-section">
           <h3><i class="fas fa-chart-line"></i> Sensor Data Visualization</h3>
-          <div class="sensor-cards">
-               <!-- Temperature -->
-            <div id="thermometer-container" class="thermometer-container" style="display: none;">
-              <h4>Temperature</h4>
-              <div id="thermometer-value" class="sensor-value" style="margin-bottom: 8px;"></div>
-              <svg width="100" height="220" viewBox="0 0 100 220" class="thermometer">
-                <defs>
-                  <radialGradient id="liquidGlow" cx="50%" cy="50%" r="60%">
-                    <stop offset="0%" stop-color="#FFFFC8" />
-                    <stop offset="60%" stop-color="#FFF078" />
-                    <stop offset="100%" stop-color="#FFD23C" />
-                  </radialGradient>
-                </defs>
-                <rect x="40" y="20" width="20" height="160" rx="10" ry="10"
-                      fill="#e0e7ff" stroke="#333" stroke-width="2"/>
-                <rect id="thermometer-fill" x="42" y="180" width="16" height="0"
-                      rx="8" ry="8" fill="url(#liquidGlow)"/>
-                <circle cx="50" cy="180" r="10"
-                        fill="#e0e7ff" stroke="#333" stroke-width="2"/>
-                <circle id="thermometer-bulb" cx="50" cy="180" r="8"
-                        fill="url(#liquidGlow)"/>
-                <line x1="65" y1="20"  x2="70"  y2="20"  stroke="#333" stroke-width="2"/>
-                <text x="75" y="25"  font-size="12" fill="var(--text-color)">50°C</text>
-                <line x1="65" y1="52"  x2="70"  y2="52"  stroke="#333" stroke-width="1"/>
-                <text x="75" y="57"  font-size="12" fill="var(--text-color)">40°C</text>
-                <line x1="65" y1="84"  x2="70"  y2="84"  stroke="#333" stroke-width="1"/>
-                <text x="75" y="89"  font-size="12" fill="var(--text-color)">30°C</text>
-                <line x1="65" y1="116" x2="70"  y2="116" stroke="#333" stroke-width="1"/>
-                <text x="75" y="121" font-size="12" fill="var(--text-color)">20°C</text>
-                <line x1="65" y1="148" x2="70"  y2="148" stroke="#333" stroke-width="1"/>
-                <text x="75" y="153" font-size="12" fill="var(--text-color)">10°C</text>
-                <line x1="65" y1="180" x2="70"  y2="180" stroke="#333" stroke-width="2"/>
-                <text x="75" y="185" font-size="12" fill="var(--text-color)">0°C</text>
-              </svg>
-            </div>
 
+          <!-- Sensor Connection Status – clean & centered -->
+        <div class="controls" style="margin-top: 16px; justify-content: center;">
+          <div class="status-box" id="status-box">  <!-- add proper id if needed -->
+            <i class="fas fa-circle status-icon" id="status-dot"></i>
+            <span id="status-text">Not connected</span>
+          </div>
+        </div>
+
+          <div class="sensor-cards">
+<!-- TEMPERATURE (CELSIUS) – FINAL FIXED: NO CUT-OFF, PERFECT °C -->
+<div id="thermometer-container" class="thermometer-container">
+  <h4>Temperature</h4>
+  <div id="thermometer-value" class="sensor-value" style="margin-bottom: 16px; font-size: 1.5rem; font-weight: 600; letter-spacing: -1px;"></div>
+
+  <svg width="280" height="460" viewBox="0 0 280 460" class="thermometer">
+    <defs>
+      <radialGradient id="liquidGlow" cx="50%" cy="100%" r="85%">
+        <stop offset="0%" stop-color="#ffffc8"/>
+        <stop offset="60%" stop-color="#ffd700"/>
+        <stop offset="100%" stop-color="#ff6b00"/>
+      </radialGradient>
+    </defs>
+
+    <!-- Tube – extends perfectly into bulb -->
+<rect x="90" y="60" width="40" height="316" rx="20" fill="none" stroke="#94a3b8" stroke-width="5"/>
+<rect id="thermometer-fill" x="95" y="376" width="30" height="0" rx="15" fill="url(#liquidGlow)"/>
+
+<!-- Bulb – PERFECTLY CONNECTED to tube -->
+<circle cx="110" cy="410" r="38" fill="none" stroke="#94a3b8" stroke-width="5"/>
+<circle id="thermometer-bulb" 
+    cx="110" cy="410" r="33" 
+    fill="url(#liquidGlow)" 
+    filter="drop-shadow(0 0 32px #ffa500) drop-shadow(0 0 50px #ff8c00)"/>
+
+    <!-- Scale – Perfect spacing, no clipping -->
+    <g font-family="system-ui, -apple-system, sans-serif">
+      <line x1="145" y1="60"  x2="165" y2="60"  stroke="#94a3b8" stroke-width="4"/>
+      <text x="180" y="70" font-size="28" font-weight="800" fill="#a0d8ff">
+        <tspan>50</tspan>
+        <tspan dx="12" font-size="22" fill="#7bb3ff">°C</tspan>
+      </text>
+
+      <line x1="145" y1="120" x2="160" y2="120" stroke="#94a3b8" stroke-width="2.5"/>
+      <text x="180" y="130" font-size="28" font-weight="800" fill="#a0d8ff">
+        <tspan>40</tspan>
+        <tspan dx="12" font-size="22" fill="#7bb3ff">°C</tspan>
+      </text>
+
+      <line x1="145" y1="180" x2="160" y2="180" stroke="#94a3b8" stroke-width="2.5"/>
+      <text x="180" y="190" font-size="28" font-weight="800" fill="#a0d8ff">
+        <tspan>30</tspan>
+        <tspan dx="12" font-size="22" fill="#7bb3ff">°C</tspan>
+      </text>
+
+      <line x1="145" y1="240" x2="160" y2="240" stroke="#94a3b8" stroke-width="2.5"/>
+      <text x="180" y="250" font-size="28" font-weight="800" fill="#a0d8ff">
+        <tspan>20</tspan>
+        <tspan dx="12" font-size="22" fill="#7bb3ff">°C</tspan>
+      </text>
+
+      <line x1="145" y1="300" x2="160" y2="300" stroke="#94a3b8" stroke-width="2.5"/>
+      <text x="180" y="310" font-size="28" font-weight="800" fill="#a0d8ff">
+        <tspan>10</tspan>
+        <tspan dx="12" font-size="22" fill="#7bb3ff">°C</tspan>
+      </text>
+
+      <line x1="145" y1="360" x2="165" y2="360" stroke="#94a3b8" stroke-width="4"/>
+      <text x="180" y="370" font-size="28" font-weight="800" fill="#a0d8ff">
+        <tspan>0</tspan>
+        <tspan dx="12" font-size="22" fill="#7bb3ff">°C</tspan>
+      </text>
+    </g>
+  </svg>
+</div>
+
+
+<!-- TEMPERATURE (FAHRENHEIT) – UPDATED TO MATCH CELSIUS STYLING -->
+<div id="thermometer-f-container" class="thermometer-container" style="display: none;">
+  <h4>Temperature (°F)</h4>
+  <div id="thermometer-f-value" class="sensor-value" style="margin-bottom: 16px; font-size: 1.5rem; font-weight: 600; letter-spacing: -1px;"></div>
+
+  <svg width="280" height="460" viewBox="0 0 280 460" class="thermometer">
+    <defs>
+      <radialGradient id="liquidGlowF" cx="50%" cy="100%" r="85%">
+        <stop offset="0%" stop-color="#ffffc8"/>
+        <stop offset="60%" stop-color="#ffd700"/>
+        <stop offset="100%" stop-color="#ff6b00"/>
+      </radialGradient>
+    </defs>
+
+    <!-- Tube – extends perfectly into bulb (SAME AS CELSIUS) -->
+    <rect x="90" y="60" width="40" height="316" rx="20" fill="none" stroke="#94a3b8" stroke-width="5"/>
+    <rect id="thermometer-f-fill" x="95" y="376" width="30" height="0" rx="15" fill="url(#liquidGlowF)"/>
+
+    <!-- Bulb – PERFECTLY CONNECTED to tube (SAME AS CELSIUS) -->
+    <circle cx="110" cy="410" r="38" fill="none" stroke="#94a3b8" stroke-width="5"/>
+    <circle id="thermometer-f-bulb" 
+        cx="110" cy="410" r="33" 
+        fill="url(#liquidGlowF)" 
+        filter="drop-shadow(0 0 32px #ffa500) drop-shadow(0 0 50px #ff8c00)"/>
+
+    <!-- Scale – Fahrenheit markings with same styling as Celsius -->
+    <g font-family="system-ui, -apple-system, sans-serif">
+      <line x1="145" y1="60"  x2="165" y2="60"  stroke="#94a3b8" stroke-width="4"/>
+      <text x="180" y="70" font-size="28" font-weight="800" fill="#a0d8ff">
+        <tspan>122</tspan>
+        <tspan dx="12" font-size="22" fill="#7bb3ff">°F</tspan>
+      </text>
+
+      <line x1="145" y1="120" x2="160" y2="120" stroke="#94a3b8" stroke-width="2.5"/>
+      <text x="180" y="130" font-size="28" font-weight="800" fill="#a0d8ff">
+        <tspan>104</tspan>
+        <tspan dx="12" font-size="22" fill="#7bb3ff">°F</tspan>
+      </text>
+
+      <line x1="145" y1="180" x2="160" y2="180" stroke="#94a3b8" stroke-width="2.5"/>
+      <text x="180" y="190" font-size="28" font-weight="800" fill="#a0d8ff">
+        <tspan>86</tspan>
+        <tspan dx="12" font-size="22" fill="#7bb3ff">°F</tspan>
+      </text>
+
+      <line x1="145" y1="240" x2="160" y2="240" stroke="#94a3b8" stroke-width="2.5"/>
+      <text x="180" y="250" font-size="28" font-weight="800" fill="#a0d8ff">
+        <tspan>68</tspan>
+        <tspan dx="12" font-size="22" fill="#7bb3ff">°F</tspan>
+      </text>
+
+      <line x1="145" y1="300" x2="160" y2="300" stroke="#94a3b8" stroke-width="2.5"/>
+      <text x="180" y="310" font-size="28" font-weight="800" fill="#a0d8ff">
+        <tspan>50</tspan>
+        <tspan dx="12" font-size="22" fill="#7bb3ff">°F</tspan>
+      </text>
+
+      <line x1="145" y1="360" x2="165" y2="360" stroke="#94a3b8" stroke-width="4"/>
+      <text x="180" y="370" font-size="28" font-weight="800" fill="#a0d8ff">
+        <tspan>32</tspan>
+        <tspan dx="12" font-size="22" fill="#7bb3ff">°F</tspan>
+      </text>
+    </g>
+  </svg>
+</div>
 
             <!-- Humidity -->
-            <div id="humidity-card" class="wave-card-container" style="display: none;">
-              <h4>Humidity</h4>
-              <div class="wave-card-content">
-                <i class="fas fa-water-drop-outlined"></i>
-                <span id="humidity-value" class="sensor-value"></span>
-              </div>
-              <svg id="humidity-wave" width="100%" height="80" viewBox="0 0 100 100" preserveAspectRatio="none">
-                <defs>
-                  <linearGradient id="waveGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" id="waveColor1" style="stop-color:#3d8eb4;stop-opacity:0.5"/>
-                    <stop offset="100%" id="waveColor2" style="stop-color:#0474a8;stop-opacity:1"/>
-                  </linearGradient>
-                </defs>
-                <path id="wavePath" d="M 0 100 V 100 H 0 Z" fill="url(#waveGradient)"/>
-              </svg>
-            </div>
+      <div id="humidity-card" class="humidity-card-container">
+        <h4>Humidity</h4>
+        <div id="humidity-value" class="sensor-value" style="margin-bottom: 16px; font-size: 1.5rem; font-weight: 600; letter-spacing: -1px;"></div>
+        <svg id="humidity-wave" width="100%" height="80" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="waveGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" id="waveColor1" style="stop-color:#3d8eb4;stop-opacity:0.5"/>
+              <stop offset="100%" id="waveColor2" style="stop-color:#0474a8;stop-opacity:1"/>
+            </linearGradient>
+          </defs>
+          <path id="wavePath" d="M 0 100 V 100 H 0 Z" fill="url(#waveGradient)"/>
+        </svg>
+      </div>
 
       
           <!-- PRESSURE -->
 <div id="pressure-card" class="card-container">
   <h4>Pressure</h4>
   <div class="card-content">
-    <div id="pressure-value" class="main-value">1038</div>
+    <div id="pressure-value" class="main-value"  style="margin-bottom: 16px; font-size: 1.5rem; font-weight: 600; letter-spacing: -1px;">0.00</div>
   </div>
 
   <!-- full-circle gauge -->
@@ -163,14 +366,14 @@
 
       <!-- full-circle background -->
       <circle class="gauge-outer"
-              cx="100" cy="100" r="90"
-              stroke-width="10"/>
+              cx="100" cy="100" r="85"
+              stroke-width="12"/>
 
       <!-- animated value arc -->
       <circle id="gauge-fill"
               class="gauge-fill"
-              cx="100" cy="100" r="90"
-              stroke-width="10"
+              cx="100" cy="100" r="85"
+              stroke-width="12"
               stroke-linecap="round"
               stroke-dasharray="0 565.48"
               stroke-dashoffset="0"/>
@@ -178,122 +381,267 @@
 
     <!-- centre read-out -->
     <div class="gauge-inner">
-      <span id="pressure-value-inner" class="pressure-value">1038</span>
+      <span id="pressure-value-inner" class="pressure-value">0.00</span>
     </div>
   </div>
 </div>
+
             <!-- Light Intensity Card with Sun/Moon Toggle -->
-            <div id="light-card" class="card-container" style="display: none; position: relative; border-radius: 15px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1); padding: 15px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-              <h4>Light Intensity</h4>
-              <div id="light-value" class="sensor-value"></div>
-              <!-- Sun SVG -->
-              <svg id="light-sun" width="120" height="120" viewBox="0 0 120 120" style="display: none; margin: 10px auto;">
-                <defs>
-                  <radialGradient id="sunGradient" cx="50%" cy="50%" r="50%">
-                    <stop offset="0%" style="stop-color:#ffeb3b; stop-opacity:1"/>
-                    <stop offset="60%" style="stop-color:#ff9800; stop-opacity:0.8"/>
-                    <stop offset="100%" style="stop-color:#ff6b00; stop-opacity:0.4"/>
-                  </radialGradient>
-                  <filter id="sunGlow" x="-50%" y="-50%" width="200%" height="200%">
-                    <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                    <feMerge>
-                      <feMergeNode in="coloredBlur"/>
-                      <feMergeNode in="SourceGraphic"/>
-                    </feMerge>
-                  </filter>
-                </defs>
-                <!-- Animated rays container -->
-                <g id="sun-rays" transform="translate(60, 60)">
-                  <line class="sun-ray" x1="0" y1="0" x2="0" y2="-40" stroke="#4b2e00" stroke-width="4" opacity="0">
-                    <animate attributeName="opacity" values="0;0.9;0" dur="4s" repeatCount="indefinite"/>
-                    <animate attributeName="y2" values="-35;-50;-35" dur="4s" repeatCount="indefinite"/>
-                  </line>
-                  <line class="sun-ray" x1="0" y1="0" x2="28" y2="-28" stroke="#4b2e00" stroke-width="4" opacity="0">
-                    <animate attributeName="opacity" values="0;0.9;0" dur="4s" begin="0.5s" repeatCount="indefinite"/>
-                    <animate attributeName="x2" values="24;34;24" dur="4s" begin="0.5s" repeatCount="indefinite"/>
-                    <animate attributeName="y2" values="-24;-34;-24" dur="4s" begin="0.5s" repeatCount="indefinite"/>
-                  </line>
-                  <line class="sun-ray" x1="0" y1="0" x2="40" y2="0" stroke="#4b2e00" stroke-width="4" opacity="0">
-                    <animate attributeName="opacity" values="0;0.9;0" dur="4s" begin="1s" repeatCount="indefinite"/>
-                    <animate attributeName="x2" values="35;50;35" dur="4s" begin="1s" repeatCount="indefinite"/>
-                  </line>
-                  <line class="sun-ray" x1="0" y1="0" x2="28" y2="28" stroke="#4b2e00" stroke-width="4" opacity="0">
-                    <animate attributeName="opacity" values="0;0.9;0" dur="4s" begin="1.5s" repeatCount="indefinite"/>
-                    <animate attributeName="x2" values="24;34;24" dur="4s" begin="1.5s" repeatCount="indefinite"/>
-                    <animate attributeName="y2" values="24;34;24" dur="4s" begin="1.5s" repeatCount="indefinite"/>
-                  </line>
-                  <line class="sun-ray" x1="0" y1="0" x2="0" y2="40" stroke="#4b2e00" stroke-width="4" opacity="0">
-                    <animate attributeName="opacity" values="0;0.9;0" dur="4s" begin="2s" repeatCount="indefinite"/>
-                    <animate attributeName="y2" values="35;50;35" dur="4s" begin="2s" repeatCount="indefinite"/>
-                  </line>
-                  <line class="sun-ray" x1="0" y1="0" x2="-28" y2="28" stroke="#4b2e00" stroke-width="4" opacity="0">
-                    <animate attributeName="opacity" values="0;0.9;0" dur="4s" begin="2.5s" repeatCount="indefinite"/>
-                    <animate attributeName="x2" values="-24;-34;-24" dur="4s" begin="2.5s" repeatCount="indefinite"/>
-                    <animate attributeName="y2" values="24;34;24" dur="4s" begin="2.5s" repeatCount="indefinite"/>
-                  </line>
-                  <line class="sun-ray" x1="0" y1="0" x2="-40" y2="0" stroke="#4b2e00" stroke-width="4" opacity="0">
-                    <animate attributeName="opacity" values="0;0.9;0" dur="4s" begin="3s" repeatCount="indefinite"/>
-                    <animate attributeName="x2" values="-35;-50;-35" dur="4s" begin="3s" repeatCount="indefinite"/>
-                  </line>
-                  <line class="sun-ray" x1="0" y1="0" x2="-28" y2="-28" stroke="#4b2e00" stroke-width="4" opacity="0">
-                    <animate attributeName="opacity" values="0;0.9;0" dur="4s" begin="3.5s" repeatCount="indefinite"/>
-                    <animate attributeName="x2" values="-24;-34;-24" dur="4s" begin="3.5s" repeatCount="indefinite"/>
-                    <animate attributeName="y2" values="-24;-34;-24" dur="4s" begin="3.5s" repeatCount="indefinite"/>
-                  </line>
-                </g>
-                <!-- Central sun circle -->
-                <circle id="sun-circle" cx="60" cy="60" r="24" fill="url(#sunGradient)" filter="url(#sunGlow)"/>
-                <!-- Inner glow circle -->
-                <circle cx="60" cy="60" r="24" fill="none" stroke="#fff" stroke-width="1" opacity="0.3">
-                  <animate attributeName="r" values="24;28;24" dur="4s" repeatCount="indefinite"/>
-                  <animate attributeName="opacity" values="0.3;0.1;0.3" dur="4s" repeatCount="indefinite"/>
-                </circle>
-              </svg>
-              <!-- Moon SVG -->
-              <svg id="light-moon" width="120" height="120" viewBox="0 0 120 120" style="display: none; margin: 10px auto;">
-                <defs>
-                  <radialGradient id="moonGradient" cx="50%" cy="50%" r="50%">
-                    <stop offset="0%" style="stop-color:#e6e6fa; stop-opacity:0.9"/>
-                    <stop offset="70%" style="stop-color:#b0c4de; stop-opacity:0.6"/>
-                    <stop offset="100%" style="stop-color:#4682b4; stop-opacity:0.3"/>
-                  </radialGradient>
-                  <filter id="moonGlow" x="-50%" y="-50%" width="200%" height="200%">
-                    <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
-                    <feMerge>
-                      <feMergeNode in="coloredBlur"/>
-                      <feMergeNode in="SourceGraphic"/>
-                    </feMerge>
-                  </filter>
-                </defs>
-                <!-- Moon shape with crescent effect -->
-                <path id="moon-shape" d="M60 20 A40 40 0 0 1 60 100 A40 40 0 0 1 60 20 C80 30 80 90 60 100" fill="url(#moonGradient)" filter="url(#moonGlow)"/>
-                <!-- Sparkles for moon -->
-                <g id="moon-sparkles">
-                  <circle cx="40" cy="40" r="2" fill="#fff" opacity="0">
-                    <animate attributeName="opacity" values="0;0.7;0" dur="2s" repeatCount="indefinite"/>
-                    <animate attributeName="r" values="2;3;2" dur="2s" repeatCount="indefinite"/>
-                  </circle>
-                  <circle cx="80" cy="80" r="2" fill="#fff" opacity="0">
-                    <animate attributeName="opacity" values="0;0.7;0" dur="2.5s" begin="0.5s" repeatCount="indefinite"/>
-                    <animate attributeName="r" values="2;3;2" dur="2.5s" begin="0.5s" repeatCount="indefinite"/>
-                  </circle>
-                  <circle cx="50" cy="70" r="2" fill="#fff" opacity="0">
-                    <animate attributeName="opacity" values="0;0.7;0" dur="3s" begin="1s" repeatCount="indefinite"/>
-                    <animate attributeName="r" values="2;3;2" dur="3s" begin="1s" repeatCount="indefinite"/>
-                  </circle>
-                </g>
-              </svg>
-            </div>
-<!-- Rain Gauge -->
+<div id="light-card" class="card-container">
+  <h4>Light Intensity</h4>
+  <div id="light-value" class="sensor-value" style="margin-bottom: 16px; font-size: 1.5rem; font-weight: 600; letter-spacing: -1px;" ></div>
+  
+  <!-- Sun SVG -->
+  <svg id="light-sun" width="160" height="160" viewBox="0 0 160 160" style="margin: 0 auto;">
+    <defs>
+      <radialGradient id="sunGradient" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" style="stop-color:#ffeb3b; stop-opacity:1"/>
+        <stop offset="60%" style="stop-color:#ff9800; stop-opacity:0.8"/>
+        <stop offset="100%" style="stop-color:#ff6b00; stop-opacity:0.4"/>
+      </radialGradient>
+      <filter id="sunGlow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="5" result="coloredBlur"/>
+        <feMerge>
+          <feMergeNode in="coloredBlur"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+    </defs>
+    <!-- Animated rays container -->
+    <g id="sun-rays" transform="translate(80, 80)">
+      <line class="sun-ray" x1="0" y1="0" x2="0" y2="-55" stroke="#ff9800" stroke-width="6" opacity="0">
+        <animate attributeName="opacity" values="0;0.9;0" dur="4s" repeatCount="indefinite"/>
+        <animate attributeName="y2" values="-50;-65;-50" dur="4s" repeatCount="indefinite"/>
+      </line>
+      <line class="sun-ray" x1="0" y1="0" x2="38" y2="-38" stroke="#ff9800" stroke-width="6" opacity="0">
+        <animate attributeName="opacity" values="0;0.9;0" dur="4s" begin="0.5s" repeatCount="indefinite"/>
+        <animate attributeName="x2" values="34;44;34" dur="4s" begin="0.5s" repeatCount="indefinite"/>
+        <animate attributeName="y2" values="-34;-44;-34" dur="4s" begin="0.5s" repeatCount="indefinite"/>
+      </line>
+      <line class="sun-ray" x1="0" y1="0" x2="55" y2="0" stroke="#ff9800" stroke-width="6" opacity="0">
+        <animate attributeName="opacity" values="0;0.9;0" dur="4s" begin="1s" repeatCount="indefinite"/>
+        <animate attributeName="x2" values="50;65;50" dur="4s" begin="1s" repeatCount="indefinite"/>
+      </line>
+      <line class="sun-ray" x1="0" y1="0" x2="38" y2="38" stroke="#ff9800" stroke-width="6" opacity="0">
+        <animate attributeName="opacity" values="0;0.9;0" dur="4s" begin="1.5s" repeatCount="indefinite"/>
+        <animate attributeName="x2" values="34;44;34" dur="4s" begin="1.5s" repeatCount="indefinite"/>
+        <animate attributeName="y2" values="34;44;34" dur="4s" begin="1.5s" repeatCount="indefinite"/>
+      </line>
+      <line class="sun-ray" x1="0" y1="0" x2="0" y2="55" stroke="#ff9800" stroke-width="6" opacity="0">
+        <animate attributeName="opacity" values="0;0.9;0" dur="4s" begin="2s" repeatCount="indefinite"/>
+        <animate attributeName="y2" values="50;65;50" dur="4s" begin="2s" repeatCount="indefinite"/>
+      </line>
+      <line class="sun-ray" x1="0" y1="0" x2="-38" y2="38" stroke="#ff9800" stroke-width="6" opacity="0">
+        <animate attributeName="opacity" values="0;0.9;0" dur="4s" begin="2.5s" repeatCount="indefinite"/>
+        <animate attributeName="x2" values="-34;-44;-34" dur="4s" begin="2.5s" repeatCount="indefinite"/>
+        <animate attributeName="y2" values="34;44;34" dur="4s" begin="2.5s" repeatCount="indefinite"/>
+      </line>
+      <line class="sun-ray" x1="0" y1="0" x2="-55" y2="0" stroke="#ff9800" stroke-width="6" opacity="0">
+        <animate attributeName="opacity" values="0;0.9;0" dur="4s" begin="3s" repeatCount="indefinite"/>
+        <animate attributeName="x2" values="-50;-65;-50" dur="4s" begin="3s" repeatCount="indefinite"/>
+      </line>
+      <line class="sun-ray" x1="0" y1="0" x2="-38" y2="-38" stroke="#ff9800" stroke-width="6" opacity="0">
+        <animate attributeName="opacity" values="0;0.9;0" dur="4s" begin="3.5s" repeatCount="indefinite"/>
+        <animate attributeName="x2" values="-34;-44;-34" dur="4s" begin="3.5s" repeatCount="indefinite"/>
+        <animate attributeName="y2" values="-34;-44;-34" dur="4s" begin="3.5s" repeatCount="indefinite"/>
+      </line>
+    </g>
+    <!-- Central sun circle -->
+    <circle id="sun-circle" cx="80" cy="80" r="32" fill="url(#sunGradient)" filter="url(#sunGlow)"/>
+    <!-- Inner glow circle -->
+    <circle cx="80" cy="80" r="32" fill="none" stroke="#fff" stroke-width="2" opacity="0.3">
+      <animate attributeName="r" values="32;36;32" dur="4s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.3;0.1;0.3" dur="4s" repeatCount="indefinite"/>
+    </circle>
+  </svg>
+  
+  <!-- Moon SVG -->
+  <svg id="light-moon" width="160" height="160" viewBox="0 0 160 160" style="display: none; margin: 0 auto;">
+    <defs>
+      <radialGradient id="moonGradient" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" style="stop-color:#e6e6fa; stop-opacity:0.9"/>
+        <stop offset="70%" style="stop-color:#b0c4de; stop-opacity:0.6"/>
+        <stop offset="100%" style="stop-color:#4682b4; stop-opacity:0.3"/>
+      </radialGradient>
+      <filter id="moonGlow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
+        <feMerge>
+          <feMergeNode in="coloredBlur"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+    </defs>
+    <!-- Moon shape with crescent effect -->
+    <path id="moon-shape" d="M80 25 A55 55 0 0 1 80 135 A55 55 0 0 1 80 25 C105 40 105 120 80 135" fill="url(#moonGradient)" filter="url(#moonGlow)"/>
+    <!-- Sparkles for moon -->
+    <g id="moon-sparkles">
+      <circle cx="50" cy="50" r="3" fill="#fff" opacity="0">
+        <animate attributeName="opacity" values="0;0.7;0" dur="2s" repeatCount="indefinite"/>
+        <animate attributeName="r" values="3;4;3" dur="2s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="110" cy="110" r="3" fill="#fff" opacity="0">
+        <animate attributeName="opacity" values="0;0.7;0" dur="2.5s" begin="0.5s" repeatCount="indefinite"/>
+        <animate attributeName="r" values="3;4;3" dur="2.5s" begin="0.5s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="70" cy="95" r="3" fill="#fff" opacity="0">
+        <animate attributeName="opacity" values="0;0.7;0" dur="3s" begin="1s" repeatCount="indefinite"/>
+        <animate attributeName="r" values="3;4;3" dur="3s" begin="1s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+  </svg>
+</div>
+
+<!-- VCNL4040 Ambient Light (LUX) Card – PERFECTLY CENTERED -->
+<div id="vcnl-lux-card" class="card-container" style="display: none;">
+  <h4>Ambient Light (VCNL4040)</h4>
+
+  <div id="vcnl-lux-value" class="sensor-value" style="margin-bottom: 16px; font-size: 1.5rem; font-weight: 600; letter-spacing: -1px;">
+    0.0 lux
+  </div>
+
+  <!-- Fixed wrapper – same size as SVG + flex centering -->
+  <div style="
+    position: relative;
+    width: 280px;
+    height: 280px;
+    margin: 20px auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  ">
+    <svg width="280" height="280" viewBox="0 0 280 280" style="display: block;">
+      <defs>
+        <radialGradient id="sunCoreGradient">
+          <stop offset="0%" stop-color="#fffbeb"/>
+          <stop offset="40%" stop-color="#fef08a"/>
+          <stop offset="70%" stop-color="#fbbf24"/>
+          <stop offset="100%" stop-color="#f59e0b"/>
+        </radialGradient>
+
+        <filter id="sunCorona" x="-60%" y="-60%" width="220%" height="220%">
+          <feGaussianBlur stdDeviation="18" result="blur1"/>
+          <feGaussianBlur stdDeviation="8" result="blur2" in="blur1"/>
+          <feMerge>
+            <feMergeNode in="blur2"/>
+            <feMergeNode in="blur1"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+
+        <filter id="sunBloom">
+          <feGaussianBlur stdDeviation="5" result="bloom"/>
+          <feComponentTransfer>
+            <feFuncA type="linear" slope="2.2"/>
+          </feComponentTransfer>
+          <feMerge>
+            <feMergeNode in="bloom"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+
+        <filter id="particleGlow">
+          <feGaussianBlur stdDeviation="3" result="pglow"/>
+        </filter>
+
+        <!-- Add your gradient for arc here if not already defined globally -->
+        <linearGradient id="luxGaugeGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#1e293b"/>
+          <stop offset="40%" stop-color="#60a5fa"/>
+          <stop offset="70%" stop-color="#fbbf24"/>
+          <stop offset="100%" stop-color="#fef08a"/>
+        </linearGradient>
+      </defs>
+
+      <!-- Background ring – perfectly centered -->
+      <circle cx="140" cy="140" r="115" fill="none" stroke="#334155" stroke-width="22" opacity="0.35"/>
+
+      <!-- Progress arc – symmetric around center -->
+      <path id="vcnl-lux-arc"
+            d="M 60 140 A 80 80 0 0 1 220 140"
+            fill="none"
+            stroke="url(#luxGaugeGradient)"
+            stroke-width="28"
+            stroke-linecap="round"
+            stroke-dasharray="502.65 502.65"
+            stroke-dashoffset="502.65"/>
+
+      <!-- Sun & everything else – forced center with translate(140,140) -->
+      <g id="vcnl-sun-group" transform="translate(140,140)">
+        <!-- Core sun -->
+        <circle id="sun-core" cx="0" cy="0" r="42" fill="url(#sunCoreGradient)" filter="url(#sunBloom)"/>
+
+        <!-- Outer corona -->
+        <circle cx="0" cy="0" r="65" fill="none" stroke="#fbbf24" stroke-width="18" opacity="0.5" filter="url(#sunCorona)"/>
+
+        <!-- Pulsing inner highlight -->
+        <circle cx="0" cy="0" r="28" fill="#ffffff" opacity="0.35">
+          <animate attributeName="r" values="28;32;28" dur="5s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.35;0.6;0.35" dur="5s" repeatCount="indefinite"/>
+        </circle>
+
+       <!-- 16 RAYS – every 22.5°, longer & staggered -->
+        <g id="sun-rays">
+          <!-- Ray 0° (North) -->
+          <line x1="0" y1="-80" x2="0" y2="-140" stroke="#fef08a" stroke-width="8" opacity="0">
+            <animate attributeName="opacity" values="0;1;0" dur="5.5s" repeatCount="indefinite"/>
+          </line>
+
+          <!-- Ray 45° -->
+          <line x1="0" y1="-80" x2="0" y2="-140" stroke="#fbbf24" stroke-width="7" opacity="0" transform="rotate(45)">
+            <animate attributeName="opacity" values="0;1;0" dur="5.5s" begin="0.68s" repeatCount="indefinite"/>
+          </line>
+          
+          <!-- Ray 90° (East) -->
+          <line x1="0" y1="-80" x2="0" y2="-140" stroke="#fcd34d" stroke-width="8" opacity="0" transform="rotate(90)">
+            <animate attributeName="opacity" values="0;1;0" dur="5.5s" begin="1.37s" repeatCount="indefinite"/>
+          </line>
+         
+          <!-- Ray 135° -->
+          <line x1="0" y1="-80" x2="0" y2="-140" stroke="#fef08a" stroke-width="7" opacity="0" transform="rotate(135)">
+            <animate attributeName="opacity" values="0;1;0" dur="5.5s" begin="2.06s" repeatCount="indefinite"/>
+          </line>
+
+          <!-- Ray 180° (South) -->
+          <line x1="0" y1="-80" x2="0" y2="-140" stroke="#fbbf24" stroke-width="8" opacity="0" transform="rotate(180)">
+            <animate attributeName="opacity" values="0;1;0" dur="5.5s" begin="2.74s" repeatCount="indefinite"/>
+          </line>
+
+          <!-- Ray 225° -->
+          <line x1="0" y1="-80" x2="0" y2="-140" stroke="#fcd34d" stroke-width="7" opacity="0" transform="rotate(225)">
+            <animate attributeName="opacity" values="0;1;0" dur="5.5s" begin="3.43s" repeatCount="indefinite"/>
+          </line>
+
+          <!-- Ray 270° (West) -->
+          <line x1="0" y1="-80" x2="0" y2="-140" stroke="#fef08a" stroke-width="8" opacity="0" transform="rotate(270)">
+            <animate attributeName="opacity" values="0;1;0" dur="5.5s" begin="4.11s" repeatCount="indefinite"/>
+          </line>
+
+          <!-- Ray 315° -->
+          <line x1="0" y1="-80" x2="0" y2="-140" stroke="#fbbf24" stroke-width="7" opacity="0" transform="rotate(315)">
+            <animate attributeName="opacity" values="0;1;0" dur="5.5s" begin="4.80s" repeatCount="indefinite"/>
+          </line>
+        </g>
+
+        <!-- Breathing pulse -->
+        <animateTransform attributeName="transform" type="scale" values="1;1.05;1" dur="8s" repeatCount="indefinite"/>
+      </g>
+    </svg>
+  </div>
+</div>
+
+<!-- RAIN GAUGE CARD - FIXED WITH RAIN ANIMATION -->
 <div id="rain-gauge-card" class="rain-gauge-card">
   <div class="rain-header">
     <i class="fa-solid fa-cloud-rain"></i>
     <div id="rain-value" class="rain-value">0.0 mm</div>
   </div>
 
+  <!-- NEW: Rain overlay (drops fall here) -->
+  <div class="rain-overlay" id="rain-overlay"></div>
+
+  <!-- Seesaw (tilts when raining) -->
   <div class="seesaw-container">
     <div class="seesaw">
-      <div class="outer-base"></div>
       <div class="base"></div>
       <div class="pole left"></div>
       <div class="pole right"></div>
@@ -302,221 +650,1078 @@
     </div>
   </div>
 
+  <!-- Water in the bucket -->
   <div class="water-container">
     <div id="water-wave" class="water-wave"></div>
   </div>
 </div>
-      <!-- LIS3DH Acceleration -->
-<div id="lis3dh-card" class="card-container" style="display: none; min-width: 300px;">
-  <h4>Acceleration</h4>
-  <div id="lis3dh-x-value" class="sensor-value">X: 0.00 m/s²</div>
-  <div id="lis3dh-y-value" class="sensor-value">Y: 0.00 m/s²</div>
-  <div id="lis3dh-z-value" class="sensor-value">Z: 0.00 m/s²</div>
-  <div class="cube-container" style="perspective: 1000px; width: 150px; height: 150px; margin: auto; position: relative;">
-    <div id="accel-cube-wrapper" style="width: 150px; height: 150px; position: relative; transform-style: preserve-3d; user-select: none;">
-      <div id="accel-cube" style="width: 150px; height: 150px; position: relative; transform-style: preserve-3d; transition: transform 0.3s ease;">
-        <!-- Cube faces (wireframe) -->
-        <div class="face front" style="position: absolute; width: 150px; height: 150px; background: transparent; border: 1px solid #333; transform: rotateY(0deg) translateZ(75px);"></div>
-        <div class="face back" style="position: absolute; width: 150px; height: 150px; background: transparent; border: 1px solid #333; transform: rotateY(180deg) translateZ(75px);"></div>
-        <div class="face right" style="position: absolute; width: 150px; height: 150px; background: transparent; border: 1px solid #333; transform: rotateY(90deg) translateZ(75px);"></div>
-        <div class="face left" style="position: absolute; width: 150px; height: 150px; background: transparent; border: 1px solid #333; transform: rotateY(-90deg) translateZ(75px);"></div>
-        <div class="face top" style="position: absolute; width: 150px; height: 150px; background: transparent; border: 1px solid #333; transform: rotateX(90deg) translateZ(75px);"></div>
-        <div class="face bottom" style="position: absolute; width: 150px; height: 150px; background: transparent; border: 1px solid #333; transform: rotateX(-90deg) translateZ(75px);"></div>
-        <!-- Axes -->
-        <div class="axis x" style="position: absolute; top: 50%; left: 0; width: 150px; height: 1px; background: red; transform: translateY(-50%);"></div>
-        <div class="axis y" style="position: absolute; left: 50%; top: 0; width: 1px; height: 150px; background: green; transform: translateX(-50%);"></div>
-        <div class="axis z" style="position: absolute; top: 50%; left: 50%; width: 150px; height: 1px; background: blue; transform: translate(-50%, -50%) rotateX(90deg);"></div>
-        <!-- Axis labels (placed in 3D space) -->
-        <div class="axis-label x" style="position: absolute; top:50%; left:50%; transform: translate(-50%, -50%) translate3d(75px, 0, 0); color: red; font-size: 12px;">+X</div>
-        <div class="axis-label y" style="position: absolute; top:50%; left:50%; transform: translate(-50%, -50%) translate3d(0, -75px, 0); color: green; font-size: 12px;">+Y</div>
-        <div class="axis-label z" style="position: absolute; top:50%; left:50%; transform: translate(-50%, -50%) translate3d(0, 0, 75px); color: blue; font-size: 12px;">+Z</div>
-        <!-- Inner circle (ball) -->
-        <div id="accel-ball" style="position: absolute; top:50%; left:50%; width: 20px; height: 20px; background: black; border-radius: 50%; transform: translate(-50%, -50%) translate3d(0, 0, 0); transition: transform 0.5s ease;"></div>
-      </div>
-    </div>
-  </div>
-</div>
-         <!-- Hall Sensor with C-shaped Arc -->
-            <div id="hall-card" class="card-container" style="display: none;">
-              <h4>Hall Sensor</h4>
-              <div id="hall-value" class="sensor-value"></div>
-              <svg id="hallCshape" viewBox="0 0 100 100"> …C path… </svg>
-              <svg id="hall-arc" width="80" height="80" viewBox="0 0 100 100">
-                <defs>
-                  <filter id="hall-glow" x="-20%" y="-20%" width="140%" height="140%">
-                    <feGaussianBlur stdDeviation="0" result="coloredBlur"/>
-                    <feMerge>
-                      <feMergeNode in="coloredBlur"/>
-                      <feMergeNode in="SourceGraphic"/>
-                    </feMerge>
-                  </filter>
-                </defs>
-                <path id="hall-arc-path" d="M 20 80 A 30 30 0 1 1 80 80" fill="none" stroke="#f44336" stroke-width="8" stroke-linecap="round"/>
-              </svg>
-            </div>
 
-        <div id="tlv493d-card" class="card-container" style="display: none;">
-            <h4>Magnetic Field</h4>
-            <div id="tlv493d-x-value" class="sensor-value">X: 0.00 mT</div>
-            <div id="tlv493d-y-value" class="sensor-value">Y: 0.00 mT</div>
-            <div id="tlv493d-z-value" class="sensor-value">Z: 0.00 mT</div>
-            <div class="tlv493d-simple-container">
-              <svg width="150" height="150" viewBox="0 0 100 100">
-                <line class="axis-line" x1="10" y1="50" x2="90" y2="50" /> <line class="axis-line" x1="50" y1="10" x2="50" y2="90" /> <text class="axis-label" x="92" y="55">+X</text>
-                <text class="axis-label" x="2" y="55">-X</text>
-                <text class="axis-label" x="45" y="8">+Y</text>
-                <text class="axis-label" x="45" y="98">-Y</text>
-                
-                <circle id="z-axis-indicator" class="sensor-origin" cx="50" cy="50" r="8" />
+<!-- Relay Controller Card -->
+<div id="relay-card" class="card-container" style="display: none;">
+  <h4>⚡ Relay Controller</h4>
+  <div id="relay-value" class="sensor-value" style="margin-bottom: 16px; font-size: 1.8rem; font-weight: 700; letter-spacing: -1px;">OFF</div>
 
-                <circle id="max-axis-indicator" class="indicator-dot" cx="50" cy="50" r="6" />
-              </svg>
-            </div>
-          </div>
-
-           <!-- TOFVL53L0X Distance -->
-            <div id="tof-card" class="card-container" style="display: none; height: 150px;">
-              <h4>Distance</h4>
-              <div id="tof-value" class="sensor-value"></div>
-              <svg id="tof-animation" width="220" height="100" viewBox="0 0 220 100">
-                <rect x="5" y="45" width="10" height="10" fill="blue"/> <!-- Sensor -->
-                <line x1="0" y1="75" x2="220" y2="75" stroke="#ccc" stroke-width="2"/> <!-- Ground line -->
-                <g id="tof-person" transform="translate(20, 0)">
-                  <circle cx="5" cy="20" r="5" fill="var(--person-color)"/> <!-- Head -->
-                  <line x1="5" y1="25" x2="5" y2="55" stroke="var(--person-color)" stroke-width="2"/> <!-- Body -->
-                  <line x1="5" y1="30" x2="-5" y2="40" stroke="var(--person-color)" stroke-width="2"/> <!-- Left arm -->
-                  <line x1="5" y1="30" x2="15" y2="40" stroke="var(--person-color)" stroke-width="2"/> <!-- Right arm -->
-                  <line x1="5" y1="55" x2="-5" y2="75" stroke="var(--person-color)" stroke-width="2"/> <!-- Left leg -->
-                  <line x1="5" y1="55" x2="15" y2="75" stroke="var(--person-color)" stroke-width="2"/> <!-- Right leg -->
-                </g>
-                <text x="0" y="95" font-size="10">0cm</text>
-                <text x="190" y="95" font-size="10">850cm</text>
-              </svg>
-            </div>
-
-
-           <!-- UVLTR390 UV Index with Enhanced Sun Animation -->
-            <div id="uvltr-card" class="card-container" style="display: none; position: relative;">
-              <h4>UV Index</h4>
-              <div id="uv-value" class="sensor-value">UV: 0.00</div>
-              <svg id="uv-sun" width="120" height="120" viewBox="0 0 120 120" style="display: block; margin: 10px auto;">
-                <defs>
-                  <radialGradient id="uvSunGradient" cx="50%" cy="50%" r="50%">
-                    <stop offset="0%" style="stop-color:#ffeb3b; stop-opacity:1"/>
-                    <stop offset="60%" style="stop-color:#ff9800; stop-opacity:0.8"/>
-                    <stop offset="100%" style="stop-color:#ff6b00; stop-opacity:0.4"/>
-                  </radialGradient>
-                  <filter id="uvGlow" x="-50%" y="-50%" width="200%" height="200%">
-                    <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                    <feMerge>
-                      <feMergeNode in="coloredBlur"/>
-                      <feMergeNode in="SourceGraphic"/>
-                    </feMerge>
-                  </filter>
-                </defs>
-                
-                <!-- Animated rays container -->
-                <g id="uv-rays" transform="translate(60, 60)">
-                  <!-- 8 rays at different angles -->
-                  <line class="uv-ray" x1="0" y1="0" x2="0" y2="-35" stroke="#ffeb3b" stroke-width="2" opacity="0">
-                    <animate attributeName="opacity" values="0;0.8;0" dur="2s" repeatCount="indefinite"/>
-                    <animate attributeName="y2" values="-30;-40;-30" dur="2s" repeatCount="indefinite"/>
-                  </line>
-                  <line class="uv-ray" x1="0" y1="0" x2="25" y2="-25" stroke="#ffeb3b" stroke-width="2" opacity="0">
-                    <animate attributeName="opacity" values="0;0.8;0" dur="2s" begin="0.25s" repeatCount="indefinite"/>
-                    <animate attributeName="x2" values="21;28;21" dur="2s" begin="0.25s" repeatCount="indefinite"/>
-                    <animate attributeName="y2" values="-21;-28;-21" dur="2s" begin="0.25s" repeatCount="indefinite"/>
-                  </line>
-                  <line class="uv-ray" x1="0" y1="0" x2="35" y2="0" stroke="#ffeb3b" stroke-width="2" opacity="0">
-                    <animate attributeName="opacity" values="0;0.8;0" dur="2s" begin="0.5s" repeatCount="indefinite"/>
-                    <animate attributeName="x2" values="30;40;30" dur="2s" begin="0.5s" repeatCount="indefinite"/>
-                  </line>
-                  <line class="uv-ray" x1="0" y1="0" x2="25" y2="25" stroke="#ffeb3b" stroke-width="2" opacity="0">
-                    <animate attributeName="opacity" values="0;0.8;0" dur="2s" begin="0.75s" repeatCount="indefinite"/>
-                    <animate attributeName="x2" values="21;28;21" dur="2s" begin="0.75s" repeatCount="indefinite"/>
-                    <animate attributeName="y2" values="21;28;21" dur="2s" begin="0.75s" repeatCount="indefinite"/>
-                  </line>
-                  <line class="uv-ray" x1="0" y1="0" x2="0" y2="35" stroke="#ffeb3b" stroke-width="2" opacity="0">
-                    <animate attributeName="opacity" values="0;0.8;0" dur="2s" begin="1s" repeatCount="indefinite"/>
-                    <animate attributeName="y2" values="30;40;30" dur="2s" begin="1s" repeatCount="indefinite"/>
-                  </line>
-                  <line class="uv-ray" x1="0" y1="0" x2="-25" y2="25" stroke="#ffeb3b" stroke-width="2" opacity="0">
-                    <animate attributeName="opacity" values="0;0.8;0" dur="2s" begin="1.25s" repeatCount="indefinite"/>
-                    <animate attributeName="x2" values="-21;-28;-21" dur="2s" begin="1.25s" repeatCount="indefinite"/>
-                    <animate attributeName="y2" values="21;28;21" dur="2s" begin="1.25s" repeatCount="indefinite"/>
-                  </line>
-                  <line class="uv-ray" x1="0" y1="0" x2="-35" y2="0" stroke="#ffeb3b" stroke-width="2" opacity="0">
-                    <animate attributeName="opacity" values="0;0.8;0" dur="2s" begin="1.5s" repeatCount="indefinite"/>
-                    <animate attributeName="x2" values="-30;-40;-30" dur="2s" begin="1.5s" repeatCount="indefinite"/>
-                  </line>
-                  <line class="uv-ray" x1="0" y1="0" x2="-25" y2="-25" stroke="#ffeb3b" stroke-width="2" opacity="0">
-                    <animate attributeName="opacity" values="0;0.8;0" dur="2s" begin="1.75s" repeatCount="indefinite"/>
-                    <animate attributeName="x2" values="-21;-28;-21" dur="2s" begin="1.75s" repeatCount="indefinite"/>
-                    <animate attributeName="y2" values="-21;-28;-21" dur="2s" begin="1.75s" repeatCount="indefinite"/>
-                  </line>
-                </g>
-                
-                <!-- Central sun circle -->
-                <circle id="uv-sun-circle" cx="60" cy="60" r="18" fill="url(#uvSunGradient)" filter="url(#uvGlow)"/>
-                
-                <!-- Inner glow circle -->
-                <circle cx="60" cy="60" r="18" fill="none" stroke="#fff" stroke-width="1" opacity="0.3">
-                  <animate attributeName="r" values="18;22;18" dur="3s" repeatCount="indefinite"/>
-                  <animate attributeName="opacity" values="0.3;0.1;0.3" dur="3s" repeatCount="indefinite"/>
-                </circle>
-              </svg>
-              <div id="uv-bar" class="card-bar"></div>
-            </div>
-
-          <!-- IR Sensor -->
-<div id="ir-card" class="card-container" style="display: none;">
-  <h4>IR Sensor</h4>
-  <div id="ir-value" class="sensor-value"></div>
-  <svg id="ir-bulb" width="80" height="80" viewBox="0 0 100 100">
+  <svg id="relay-svg" width="520" height="280" viewBox="0 0 520 280" style="margin: 20px auto; display: block;">
     <defs>
-      <filter id="ir-glow" x="-20%" y="-20%" width="140%" height="140%">
-        <feGaussianBlur stdDeviation="0" result="coloredBlur"/>
+      <!-- Bulb Glow Gradient -->
+      <radialGradient id="bulbGlowOn">
+        <stop offset="0%" style="stop-color:#FFEB3B;stop-opacity:0.9"/>
+        <stop offset="50%" style="stop-color:#FFC107;stop-opacity:0.5"/>
+        <stop offset="100%" style="stop-color:#FF9800;stop-opacity:0"/>
+      </radialGradient>
+      
+      <!-- Relay Coil Glow -->
+      <filter id="relayGlow">
+        <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+        <feMerge>
+          <feMergeNode in="coloredBlur"/>
+          <feMergeNode in="coloredBlur"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+
+      <!-- Switch Glow -->
+      <filter id="switchGlow">
+        <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
         <feMerge>
           <feMergeNode in="coloredBlur"/>
           <feMergeNode in="SourceGraphic"/>
         </feMerge>
       </filter>
     </defs>
-    <circle id="ir-bulb-circle" cx="50" cy="50" r="30" fill="#ccc" stroke="#333" stroke-width="2"/>
-    <path id="ir-bulb-base" d="M 35 80 H 65 V 90 H 35 Z" fill="#666"/>
+    
+    <!-- POWER SOURCE (LEFT) -->
+    <g id="power-source">
+      <rect x="80" y="120" width="40" height="60" rx="5" fill="#424242" stroke="#616161" stroke-width="2"/>
+      <rect x="85" y="125" width="30" height="50" rx="3" fill="#4CAF50" opacity="0.4"/>
+      <circle cx="100" cy="145" r="8" fill="#4CAF50" opacity="0.6"/>
+      <line x1="95" y1="140" x2="105" y2="140" stroke="#E8F5E9" stroke-width="3" stroke-linecap="round"/>
+      <line x1="100" y1="135" x2="100" y2="145" stroke="#E8F5E9" stroke-width="3" stroke-linecap="round"/>
+      <line x1="95" y1="160" x2="105" y2="160" stroke="#FFCDD2" stroke-width="3" stroke-linecap="round"/>
+      <text x="100" y="200" text-anchor="middle" fill="#94A3B8" font-size="13" font-weight="600">Power</text>
+    </g>
+    
+    <!-- ELECTROMAGNETIC RELAY (CENTER) -->
+    <g id="relay-mechanism">
+      <!-- Coil Winding -->
+      <rect id="relay-coil" x="140" y="100" width="40" height="80" rx="4" 
+            fill="#FF6B35" stroke="#C44536" stroke-width="2" opacity="0.7"/>
+      
+      <!-- Coil Lines -->
+      <line x1="145" y1="110" x2="175" y2="110" stroke="#8B4513" stroke-width="1.5"/>
+      <line x1="145" y1="120" x2="175" y2="120" stroke="#8B4513" stroke-width="1.5"/>
+      <line x1="145" y1="130" x2="175" y2="130" stroke="#8B4513" stroke-width="1.5"/>
+      <line x1="145" y1="140" x2="175" y2="140" stroke="#8B4513" stroke-width="1.5"/>
+      <line x1="145" y1="150" x2="175" y2="150" stroke="#8B4513" stroke-width="1.5"/>
+      <line x1="145" y1="160" x2="175" y2="160" stroke="#8B4513" stroke-width="1.5"/>
+      <line x1="145" y1="170" x2="175" y2="170" stroke="#8B4513" stroke-width="1.5"/>
+      
+      <!-- Iron Core -->
+      <rect id="relay-core" x="150" y="180" width="20" height="80" rx="2" 
+            fill="#607D8B" stroke="#455A64" stroke-width="2"/>
+      
+      <!-- Spring -->
+      <path id="relay-spring" d="M160 180 Q160 160 160 140 Q160 120 160 100" 
+            fill="none" stroke="#90A4AE" stroke-width="3" stroke-linecap="round"/>
+      
+      <!-- Moving Arm -->
+      <g id="relay-arm" transform="translate(300,140) rotate(0)">
+        <line x1="-90" y1="0" x2="0" y2="0" stroke="#546E7A" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="0" cy="0" r="5" fill="#37474F"/>
+      </g>
+      
+      <!-- Contacts -->
+      <circle cx="300" cy="120" r="6" fill="#FFD700" stroke="#FFA000" stroke-width="2"/>
+      <circle cx="300" cy="140" r="6" fill="#B0BEC5" stroke="#78909C" stroke-width="2"/>
+      <circle cx="300" cy="160" r="6" fill="#FFD700" stroke="#FFA000" stroke-width="2"/>
+      
+      <!-- Spark Effect -->
+      <g id="relay-spark" opacity="0">
+        <circle cx="300" cy="120" r="8" fill="#FFEB3B" opacity="0.8"/>
+        <circle cx="300" cy="120" r="12" fill="#FFC107" opacity="0.4"/>
+      </g>
+      
+      <text x="160" y="220" text-anchor="middle" fill="#94A3B8" font-size="13" font-weight="600">Relay</text>
+    </g>
+    
+    <!-- BULB (RIGHT) -->
+    <g id="relay-bulb">
+      <circle cx="400" cy="150" r="32" fill="#FAFAFA" stroke="#E0E0E0" stroke-width="2.5"/>
+      <rect x="383" y="177" width="34" height="18" rx="4" fill="#9E9E9E" stroke="#757575" stroke-width="1.5"/>
+      <rect x="388" y="182" width="24" height="13" rx="2" fill="#616161"/>
+      
+      <!-- Filament -->
+      <path id="bulb-filament" d="M393 145 Q400 132 407 145 Q400 158 393 145" 
+            fill="none" stroke="#FF9800" stroke-width="2.5" stroke-linecap="round"/>
+      
+      <!-- Bulb Glow -->
+      <circle id="bulb-glow" cx="400" cy="150" r="38" fill="url(#bulbGlowOn)" opacity="0"/>
+      
+      <!-- Light Rays -->
+      <g id="light-rays" opacity="0">
+        <line x1="400" y1="118" x2="400" y2="75" stroke="#FFEB3B" stroke-width="4" stroke-linecap="round" opacity="0.9"/>
+        <line x1="425" y1="127" x2="455" y2="105" stroke="#FFC107" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
+        <line x1="375" y1="127" x2="345" y2="105" stroke="#FFC107" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
+        <line x1="435" y1="150" x2="470" y2="150" stroke="#FFD54F" stroke-width="3" stroke-linecap="round" opacity="0.7"/>
+        <line x1="365" y1="150" x2="330" y2="150" stroke="#FFD54F" stroke-width="3" stroke-linecap="round" opacity="0.7"/>
+        <line x1="425" y1="173" x2="455" y2="195" stroke="#FFE082" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
+        <line x1="375" y1="173" x2="345" y2="195" stroke="#FFE082" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
+      </g>
+      
+      <text x="400" y="215" text-anchor="middle" fill="#94A3B8" font-size="13" font-weight="600">Bulb</text>
+    </g>
+    
+    <!-- CONNECTION WIRES -->
+    <line id="wire-1" x1="120" y1="150" x2="140" y2="150" 
+          stroke="#78909C" stroke-width="3" stroke-dasharray="5,5" stroke-linecap="round"/>
+    <line id="wire-2" x1="180" y1="150" x2="210" y2="140" 
+          stroke="#78909C" stroke-width="3" stroke-dasharray="5,5" stroke-linecap="round"/>
+    <line id="wire-3" x1="300" y1="120" x2="370" y2="150" 
+          stroke="#78909C" stroke-width="3" stroke-dasharray="5,5" stroke-linecap="round"/>
+    
+    <!-- ENERGY FLOW PARTICLES -->
+    <g id="energy-particles-1" opacity="0">
+      <circle cx="125" cy="150" r="3" fill="#4CAF50"/>
+      <circle cx="132" cy="150" r="2.5" fill="#66BB6A"/>
+    </g>
+    
+    <g id="energy-particles-2" opacity="0">
+      <circle cx="310" cy="125" r="3" fill="#4CAF50"/>
+      <circle cx="330" cy="132" r="2.5" fill="#66BB6A"/>
+      <circle cx="350" cy="142" r="3" fill="#4CAF50"/>
+    </g>
+    
+    <!-- CONNECTION POINTS -->
+    <circle cx="120" cy="150" r="4" fill="#546E7A" stroke="#37474F" stroke-width="1"/>
+    <circle cx="140" cy="150" r="4" fill="#546E7A" stroke="#37474F" stroke-width="1"/>
+    <circle cx="180" cy="150" r="4" fill="#546E7A" stroke="#37474F" stroke-width="1"/>
+    <circle cx="210" cy="140" r="4" fill="#546E7A" stroke="#37474F" stroke-width="1"/>
+    <circle cx="300" cy="120" r="4" fill="#546E7A" stroke="#37474F" stroke-width="1"/>
+    <circle cx="370" cy="150" r="4" fill="#546E7A" stroke="#37474F" stroke-width="1"/>
   </svg>
 </div>
-          </div>
-        </section>
 
-        <section class="control-section">
-          <h3><i class="fas fa-file-alt"></i> UART Logs</h3>
-          <div class="controls">
-            <button class="action-button" onclick="clearOutput()"><i class="fas fa-trash"></i> Clear Logs</button>
+<!-- LIS3DH ACCELERATION CARD -->
+<div id="lis3dh-card" class="card-container" style="display: none; min-width: 300px;">
+
+  <h4>Acceleration (LIS3DH)</h4>
+
+  <div class="accel-values">
+    <div id="lis3dh-x-value" class="sensor-value">X: 0.00 m/s²</div>
+    <div id="lis3dh-y-value" class="sensor-value">Y: 0.00 m/s²</div>
+    <div id="lis3dh-z-value" class="sensor-value">Z: 0.00 m/s²</div>
+  </div>
+
+  <!-- 3D Cube + Ball -->
+  <div class="cube-container" style="perspective: 1000px; width: 150px; height: 150px; margin: auto; position: relative;">
+    <div id="accel-cube-wrapper" style="width: 150px; height: 150px; position: relative; transform-style: preserve-3d;">
+      <div id="accel-cube" style="width: 150px; height: 150px; position: relative; transform-style: preserve-3d; transition: transform 0.3s ease;">
+
+        <!-- Cube faces -->
+        <div class="face front"></div>
+        <div class="face back"></div>
+        <div class="face right"></div>
+        <div class="face left"></div>
+        <div class="face top"></div>
+        <div class="face bottom"></div>
+
+        <!-- Axes --> 
+         <div class="axis x" style="position: absolute; top: 50%; left: 0; width: 150px; height: 1px; background: red; transform: translateY(-50%);"></div> 
+         <div class="axis y" style="position: absolute; left: 50%; top: 0; width: 1px; height: 150px; background: green; transform: translateX(-50%);"></div> 
+         <div class="axis z"
+     style="
+       position: absolute;
+       top: 50%;
+       left: 50%;
+       width: 1px;
+       height: 150px;
+       background: blue;
+       transform: translate(-50%, -50%) rotateX(90deg);
+     ">
+</div>
+
+        <!-- Axis labels (placed in 3D space) --> 
+         <div class="axis-label x" style="position: absolute; top:50%; left:50%; transform: translate(-50%, -50%) translate3d(75px, 0, 0); color: red; font-size: 12px;">+X</div> 
+         <div class="axis-label y" style="position: absolute; top:50%; left:50%; transform: translate(-50%, -50%) translate3d(0, -75px, 0); color: green; font-size: 12px;">+Y</div> 
+         <div class="axis-label z" style="position: absolute; top:50%; left:50%; transform: translate(-50%, -50%) translate3d(0, 0, 75px); color: blue; font-size: 12px;">+Z</div>
+         
+        <!-- Ball -->
+        <div id="accel-ball"></div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+        <!-- Hall Sensor Card -->
+<div id="hall-card" class="card-container">
+  <h4>Hall Sensor</h4>
+  <div id="hall-value" class="sensor-value" style="margin-bottom: 16px; font-size: 1.5rem; font-weight: 600; letter-spacing: -1px;">Waiting for data…</div>
+  
+  <div class="hall-animation-container">
+    <!-- Lightning bolts container -->
+    <svg id="hall-lightning-bolts" class="hall-lightning-layer" viewBox="0 0 100 100">
+      <!-- Lightning bolts will be dynamically inserted here -->
+    </svg>
+
+    <!-- Magnetic field lines (background) -->
+    <svg class="hall-field-layer" viewBox="0 0 100 100">
+      <defs>
+        <filter id="hall-glow">
+          <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+          <feMerge>
+            <feMergeNode in="coloredBlur"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+      </defs>
+      
+      <g id="hall-magnetic-waves" opacity="0">
+        <path class="mag-wave wave-1" d="M 28 35 Q 50 27, 72 35" fill="none" stroke="#ef4444" stroke-width="1" opacity="0.6"/>
+        <path class="mag-wave wave-2" d="M 26 40 Q 50 31, 74 40" fill="none" stroke="#ef4444" stroke-width="1" opacity="0.5"/>
+        <path class="mag-wave wave-3" d="M 24 45 Q 50 35, 76 45" fill="none" stroke="#ef4444" stroke-width="1" opacity="0.4"/>
+        <path class="mag-wave wave-4" d="M 22 50 Q 50 39, 78 50" fill="none" stroke="#ef4444" stroke-width="1" opacity="0.3"/>
+        <path class="mag-wave wave-5" d="M 20 55 Q 50 43, 80 55" fill="none" stroke="#ef4444" stroke-width="1" opacity="0.2"/>
+        
+        <path class="mag-wave wave-1" d="M 28 65 Q 50 73, 72 65" fill="none" stroke="#ef4444" stroke-width="1" opacity="0.6"/>
+        <path class="mag-wave wave-2" d="M 26 60 Q 50 69, 74 60" fill="none" stroke="#ef4444" stroke-width="1" opacity="0.5"/>
+        <path class="mag-wave wave-3" d="M 24 55 Q 50 65, 76 55" fill="none" stroke="#ef4444" stroke-width="1" opacity="0.4"/>
+        <path class="mag-wave wave-4" d="M 22 50 Q 50 61, 78 50" fill="none" stroke="#ef4444" stroke-width="1" opacity="0.3"/>
+        <path class="mag-wave wave-5" d="M 20 45 Q 50 57, 80 45" fill="none" stroke="#ef4444" stroke-width="1" opacity="0.2"/>
+      </g>
+    </svg>
+
+    <!-- Horseshoe magnet -->
+    <svg id="hall-magnet" class="hall-magnet-layer" viewBox="0 0 100 100">
+      <defs>
+        <filter id="hall-shadow">
+          <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.3"/>
+        </filter>
+      </defs>
+
+      <!-- Magnet body - U shape upward -->
+      <path
+        d="M 30 30 L 30 50 Q 30 65, 50 65 Q 70 65, 70 50 L 70 30"
+        fill="none"
+        stroke="#1e293b"
+        stroke-width="6"
+        stroke-linecap="round"
+        filter="url(#hall-shadow)"
+      />
+      
+      <!-- Inner highlight for depth -->
+      <path
+        d="M 32 32 L 32 50 Q 32 63, 50 63 Q 68 63, 68 50 L 68 32"
+        fill="none"
+        stroke="#334155"
+        stroke-width="2"
+        stroke-linecap="round"
+        opacity="0.5"
+      />
+
+      <!-- Left pole (red) -->
+      <g filter="url(#hall-shadow)">
+        <rect x="25" y="25" width="12" height="10" fill="#ef4444" rx="1.5"/>
+        <text x="31" y="32.5" font-size="8" fill="white" font-weight="bold" text-anchor="middle">N</text>
+      </g>
+
+      <!-- Right pole (blue) -->
+      <g filter="url(#hall-shadow)">
+        <rect x="63" y="25" width="12" height="10" fill="#3b82f6" rx="1.5"/>
+        <text x="69" y="32.5" font-size="8" fill="white" font-weight="bold" text-anchor="middle">S</text>
+      </g>
+
+      <!-- Shine effect on poles -->
+      <rect x="26" y="26" width="4" height="3" fill="white" opacity="0.3" rx="0.5"/>
+      <rect x="64" y="26" width="4" height="3" fill="white" opacity="0.3" rx="0.5"/>
+
+      <!-- Lightning symbols on top of poles -->
+      <g id="hall-pole-lightning" opacity="0">
+        <path
+          class="pole-spark spark-1"
+          d="M 29 19 L 30 23 L 28 23 L 32 28 L 31 25 L 33 25 Z"
+          fill="#fbbf24"
+          opacity="0.8"
+        />
+        <path
+          class="pole-spark spark-2"
+          d="M 67 19 L 68 23 L 66 23 L 70 28 L 69 25 L 71 25 Z"
+          fill="#fbbf24"
+          opacity="0.8"
+        />
+      </g>
+    </svg>
+  </div>
+
+  <!-- Status indicator -->
+  <div class="hall-status-container">
+    <div id="hall-status-dot" class="hall-status-dot"></div>
+  </div>
+</div>
+
+<!-- TLV493D Magnetic Field – PERFECTLY SIZED & GRID-FRIENDLY -->
+<div id="tlv493d-card" class="card-container" style="display:none; text-align:center;">
+  <h4>Magnetic Field (TLV493D)</h4>
+
+  <!-- Live Values -->
+  <div style="margin:16px 0; font-size:1.1rem; line-height:1.8;">
+    <div id="tlv493d-x-value" style="color:#ff6b6b;">X: 0.00 mT</div>
+    <div id="tlv493d-y-value" style="color:#4ecdc4;">Y: 0.00 mT</div>
+    <div id="tlv493d-z-value" style="color:#60a5fa;">Z: 0.00 mT</div>
+  </div>
+
+  <!-- Compact 140×140 SVG -->
+  <div style="width:160px; height:160px; margin:20px auto; background:#0f172a; border-radius:20px; display:flex; align-items:center; justify-content:center;">
+    <svg width="140" height="140" viewBox="0 0 140 140">
+      <!-- Background circles -->
+      <circle cx="70" cy="70" r="68" fill="none" stroke="#334155" stroke-width="1"/>
+      <circle cx="70" cy="70" r="45" fill="none" stroke="#334155" stroke-width="1" opacity="0.6"/>
+
+      <!-- Axes -->
+      <line x1="10" y1="70" x2="130" y2="70" stroke="#475569" stroke-width="1.5"/>
+      <line x1="70" y1="10" x2="70" y2="130" stroke="#475569" stroke-width="1.5"/>
+
+      <!-- Z dominant indicator -->
+      <circle id="z-axis-indicator" cx="70" cy="70" r="12" fill="#60a5fa33" stroke="#60a5fa" stroke-width="3" opacity="0">
+        <animate attributeName="r" values="12;22;12" dur="2s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0;0.6;0" dur="2s" repeatCount="indefinite"/>
+      </circle>
+
+      <!-- Magnetic field vector LINE -->
+      <line id="vector-line" x1="70" y1="70" x2="70" y2="70"
+            stroke="#6ee7ff" stroke-width="5" stroke-linecap="round"/>
+      
+      <!-- Arrow head - proper triangle shape pointing RIGHT by default -->
+      <polygon id="vector-head" points="0,-6 12,0 0,6" fill="#6ee7ff"
+               transform="translate(70,70) rotate(0)"/>
+
+      <!-- Center dot -->
+      <circle cx="70" cy="70" r="3" fill="#94a3b8" opacity="0.6"/>
+    </svg>
+  </div>
+
+  <!-- Direction label -->
+  <div id="mag-label" style="font-size:1.8rem; font-weight:bold; color:#ffd43b; margin-top:8px;">
+    Waiting...
+  </div>
+</div>
+
+
+        <!-- WIND DIRECTION CARD - FINAL PERFECT (centered, smaller, needle fully attached) -->
+        <div id="wind-direction-card" class="card-container" style="display: none;  border-radius: 16px; padding: 16px; text-align: center;">
+          <h4>Wind Direction</h4>
+          <div id="wind-direction-value">0°</div>
+          <div class="wind-compass">
+            <div class="outer-ring"></div>
+            <div class="inner-ring"></div>
+
+            <!-- 8-point star -->
+            <div class="rose">
+              <div class="line"></div><div class="line" style="transform:rotate(45deg)"></div>
+              <div class="line" style="transform:rotate(90deg)"></div><div class="line" style="transform:rotate(135deg)"></div>
+              <div class="line" style="transform:rotate(180deg)"></div><div class="line" style="transform:rotate(225deg)"></div>
+              <div class="line" style="transform:rotate(270deg)"></div><div class="line" style="transform:rotate(315deg)"></div>
+            </div>
+
+            <!-- Labels -->
+            <span class="dir N">N</span><span class="dir NE">NE</span>
+            <span class="dir E">E</span><span class="dir SE">SE</span>
+            <span class="dir S">S</span><span class="dir SW">SW</span>
+            <span class="dir W">W</span><span class="dir NW">NW</span>
+
+            <!-- Needle - RED NORTH + GRAY SOUTH - perfectly joined at center -->
+            <div class="needle" id="wind-direction-arrow">
+              <div class="north"></div>
+              <div class="south"></div>
+            </div>
+
+            <!-- Center pivot -->
+            <div class="pivot"></div>
           </div>
-          <div id="output"></div>
+        </div>
+
+        <!-- Wind Speed Card -->
+        <div id="wind-speed-card" class="card-container" style="display: none;">
+          <h4>Wind Speed</h4>
+          <div id="wind-speed-value" class="sensor-value">0.0 m/s</div>
+          <div class="anemometer-container">
+            <svg width="150" height="150" viewBox="0 0 150 150">
+              <defs>
+                <linearGradient id="anemometerGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:#10b981;stop-opacity:0.8" />
+                  <stop offset="100%" style="stop-color:#047857;stop-opacity:1" />
+                </linearGradient>
+                <filter id="speedGlow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                  <feMerge>
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+              </defs>
+              
+              <!-- Anemometer base -->
+              <circle cx="75" cy="75" r="50" fill="none" stroke="var(--text-color)" stroke-width="2" opacity="0.3"/>
+              
+              <!-- Anemometer cups -->
+              <g id="anemometer-cups" transform="rotate(0, 75, 75)">
+                <!-- Cup 1 -->
+                <circle cx="75" cy="25" r="12" fill="url(#anemometerGlow)" filter="url(#speedGlow)"/>
+                <!-- Cup 2 -->
+                <circle cx="105" cy="75" r="12" fill="url(#anemometerGlow)" filter="url(#speedGlow)"/>
+                <!-- Cup 3 -->
+                <circle cx="75" cy="125" r="12" fill="url(#anemometerGlow)" filter="url(#speedGlow)"/>
+                <!-- Cup 4 -->
+                <circle cx="45" cy="75" r="12" fill="url(#anemometerGlow)" filter="url(#speedGlow)"/>
+                
+                <!-- Support arms -->
+                <line x1="75" y1="25" x2="75" y2="75" stroke="var(--text-color)" stroke-width="2"/>
+                <line x1="105" y1="75" x2="75" y2="75" stroke="var(--text-color)" stroke-width="2"/>
+                <line x1="75" y1="125" x2="75" y2="75" stroke="var(--text-color)" stroke-width="2"/>
+                <line x1="45" y1="75" x2="75" y2="75" stroke="var(--text-color)" stroke-width="2"/>
+              </g>
+              
+              <!-- Center hub -->
+              <circle cx="75" cy="75" r="8" fill="var(--text-color)"/>
+            </svg>
+          </div>
+          <div id="wind-speed-bar" class="card-bar" style="width: 0%; background: linear-gradient(90deg, #10b981, #f59e0b, #ef4444); margin-top: 10px;"></div>
+        </div>
+
+        
+<!-- VL53L0X Distance Sensor Card -->
+<div id="tof-card" class="sensor-card tof-animate">
+  <div class="tof-header">
+    <h4>Distance</h4>
+    <div id="tof-value" class="sensor-value">– cm</div>
+  </div>
+
+  <svg id="tof-animation" width="220" height="100" viewBox="0 0 220 100">
+    <!-- sensor box -->
+    <rect x="5" y="45" width="10" height="10" fill="#4a90e2" class="sensor-pulse"/>
+    
+    <!-- distance wave effect -->
+    <circle id="tof-wave" cx="10" cy="50" r="5" fill="none" stroke="#4a90e2" stroke-width="2" opacity="0"/>
+    
+    <!-- distance measurement line -->
+    <line id="tof-distance-line" x1="15" y1="50" x2="30" y2="50" stroke="#4a90e2" stroke-width="1" stroke-dasharray="3,2" opacity="0.6"/>
+    
+    <!-- ground line -->
+    <line x1="0" y1="75" x2="220" y2="75" stroke="#ccc" stroke-width="2"/>
+    
+    <!-- stick figure person -->
+    <g id="tof-person" transform="translate(20,0)">
+      <circle cx="5" cy="20" r="5" fill="#FF6B6B"/>
+      <line x1="5" y1="25" x2="5" y2="55" stroke="#FF6B6B" stroke-width="2"/>
+      <line x1="5" y1="30" x2="-5" y2="40" stroke="#FF6B6B" stroke-width="2"/>
+      <line x1="5" y1="30" x2="15" y2="40" stroke="#FF6B6B" stroke-width="2"/>
+      <line x1="5" y1="55" x2="-5" y2="75" stroke="#FF6B6B" stroke-width="2"/>
+      <line x1="5" y1="55" x2="15" y2="75" stroke="#FF6B6B" stroke-width="2"/>
+    </g>
+    
+    <!-- distance markers -->
+    <text x="0" y="95" font-size="10" fill="#999">0cm</text>
+    <text x="190" y="95" font-size="10" fill="#999">850cm</text>
+  </svg>
+</div>
+
+
+<!-- UV LTR390 UV Index with Enhanced Sun Animation + Dynamic Pointer -->
+<div id="uvltr-card" class="card-container">
+  <div class="sensor-card">
+    <h4>UV Index</h4>
+    <div id="uv-value" class="sensor-value">UV: 0.00</div>
+   
+    <div class="sensor-visualization">
+      <svg id="uv-sun" width="120" height="120" viewBox="0 0 120 120">
+        <defs>
+          <!-- Sun gradient – will be updated by JS -->
+          <radialGradient id="uvSunGradient" cx="50%" cy="50%" r="50%">
+            <stop id="sunStop1" offset="0%"   style="stop-color:#ffeb3b; stop-opacity:1"/>
+            <stop id="sunStop2" offset="60%"  style="stop-color:#ff9800; stop-opacity:0.8"/>
+            <stop id="sunStop3" offset="100%" style="stop-color:#ff6b00; stop-opacity:0.4"/>
+          </radialGradient>
+          <filter id="uvGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="5" result="coloredBlur"/>
+            <feMerge>
+              <feMergeNode in="coloredBlur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+      
+        <!-- Animated sun rays -->
+        <g id="sun-rays" transform="translate(60, 45)">
+          <line class="sun-ray" x1="0" y1="0" x2="0" y2="-40" stroke="#ff9800" stroke-width="4" opacity="0">
+            <animate attributeName="opacity" values="0;0.9;0" dur="4s" repeatCount="indefinite"/>
+            <animate attributeName="y2" values="-35;-45;-35" dur="4s" repeatCount="indefinite"/>
+          </line>
+          <line class="sun-ray" x1="0" y1="0" x2="28" y2="-28" stroke="#ff9800" stroke-width="4" opacity="0">
+            <animate attributeName="opacity" values="0;0.9;0" dur="4s" begin="0.5s" repeatCount="indefinite"/>
+            <animate attributeName="x2" values="25;32;25" dur="4s" begin="0.5s" repeatCount="indefinite"/>
+            <animate attributeName="y2" values="-25;-32;-25" dur="4s" begin="0.5s" repeatCount="indefinite"/>
+          </line>
+          <line class="sun-ray" x1="0" y1="0" x2="40" y2="0" stroke="#ff9800" stroke-width="4" opacity="0">
+            <animate attributeName="opacity" values="0;0.9;0" dur="4s" begin="1s" repeatCount="indefinite"/>
+            <animate attributeName="x2" values="35;45;35" dur="4s" begin="1s" repeatCount="indefinite"/>
+          </line>
+          <line class="sun-ray" x1="0" y1="0" x2="28" y2="28" stroke="#ff9800" stroke-width="4" opacity="0">
+            <animate attributeName="opacity" values="0;0.9;0" dur="4s" begin="1.5s" repeatCount="indefinite"/>
+            <animate attributeName="x2" values="25;32;25" dur="4s" begin="1.5s" repeatCount="indefinite"/>
+            <animate attributeName="y2" values="25;32;25" dur="4s" begin="1.5s" repeatCount="indefinite"/>
+          </line>
+          <line class="sun-ray" x1="0" y1="0" x2="0" y2="40" stroke="#ff9800" stroke-width="4" opacity="0">
+            <animate attributeName="opacity" values="0;0.9;0" dur="4s" begin="2s" repeatCount="indefinite"/>
+            <animate attributeName="y2" values="35;45;35" dur="4s" begin="2s" repeatCount="indefinite"/>
+          </line>
+          <line class="sun-ray" x1="0" y1="0" x2="-28" y2="28" stroke="#ff9800" stroke-width="4" opacity="0">
+            <animate attributeName="opacity" values="0;0.9;0" dur="4s" begin="2.5s" repeatCount="indefinite"/>
+            <animate attributeName="x2" values="-25;-32;-25" dur="4s" begin="2.5s" repeatCount="indefinite"/>
+            <animate attributeName="y2" values="25;32;25" dur="4s" begin="2.5s" repeatCount="indefinite"/>
+          </line>
+          <line class="sun-ray" x1="0" y1="0" x2="-40" y2="0" stroke="#ff9800" stroke-width="4" opacity="0">
+            <animate attributeName="opacity" values="0;0.9;0" dur="4s" begin="3s" repeatCount="indefinite"/>
+            <animate attributeName="x2" values="-35;-45;-35" dur="4s" begin="3s" repeatCount="indefinite"/>
+          </line>
+          <line class="sun-ray" x1="0" y1="0" x2="-28" y2="-28" stroke="#ff9800" stroke-width="4" opacity="0">
+            <animate attributeName="opacity" values="0;0.9;0" dur="4s" begin="3.5s" repeatCount="indefinite"/>
+            <animate attributeName="x2" values="-25;-32;-25" dur="4s" begin="3.5s" repeatCount="indefinite"/>
+            <animate attributeName="y2" values="-25;-32;-25" dur="4s" begin="3.5s" repeatCount="indefinite"/>
+          </line>
+        </g>
+      
+        <!-- Sun core -->
+        <circle cx="60" cy="45" r="20" fill="url(#uvSunGradient)" filter="url(#uvGlow)"/>
+        
+        <!-- Inner glow circle -->
+        <circle cx="60" cy="45" r="20" fill="none" stroke="#fff" stroke-width="2" opacity="0.3">
+          <animate attributeName="r" values="20;24;20" dur="4s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.3;0.1;0.3" dur="4s" repeatCount="indefinite"/>
+        </circle>
+      </svg>
+    </div>
+
+          <div class="uv-container">
+            <!-- Labels -->
+            <div class="uv-labels" style="margin-top: 45px;">
+              <span>0</span>
+              <span>3</span>
+              <span>6</span>
+              <span>8</span>
+              <span>11+</span>
+            </div>
+          
+            <!-- Gradient bar (exact shape) -->
+            <div class="uv-bar"></div>
+          
+            <!-- Triangle pointer (exact same as your second picture) -->
+            <div class="pointer">
+              <svg viewBox="0 0 24 24">
+                <polygon points="12,2 0,22 24,22" fill="#ffffff" stroke="#0f172a" stroke-width="2"/>
+                <!-- small inner highlight (optional, looks even closer) -->
+                <polygon points="12,5 4,19 20,19" fill="rgba(255,255,255,0.5)"/>
+              </svg>
+            </div>
+          </div>
+        </svg>
+      </div>
+    </div>
+  </div>
+</div>
+            
+
+          <!-- IR Sensor Card with Proper Reflection Animation -->
+<div id="ir-card" class="card-container" style="display: none;">
+  <h4>IR Sensor</h4>
+  <div id="ir-value" class="sensor-value" style="margin-bottom: 16px; font-size: 1.5rem; font-weight: 600; letter-spacing: -1px;">Waiting...</div>
+  
+  <svg width="650" height="280" viewBox="0 0 650 280" style="margin: 20px 0;">
+    <!-- Gradient Definitions for Light Rays -->
+    <defs>
+      <!-- Red ray gradient (IR light going OUT) -->
+      <linearGradient id="redRayGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" style="stop-color:#8B0000;stop-opacity:0" />
+        <stop offset="30%" style="stop-color:#CD5C5C;stop-opacity:0.7" />
+        <stop offset="100%" style="stop-color:#8B0000;stop-opacity:0.3" />
+      </linearGradient>
+      
+      <!-- Yellow/Orange ray gradient (Reflected light coming BACK) -->
+      <linearGradient id="yellowRayGradient" x1="100%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" style="stop-color:#B8860B;stop-opacity:0.3" />
+        <stop offset="70%" style="stop-color:#DAA520;stop-opacity:0.7" />
+        <stop offset="100%" style="stop-color:#B8860B;stop-opacity:0" />
+      </linearGradient>
+    </defs>
+    
+    <!-- IR Sensor Box (Left) -->
+    <rect x="50" y="95" width="110" height="110" rx="8" fill="rgba(51, 65, 85, 0.5)" stroke="#4a90e2" stroke-width="2.5"/>
+    <text x="105" y="145" text-anchor="middle" fill="#4ade80" font-size="15" font-weight="bold">IR</text>
+    <text x="105" y="165" text-anchor="middle" fill="#4ade80" font-size="15" font-weight="bold">Sensor</text>
+    
+    <!-- IR LED (Top emitter) -->
+    <circle cx="190" cy="120" r="22" fill="rgba(42, 42, 42, 0.8)" stroke="#555" stroke-width="2"/>
+    <circle id="ir-led" cx="190" cy="120" r="14" fill="#cc0000"/>
+    <circle id="ir-led-glow" cx="190" cy="120" r="20" fill="#ff0000" opacity="0"/>
+    <text x="230" y="115" fill="#888" font-size="11">IR LED</text>
+    
+    <!-- Photodiode (Bottom receiver) -->
+    <circle cx="190" cy="180" r="22" fill="rgba(42, 42, 42, 0.8)" stroke="#555" stroke-width="2"/>
+    <circle id="ir-receiver" cx="190" cy="180" r="14" fill="#555"/>
+    <circle id="ir-receiver-glow" cx="190" cy="180" r="20" fill="#ffeb3b" opacity="0"/>
+    <text x="230" y="185" fill="#888" font-size="11">Photo Diode</text>
+    
+    <!-- Connection lines -->
+    <line x1="160" y1="120" x2="168" y2="120" stroke="#4a90e2" stroke-width="2"/>
+    <line x1="160" y1="180" x2="168" y2="180" stroke="#4a90e2" stroke-width="2"/>
+    
+    <!-- IR Light Label (Top) -->
+    <text x="360" y="90" text-anchor="middle" fill="#4ade80" font-size="14" font-weight="bold">IR light</text>
+    
+    <!-- OUTGOING (red) -->
+<polygon id="ray-gradient-out"
+         points="500,170 500,102 500,108 212,123"
+         fill="url(#redRayGradient)" opacity="0"/>
+
+    
+    <!-- Transmitted IR Beam Dots (Red) - Horizontal path -->
+    <g id="ir-beam-out">
+      <circle cx="250" cy="120" r="1" fill="#ff3366" opacity="0"/>
+      <circle cx="320" cy="120" r="2" fill="#ff3366" opacity="0"/>
+      <circle cx="390" cy="120" r="3" fill="#ff3366" opacity="0"/>
+      <circle cx="460" cy="120" r="4" fill="#ff3366" opacity="0"/>
+      <circle cx="500" cy="120" r="3" fill="#ff3366" opacity="0"/>
+    </g>
+    
+    <!-- Reflected IR Light Label (Bottom) -->
+    <text x="360" y="245" text-anchor="middle" fill="#4ade80" font-size="14" font-weight="bold">Reflected IR light</text>
+    
+    <!-- REFLECTED (yellow) -->
+    <polygon id="ray-gradient-reflected"
+         points="500,170 212,170 212,170 500,114"
+         fill="url(#yellowRayGradient)" opacity="0"/>
+    
+    <!-- Reflected Beam Dots (Yellow) - Diagonal path from object to photodiode -->
+    <g id="ir-beam-reflected">
+      <circle cx="500" cy="135" r="2" fill="#ffeb3b" opacity="0"/>
+      <circle cx="430" cy="148" r="2" fill="#ffeb3b" opacity="0"/>
+      <circle cx="360" cy="161" r="3" fill="#ffeb3b" opacity="0"/>
+      <circle cx="290" cy="174" r="4" fill="#ffeb3b" opacity="0"/>
+      <circle cx="220" cy="180" r="3" fill="#ffeb3b" opacity="0"/>
+    </g>
+    
+    <!-- Object Box (Right) - Same size as Sensor box -->
+    <rect id="detected-object" x="490" y="95" width="110" height="110" rx="8" fill="rgba(51, 65, 85, 0.5)" stroke="#4a90e2" stroke-width="2.5" opacity="0"/>
+    <text id="object-label" x="545" y="155" text-anchor="middle" fill="#4ade80" font-size="15" font-weight="bold" opacity="0">Object</text>
+  </svg>
+</div>
+
+<!-- Blinky Card - Fixed Switch -->
+<div id="blinky-card" class="card-container" style="display: none;">
+  <h4>Blinky Controller</h4>
+  <div id="blinky-value" class="sensor-value" style="margin-bottom: 16px; font-size: 1.5rem; font-weight: 600; letter-spacing: -1px;">OFF</div>
+  
+  <svg id="blinky-svg" width="500" height="300" viewBox="0 0 500 300" style="margin: 0 auto;">
+    <defs>
+      <!-- Bulb Glow -->
+      <radialGradient id="bulbGlowOn" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#FFFF00" stop-opacity="1"/>
+        <stop offset="50%" stop-color="#FFEB3B" stop-opacity="0.8"/>
+        <stop offset="100%" stop-color="#FFC107" stop-opacity="0"/>
+      </radialGradient>
+      
+      <!-- Green Energy Particles -->
+      <radialGradient id="energyParticle" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#4CAF50" stop-opacity="1"/>
+        <stop offset="100%" stop-color="#4CAF50" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    
+    <!-- === POWER SOURCE (LEFT) === -->
+    <g id="power-source">
+      <circle cx="100" cy="150" r="20" fill="#455A64" stroke="#37474F" stroke-width="2"/>
+      <line x1="100" y1="130" x2="100" y2="170" stroke="#37474F" stroke-width="3"/>
+      <line x1="80" y1="150" x2="120" y2="150" stroke="#37474F" stroke-width="3"/>
+      <text x="100" y="190" text-anchor="middle" fill="#90A4AE" font-size="14" font-weight="600">Power</text>
+    </g>
+    
+    <!-- === RELAY SWITCH (CENTER) === -->
+    <g id="relay-switch-group">
+      <!-- Switch Track -->
+      <rect x="180" y="130" width="120" height="40" rx="20" fill="#ECEFF1" stroke="#B0BEC5" stroke-width="2"/>
+      
+      <!-- Switch Knob (STARTING AT OFF POSITION - LEFT SIDE) -->
+      <circle id="switch-knob" cx="200" cy="150" r="15" 
+              fill="#78909C" stroke="#546E7A" stroke-width="2"/>
+      
+      <!-- ON/OFF Labels -->
+      <text x="195" y="125" text-anchor="middle" fill="#757575" font-size="12" font-weight="600">OFF</text>
+      <text x="285" y="125" text-anchor="middle" fill="#757575" font-size="12" font-weight="600">ON</text>
+      
+      <!-- Switch Glow (CENTERED ON KNOB, NOT VISIBLE BY DEFAULT) -->
+      <circle id="switch-glow" cx="200" cy="150" r="20" 
+              fill="#4CAF50" opacity="0"/>
+      
+      <text x="240" y="190" text-anchor="middle" fill="#90A4AE" font-size="14" font-weight="600">Blinky Switch</text>
+    </g>
+    
+    <!-- === BULB (RIGHT) === -->
+    <g id="relay-bulb">
+      <!-- Bulb Glass -->
+      <circle cx="400" cy="150" r="30" fill="#FAFAFA" stroke="#E0E0E0" stroke-width="2"/>
+      
+      <!-- Bulb Base -->
+      <rect x="385" y="175" width="30" height="15" rx="3" fill="#9E9E9E"/>
+      <rect x="390" y="180" width="20" height="10" rx="2" fill="#757575"/>
+      
+      <!-- Bulb Filament -->
+      <path id="bulb-filament" d="M395 145 Q400 135 405 145" 
+            fill="none" stroke="#FF9800" stroke-width="2" stroke-linecap="round"/>
+      
+      <!-- Bulb Glow Effect -->
+      <circle id="bulb-glow" cx="400" cy="150" r="35" 
+              fill="url(#bulbGlowOn)" opacity="0"/>
+      
+      <!-- Light Rays - CORRECTED with more gap -->
+    <g id="light-rays" opacity="0">
+      <!-- Top -->
+      <line x1="400" y1="120" x2="400" y2="80" stroke="#FFEB3B" stroke-width="3" stroke-linecap="round"/>
+      
+      <!-- Top-Right -->
+      <line x1="420" y1="130" x2="445" y2="110" stroke="#FFEB3B" stroke-width="2" stroke-linecap="round"/>
+      
+      <!-- Top-Left -->
+      <line x1="380" y1="130" x2="355" y2="110" stroke="#FFEB3B" stroke-width="2" stroke-linecap="round"/>
+      
+      <!-- Right -->
+      <line x1="430" y1="150" x2="460" y2="150" stroke="#FFEB3B" stroke-width="2" stroke-linecap="round"/>
+      
+      <!-- Left -->
+      <line x1="380" y1="150" x2="340" y2="150" stroke="#FFEB3B" stroke-width="4" stroke-linecap="round"/>
+    </g>
+      
+      <text x="400" y="205" text-anchor="middle" fill="#90A4AE" font-size="14" font-weight="600">Bulb</text>
+    </g>
+    
+    <!-- === DOTTED CONNECTION LINES === -->
+    <!-- Power to Switch -->
+    <line id="wire-1" x1="120" y1="150" x2="180" y2="150" 
+          stroke="#78909C" stroke-width="3" stroke-dasharray="5,5" stroke-linecap="round"/>
+    
+    <!-- Switch to Bulb -->
+    <line id="wire-2" x1="300" y1="150" x2="370" y2="150" 
+          stroke="#78909C" stroke-width="3" stroke-dasharray="5,5" stroke-linecap="round"/>
+    
+    <!-- === ENERGY FLOW PARTICLES === -->
+    <!-- Energy particles from Power to Switch -->
+    <g id="energy-particles-1" opacity="0">
+      <circle cx="125" cy="150" r="3" fill="#4CAF50"/>
+      <circle cx="145" cy="150" r="2" fill="#4CAF50"/>
+      <circle cx="165" cy="150" r="3" fill="#4CAF50"/>
+    </g>
+    
+    <!-- Energy particles from Switch to Bulb -->
+    <g id="energy-particles-2" opacity="0">
+      <circle cx="305" cy="150" r="3" fill="#4CAF50"/>
+      <circle cx="325" cy="150" r="2" fill="#4CAF50"/>
+      <circle cx="345" cy="150" r="3" fill="#4CAF50"/>
+      <circle cx="365" cy="150" r="2" fill="#4CAF50"/>
+    </g>
+    
+    <!-- Connection Points -->
+    <circle cx="120" cy="150" r="4" fill="#78909C"/>
+    <circle cx="180" cy="150" r="4" fill="#78909C"/>
+    <circle cx="300" cy="150" r="4" fill="#78909C"/>
+    <circle cx="370" cy="150" r="4" fill="#78909C"/>
+  </svg>
+</div>
+
+<!-- Buzzer Card - Enhanced with Sound Wave Animation -->
+<div id="buzzer-card" class="card-container" style="display: none;">
+  <h4>Buzzer</h4>
+  <div id="buzzer-value" class="sensor-value" style="margin-bottom: 16px; font-size: 1.8rem; font-weight: 700; letter-spacing: -1px;">Inactive</div>
+
+  <div class="buzzer-animation-container" style="width: 220px; height: 220px; margin: 0 auto; position: relative;">
+    <svg width="220" height="220" viewBox="0 0 220 220">
+      <defs>
+        <!-- Gradient for speaker body -->
+        <linearGradient id="speakerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#4b5563"/>
+          <stop offset="100%" stop-color="#1f2937"/>
+        </linearGradient>
+
+        <!-- Pulsing glow when active -->
+        <radialGradient id="buzzerGlow" cx="50%" cy="50%" r="70%">
+          <stop offset="0%" stop-color="#60a5fa" stop-opacity="0.8"/>
+          <stop offset="60%" stop-color="#3b82f6" stop-opacity="0.4"/>
+          <stop offset="100%" stop-color="#2563eb" stop-opacity="0"/>
+        </radialGradient>
+
+        <filter id="buzzerPulseGlow">
+          <feGaussianBlur stdDeviation="8" result="blur"/>
+          <feOffset in="blur" dx="0" dy="0" result="offsetBlur"/>
+          <feFlood flood-color="#60a5fa" flood-opacity="0.6"/>
+          <feComposite in="flood" in2="offsetBlur" operator="in"/>
+          <feMerge>
+            <feMergeNode/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+      </defs>
+
+      <!-- Speaker Body -->
+      <g id="speaker-body">
+        <!-- Outer cone -->
+        <circle cx="110" cy="110" r="80" fill="none" stroke="#374151" stroke-width="12"/>
+        <!-- Inner speaker cone -->
+        <circle cx="110" cy="110" r="65" fill="url(#speakerGradient)"/>
+        <!-- Center magnet -->
+        <circle cx="110" cy="110" r="35" fill="#111827"/>
+        <circle cx="110" cy="110" r="25" fill="#1f2937" stroke="#374151" stroke-width="3"/>
+      </g>
+
+      <!-- Sound Waves (visible only when active) -->
+      <g id="sound-waves" opacity="0">
+        <!-- Wave 1 -->
+        <circle cx="110" cy="110" r="90" fill="none" stroke="#60a5fa" stroke-width="6" opacity="0.8">
+          <animate attributeName="r" values="90;120;90" dur="1.8s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.8;0;0.8" dur="1.8s" repeatCount="indefinite"/>
+          <animate attributeName="stroke-width" values="6;3;6" dur="1.8s" repeatCount="indefinite"/>
+        </circle>
+        <!-- Wave 2 (offset) -->
+        <circle cx="110" cy="110" r="90" fill="none" stroke="#3b82f6" stroke-width="5" opacity="0.7">
+          <animate attributeName="r" values="90;115;90" dur="1.8s" begin="0.4s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.7;0;0.7" dur="1.8s" begin="0.4s" repeatCount="indefinite"/>
+        </circle>
+        <!-- Wave 3 (smaller, faster) -->
+        <circle cx="110" cy="110" r="90" fill="none" stroke="#2563eb" stroke-width="4" opacity="0.6">
+          <animate attributeName="r" values="90;110;90" dur="1.4s" begin="0.8s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.6;0;0.6" dur="1.4s" begin="0.8s" repeatCount="indefinite"/>
+        </circle>
+      </g>
+
+      <!-- Pulsing Glow Overlay (when active) -->
+      <circle id="buzzer-glow-ring" cx="110" cy="110" r="85" fill="none" stroke="url(#buzzerGlow)" stroke-width="8" opacity="0" filter="url(#buzzerPulseGlow)">
+        <animate attributeName="opacity" values="0;0.6;0" dur="1.5s" repeatCount="indefinite"/>
+      </circle>
+
+      <!-- Small vibration lines (random subtle shake when active) -->
+      <g id="vibration-lines" opacity="0">
+        <line x1="30" y1="110" x2="190" y2="110" stroke="#60a5fa" stroke-width="2" opacity="0.5">
+          <animateTransform attributeName="transform" type="translate" values="0,0; 2,2; -2,-2; 0,0" dur="0.3s" repeatCount="indefinite"/>
+        </line>
+        <line x1="110" y1="30" x2="110" y2="190" stroke="#60a5fa" stroke-width="2" opacity="0.5">
+          <animateTransform attributeName="transform" type="translate" values="0,0; -2,-2; 2,2; 0,0" dur="0.4s" repeatCount="indefinite"/>
+        </line>
+      </g>
+    </svg>
+  </div>
+</div>
+        
+          </div>
         </section>
       </div>
     </div>
   </div>
 
   <footer>
-    <p><i class="fas fa-copyright"></i> IOT Serial Monitor App © 2025</p>
+    <p><i class="fas fa-copyright"></i> Serial Monitor App © 2025</p>
   </footer>
 
   <script src="renderer.js"></script>
   <script>
   let isLedOn = false;
 
-  function restartDevice() {
-    sendCommand('Restart Device');
-    document.getElementById('output').innerHTML += 'Sent RESTART command to device.<br>';
-    const button = document.getElementById('restart-button');
-    button.disabled = true;
-    setTimeout(() => {
-      button.disabled = false;
-    }, 5000);
+ function restartDevice() {
+  // === STEP 1: Reset ALL visual displays first (before sending command) ===
+  resetAllSensorDisplays();
+
+  // === STEP 2: Reset the polling interval (stop current data updates) ===
+  if (typeof dataInterval !== 'undefined' && dataInterval !== null) {
+    clearInterval(dataInterval);
+    dataInterval = null;
+    console.log('Cleared existing polling interval due to device restart.');
   }
+
+  // === STEP 3: Send the actual restart command ===
+  sendCommand('restartDevice');
+  // Removed the line that appended text to #output
+
+  // Disable button to prevent spam
+  const button = document.getElementById('restart-button');
+  if (button) button.disabled = true;
+
+  // === STEP 4: Re-enable button after 2 seconds ===
+  setTimeout(() => {
+    if (button) button.disabled = false;
+  }, 2000);
+
+  // === STEP 5: Restart the polling interval after a longer delay ===
+  setTimeout(() => {
+    if (typeof startPolling === 'function') {
+      startPolling();
+    } else {
+      // Fallback example – adjust to match your actual function and interval
+      dataInterval = setInterval(updateSensors, 2000);
+    }
+    console.log('Restarted polling interval after device reboot.');
+  }, 12000);  // Adjust delay if your device takes longer/shorter to reboot
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NEW & IMPROVED: Separate function to fully reset every display (including sidebar)
+// ─────────────────────────────────────────────────────────────────────────────
+function resetAllSensorDisplays() {
+  console.log("Resetting all sensor displays and sidebar...");
+
+  // 1. Connection status to red + "Restarting..."
+  const statusDot = document.getElementById("status-dot");
+  const statusText = document.getElementById("status-text");
+  if (statusText) statusText.textContent = "Restarting...";
+
+  // ADDED: Clear UART Logs / Terminal completely
+  const output = document.getElementById("output");
+  if (output) {
+    output.innerHTML = '<span style="color: #94a3b8; font-style: italic;">Terminal cleared — device restarting...</span><br>';
+  }
+
+  // 2. Clear the generic "Sensor Data" box on the left sidebar (THIS WAS THE BUG!)
+  const sensorDataContainer = document.getElementById("sensor-data");
+  if (sensorDataContainer) {
+    sensorDataContainer.innerHTML = `
+      <p style="color: #888; margin: 8px 0; font-size: 0.95em;">No Data</p>
+    `;
+  }
+
+  // 3. Reset big dashboard tiles (the ones in your screenshot)
+  const tempEl = document.querySelector(".temperature-value");
+  const humEl = document.querySelector(".humidity-value");
+  const pressEl = document.querySelector(".pressure-value");
+  if (tempEl) tempEl.textContent = "--.-°C";
+  if (humEl) humEl.textContent = "--.-%";
+  if (pressEl) pressEl.textContent = "----.- hPa";
+
+  // 4. Reset all fancy SVG/animated visualizations (same as your original code)
+  // ── Rain Gauge ─────────────────────────────────────
+  const rainValEl = document.getElementById("rain-value");
+  const roof = document.getElementById("roof");
+  const overlay = document.getElementById("rain-overlay");
+  if (rainValEl) rainValEl.textContent = "0.0 mm";
+  if (roof) {
+    roof.style.transform = "translateX(-50%) rotate(0deg)";
+    roof.dataset.state = JSON.stringify({ lastRainfall: 0, lastTipCount: 0, lastTipTime: Date.now(), direction: 1, hasStarted: false, isRestarting: true, consecutiveZeros: 0 });
+  }
+  if (overlay) overlay.innerHTML = '';
+
+  // ── Temperature (C & F) ─────────────────────────────
+  ["", "-f"].forEach(suffix => {
+    const val = document.getElementById(`thermometer${suffix}-value`);
+    const fill = document.getElementById(`thermometer${suffix}-fill`);
+    const bulb = document.getElementById(`thermometer${suffix}-bulb`);
+    if (val) val.textContent = suffix ? "32.0°F" : "0.0°C";
+    if (fill) { fill.setAttribute("height", "0"); fill.setAttribute("y", "376"); }
+    if (bulb) bulb.style.filter = "drop-shadow(0 0 0px #ffa500)";
+  });
+
+  // ── Humidity ───────────────────────────────────────
+  const humidityVal = document.getElementById("humidity-value");
+  const wavePath = document.getElementById("wavePath");
+  if (humidityVal) humidityVal.textContent = "0.0%";
+  if (wavePath) wavePath.setAttribute("d", "M 0 100 V 100 H 0 Z");
+
+  // ── Pressure Gauge ─────────────────────────────────
+  const pressureVal = document.getElementById("pressure-value");
+  const pressureValInner = document.getElementById("pressure-value-inner");
+  const gaugeFill = document.getElementById("gauge-fill");
+  if (pressureVal) pressureVal.textContent = "0.00 hPa";
+  if (pressureValInner) pressureValInner.textContent = "0.00";
+  if (gaugeFill) gaugeFill.setAttribute("stroke-dasharray", "0 565.48");
+
+  // ── Light Intensity – FIXED & BEAUTIFUL RESET ───────────────────────
+  const lightVal       = document.getElementById("light-value");
+  const sunCircle      = document.getElementById("sun-circle");
+  const lightSun       = document.getElementById("light-sun");
+  const lightMoon      = document.getElementById("light-moon");
+
+  if (lightVal) lightVal.textContent = "0.0 lux";
+  if (lightSun) {
+    lightSun.style.display = "block";
+    lightSun.style.opacity = "1";
+  }
+  if (lightMoon) lightMoon.style.display = "none";
+  if (sunCircle) sunCircle.style.opacity = "1";
+
+  // ── Accelerometer (LIS3DH) ───────────────────────
+  ["x", "y", "z"].forEach(axis => {
+    const el = document.getElementById(`lis3dh-${axis}-value`);
+    if (el) el.textContent = `${axis.toUpperCase()}: 0.00 m/s²`;
+  });
+  const accelCube = document.getElementById("accel-cube");
+  const accelBall = document.getElementById("accel-ball");
+  if (accelCube) accelCube.style.transform = "rotateX(0deg) rotateY(0deg)";
+  if (accelBall) accelBall.style.transform = "translate(-50%, -50%) translate3d(0, 0, 0)";
+
+  // ── Hall, TLV493D, Wind, TOF, UV, IR ───────────────
+  const hallVal = document.getElementById("hall-value");
+  const hallArcPath = document.getElementById("hall-arc-path");
+  if (hallVal) hallVal.textContent = "0 mT";
+  if (hallArcPath) hallArcPath.setAttribute("stroke-width", "8");
+
+  ["x", "y", "z"].forEach(axis => {
+    const el = document.getElementById(`tlv493d-${axis}-value`);
+    if (el) el.textContent = `${axis.toUpperCase()}: 0.00 mT`;
+  });
+  const maxAxisIndicator = document.getElementById("max-axis-indicator");
+  const zAxisIndicator = document.getElementById("z-axis-indicator");
+  if (maxAxisIndicator) { maxAxisIndicator.setAttribute("cx", "50"); maxAxisIndicator.setAttribute("cy", "50"); }
+  if (zAxisIndicator) zAxisIndicator.style.fill = "#888";
+
+  const windDirVal = document.getElementById("wind-direction-value");
+  const windDirArrow = document.getElementById("wind-direction-arrow");
+  if (windDirVal) windDirVal.textContent = "0°";
+  if (windDirArrow) windDirArrow.style.transform = "rotate(0deg)";
+
+  const windSpeedVal = document.getElementById("wind-speed-value");
+  const windSpeedBar = document.getElementById("wind-speed-bar");
+  const anemometerCups = document.getElementById("anemometer-cups");
+  if (windSpeedVal) windSpeedVal.textContent = "0.0 m/s";
+  if (windSpeedBar) windSpeedBar.style.width = "0%";
+  if (anemometerCups) anemometerCups.style.animation = "none";
+
+  const tofVal = document.getElementById("tof-value");
+  const tofPerson = document.getElementById("tof-person");
+  if (tofVal) tofVal.textContent = "0 cm";
+  if (tofPerson) tofPerson.setAttribute("transform", "translate(20, 0)");
+
+  const uvVal = document.getElementById("uv-value");
+  const uvBar = document.getElementById("uv-bar");
+  const uvSunCircle = document.getElementById("uv-sun-circle");
+  if (uvVal) uvVal.textContent = "UV: 0.00";
+  if (uvBar) { uvBar.style.width = "0%"; uvBar.style.background = "linear-gradient(90deg, #10b981, #f59e0b)"; }
+  if (uvSunCircle) uvSunCircle.style.opacity = "0.3";
+
+  const irVal = document.getElementById("ir-value");
+  const irBulbCircle = document.getElementById("ir-bulb-circle");
+  if (irVal) irVal.textContent = "Not Detected";
+  if (irBulbCircle) irBulbCircle.setAttribute("fill", "#ccc");
+
+  // Relay
+  const relayCard = document.getElementById("relay-card");
+  const relayValue = document.getElementById("relay-value");
+  const relayArm = document.getElementById("relay-arm");
+  const relayBulb = document.getElementById("relay-bulb");
+  const relayGlow = document.getElementById("relay-bulb-glow");
+  if (relayValue) relayValue.textContent = "OFF";
+  if (relayArm) relayArm.setAttribute("x2", "80");
+  if (relayBulb) relayBulb.setAttribute("fill", "#d1d5db");
+  if (relayGlow) relayGlow.style.opacity = "0";
+  
+  // Buzzer
+  const buzzerValue = document.getElementById("buzzer-value");
+  const buzzerWaves = document.getElementById("buzzer-waves");
+  if (buzzerValue) buzzerValue.textContent = "Inactive";
+  if (buzzerWaves) buzzerWaves.style.opacity = "0";
+}
 
   function toggleTheme() {
     document.body.classList.toggle('dark-mode');
@@ -529,44 +1734,83 @@
     document.getElementById('output').innerHTML = '';
   }
 
-  // Function to check if any sensor has data and update visibility
-  function updateSensorVisualizationVisibility() {
-    const visualizationSection = document.getElementById('sensor-visualization-section');
-    
-    // List of sensor value elements to check
-    const sensorValues = [
-      document.getElementById('thermometer-value').textContent,
-      document.getElementById('humidity-value').textContent,
-      document.getElementById('pressure-value').textContent,
-      document.getElementById('light-value').textContent,
-      document.getElementById('lis3dh-x-value').textContent,
-      document.getElementById('hall-value').textContent,
-      document.getElementById('tlv493d-x-value').textContent,
-      document.getElementById('tof-value').textContent,
-      document.getElementById('uv-value').textContent,
-      document.getElementById('ir-value').textContent
-    ];
-
-   // Check if any sensor has non-empty data (relaxed: show even if zero, but hide if empty/undefined)
-  const hasData = sensorValues.some(value => value && value.trim() !== '');
-
-  // Show or hide the entire visualization section
-  visualizationSection.style.display = hasData ? 'block' : 'none';
+  // Show the styled modal
+function logoutDevice() {
+  document.getElementById('disconnectModal').style.display = 'flex';
 }
 
-  // Override updateSensorUI to include visibility check
-  const originalUpdateSensorUI = window.updateSensorUI || function() {};
-  window.updateSensorUI = function() {
-    originalUpdateSensorUI();
-    updateSensorVisualizationVisibility();
-  };
+// Hide the modal
+function hideDisconnectModal() {
+  document.getElementById('disconnectModal').style.display = 'none';
+}
 
-  // Override selectSensor to include visibility check
-  const originalSelectSensor = window.selectSensor || function() {};
-  window.selectSensor = function(value) {
-    originalSelectSensor(value);
-    updateSensorVisualizationVisibility();
-  };
+// Confirm disconnect and redirect
+function confirmDisconnect() {
+  localStorage.removeItem('deviceConnected');
+  localStorage.removeItem('selectedDevice');
+  localStorage.removeItem('connectionTime');
+  window.location.href = 'login.html';
+}
+
+// Close modal when clicking outside
+document.addEventListener('DOMContentLoaded', function() {
+  const modal = document.getElementById('disconnectModal');
+  
+  if (modal) {
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) {
+        hideDisconnectModal();
+      }
+    });
+  }
+});
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    const modal = document.getElementById('disconnectModal');
+    if (modal && modal.style.display === 'flex') {
+      hideDisconnectModal();
+    }
+  }
+});
+
+  // Function to check if any sensor has data and update visibility
+ // Update sensor visualization visibility - FIXED & SAFE
+function updateSensorVisualizationVisibility() {
+  const visualizationSection = document.getElementById('sensor-visualization-section');
+  if (!visualizationSection) return;
+
+  // List of all possible value elements
+  const valueElements = [
+    'thermometer-value',
+    'humidity-value',
+    'pressure-value',
+    'light-value',
+    'lis3dh-x-value',
+    'hall-value',
+    'tlv493d-x-value',
+    'tof-value',
+    'uv-value',
+    'ir-value',
+    'blinky-value',      // for Blinky
+    'buzzer-value'       // for Buzzer
+  ];
+
+  // Check if ANY of these elements exists AND has non-empty text
+  const hasData = valueElements.some(id => {
+    const el = document.getElementById(id);
+    return el && el.textContent && el.textContent.trim() !== '' && el.textContent.trim() !== '– cm';
+  });
+
+  // Also show section if at least one card is visible (fallback)
+  const cardsContainer = visualizationSection.querySelector('.sensor-cards');
+  const hasVisibleCard = cardsContainer && Array.from(cardsContainer.children).some(
+    card => card.style.display !== 'none' && card.style.display !== ''
+  );
+
+  visualizationSection.style.display = (hasData || hasVisibleCard) ? 'block' : 'none';
+}
 
   // Apply saved theme on page load
   if (localStorage.getItem('theme') === 'dark') {

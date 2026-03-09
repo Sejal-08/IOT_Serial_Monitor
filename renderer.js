@@ -1,36 +1,43 @@
 let selectedSensor = null;
+let hallLightningInterval = null;  
 
+const selectedBackend = localStorage.getItem('selectedDevice'); // 'c' or 'python'
+let isPythonBackend = selectedBackend === 'python';
 
-// Sensor protocol to sensor mapping
 const sensorProtocolMap = {
-  "I2C": ["SHT40", "BME680", "STS30", "STTS751", "LIS3DH", "VEML7700", "TLV493D", "VL53L0X", "LTR390"],
+  "I2C": ["SHT40", "BME680", "STS30", "STTS751", "LIS3DH", "VEML7700", "TLV493D", "VL53L0X", "LTR390", "Weather Shield", "VCNL4040"],
   "RS485": ["MD02"],
-  "SPI": [""],
+  "RS232": ["Wind Sensor"],
+  "SPI": [],
   "Analog": ["Hall Sensor", "IR Sensor"],
-  "ADC": ["Rain Gauge"]
+  "ADC": ["Rain Gauge"],
+  "GPIO": ["Blinky", "Buzzer", "Relay"]
 };
-
 // Track sensor presence and data
 let sensorStatus = {
-  "I2C": { SHT40: false, BME680: false, STS30: false, STTS751: false, LIS3DH: false, VEML7700: false, TLV493D: false, VL53L0X: false, LTR390: false },
+  "I2C": { SHT40: false, BME680: false, STS30: false, STTS751: false, LIS3DH: false, VEML7700: false, TLV493D: false, VL53L0X: false, LTR390: false, WeatherShield: false },
   "RS485": { MD02: false },
+  "RS232": { WindSensor: false },
   "SPI": {},
   "Analog": { Hall_Sensor: false, IR_Sensor: false },
-  "ADC": { "Rain Gauge": false}
+  "ADC": { "Rain Gauge": false },
+  "GPIO": { "Blinky": false, "Buzzer": false }
 };
-
 let sensorData = {
   "I2C": {},
   "ADC": {},
   "RS232": {},
   "RS485": {},
   "SPI": {},
-  "Analog": {}
+  "Analog": {},
+  "GPIO": {}
 };
 let currentTemperature = null;
 let currentHumidity = null;
 let currentPressure = null;
 let currentLight = null;
+let currentVCNLLux = null;        // ← ADD THIS
+let currentVCNLProximity = null;  // ← ADD THIS (optional, if your firmware sends proximity)
 let currentAccelX = null;
 let currentAccelY = null;
 let currentAccelZ = null;
@@ -41,22 +48,28 @@ let currentMagneticZ = null;
 let currentDistance = null;
 let currentUV = null;
 let currentIR = null;
-let prevAzimuth = 0; // For TLV493D arrow animation
+let currentRelayState = null;
+let currentWindDirection = null;
+let currentWindSpeed = null;
+let prevAzimuth = 0;
 let prevPolar = 0;
 let prevMagnitude = 0;
 let prevScale = 1;
-
 let isConnected = false;
 let currentBaud = null;
 let currentPort = null;
 
 // Update sensor UI
 function updateSensorUI() {
+  console.log('updateSensorUI called - selectedSensor:', selectedSensor);
+  console.log('Current data - Temp:', currentTemperature, 'Humidity:', currentHumidity, 'Pressure:', currentPressure);
+ 
   const protocol = document.getElementById("sensor-select").value;
   const sensorDropdown = document.getElementById("sensor-dropdown");
   const sensorDataDiv = document.getElementById("sensor-data");
-  
+ 
   const thermometerContainer = document.getElementById("thermometer-container");
+  const thermometerFContainer = document.getElementById("thermometer-f-container");
   const humidityContainer = document.getElementById("humidity-card");
   const pressureContainer = document.getElementById("pressure-card");
   const lightContainer = document.getElementById("light-card");
@@ -66,62 +79,64 @@ function updateSensorUI() {
   const tofContainer = document.getElementById("tof-card");
   const uvltrContainer = document.getElementById("uvltr-card");
   const irContainer = document.getElementById("ir-card");
-
   const rainGaugeCard = document.getElementById("rain-gauge-card");
- 
-  const rainGaugeValue = document.getElementById("rain-gauge-value");
- 
-
+  const windDirectionContainer = document.getElementById("wind-direction-card");
+  const windSpeedContainer = document.getElementById("wind-speed-card");
+  const windDirectionValue = document.getElementById("wind-direction-value");
+  const windDirectionArrow = document.getElementById("wind-direction-arrow");
+  const windSpeedValue = document.getElementById("wind-speed-value");
+  const windSpeedCups = document.getElementById("anemometer-cups");
+  const windSpeedBar = document.getElementById("wind-speed-bar");
   const thermometerFill = document.getElementById("thermometer-fill");
   const thermometerBulb = document.getElementById("thermometer-bulb");
   const thermometerValue = document.getElementById("thermometer-value");
-
   const humidityValue = document.getElementById("humidity-value");
   const wavePath = document.getElementById("wavePath");
   const waveColor1 = document.getElementById("waveColor1");
   const waveColor2 = document.getElementById("waveColor2");
-
   const pressureValue = document.getElementById("pressure-value");
   const pressureBar = document.getElementById("pressure-bar");
-
   const lightValue = document.getElementById("light-value");
   const sunCircle = document.getElementById("sun-circle");
   const glowFilter = document.getElementById("glow");
   const sunGradient = document.getElementById("sunGradient");
   const sparkles = document.getElementById("sparkles");
-
   const lis3dhXValue = document.getElementById("lis3dh-x-value");
   const lis3dhYValue = document.getElementById("lis3dh-y-value");
   const lis3dhZValue = document.getElementById("lis3dh-z-value");
-
   const hallValue = document.getElementById("hall-value");
   const hallArc = document.getElementById("hall-arc-path");
   const hallGlow = document.getElementById("hall-glow");
-
-const tlv493dXValue = document.getElementById("tlv493d-x-value");
-  const tlv493dYValue = document.getElementById("tlv493d-y-value");
-  const tlv493dZValue = document.getElementById("tlv493d-z-value");
-  const tlv493dArrow = document.querySelector(".tlv493d-arrow");
-  const tlv493dArrowShaft = document.getElementById("tlv493d-arrow-shaft");
-  const tlv493dArrowHead = document.getElementById("tlv493d-arrow-head");
-
+  const tlvLine = document.getElementById("vector-line");
+  const tlvHead = document.getElementById("vector-head");
+  const tlvZCircle = document.getElementById("z-axis-indicator");
+  const tlvMagLabel = document.getElementById("mag-label");
+  const tlvVecStops = document.querySelectorAll("#vecGradient stop");
+  const vcnlLuxCard = document.getElementById("vcnl-lux-card");     // For VCNL4040
+  const relayCard = document.getElementById("relay-card");         // For Relay
+  if (tlvLine && tlvHead && tlvZCircle) {
+    tlvLine.style.transition = "opacity 0.2s ease";
+    tlvHead.style.transition = "transform 0.3s ease, opacity 0.2s ease";
+    tlvZCircle.style.transition = "transform 0.4s ease";
+    tlvZCircle.style.transformOrigin = "50% 50%";
+  }
   const tofValue = document.getElementById("tof-value");
   const tofPerson = document.getElementById("tof-person");
-
   const uvValue = document.getElementById("uv-value");
   const uvBar = document.getElementById("uv-bar");
   const uvSun = document.getElementById("uv-sun");
   const uvSunCircle = document.getElementById("uv-sun-circle");
   const uvRays = document.getElementById("uv-rays");
   const uvGlow = document.getElementById("uvGlow");
-
+  const uvSunGradient = document.getElementById("uvSunGradient");
   const irValue = document.getElementById("ir-value");
-  const irFlame = document.getElementById("ir-flame");
+  const irBulbCircle = document.getElementById("ir-bulb-circle");
   const irGlow = document.querySelector("#ir-glow feGaussianBlur");
-
-  sensorDropdown.innerHTML = '<option value="" disabled>Select a Sensor</option>';
+  const rainGaugeValue = document.getElementById("rain-gauge-value");
+  const blinkyCard = document.getElementById("blinky-card");
+  const buzzerCard = document.getElementById("buzzer-card");
+  sensorDropdown.innerHTML = '<option value="" disabled selected>Select a Sensor</option>';
   sensorDataDiv.innerHTML = "";
-
   // Define which sensors support which parameters
   const sensorParameters = {
     "BME680": ["Temperature", "Humidity", "Pressure"],
@@ -136,10 +151,9 @@ const tlv493dXValue = document.getElementById("tlv493d-x-value");
     "LTR390": ["UV"],
     "IR Sensor": ["Infrared"],
     "MD02": ["Temperature", "Humidity"],
-    "Rain Gauge":[],
-
+    "Rain Gauge": ["Rainfall"],
+    "Wind Sensor": ["Direction", "Speed"]
   };
-
   if (protocol) {
     // Populate sensor dropdown
     const sensors = sensorProtocolMap[protocol] || [];
@@ -153,498 +167,878 @@ const tlv493dXValue = document.getElementById("tlv493d-x-value");
       }
       sensorDropdown.appendChild(option);
     });
-
     // Display sensor data for selected sensor
-   let dataHtml = "<h4>Sensor Data</h4>";
-if (selectedSensor && sensorData[protocol]) {
-  if (selectedSensor === "Rain Gauge") {
-   dataHtml += `<div class="sensor-data-item"><strong>Rainfall:</strong> ${sensorData[protocol]["Rainfall"] || "N/A"}</div>`;
-  
-  } else {
-    const sensorKeys = Object.keys(sensorData[protocol]).filter(key => key.startsWith(selectedSensor + " "));
-    if (sensorKeys.length > 0) {
-      sensorKeys.forEach(key => {
-        let value = sensorData[protocol][key];
-        if (!isNaN(parseFloat(value))) {
-          value = parseFloat(value).toFixed(2);
+    let dataHtml = "<h4>Sensor Data</h4>";
+    if (selectedSensor && sensorData[protocol]) {
+      if (selectedSensor === "Rain Gauge") {
+        dataHtml += `<div class="sensor-data-item"><strong>Rainfall:</strong> ${sensorData[protocol]["Rainfall"] || "N/A"}</div>`;
+      } else {
+        const sensorKeys = Object.keys(sensorData[protocol]).filter(key => key.startsWith(selectedSensor + " "));
+        if (sensorKeys.length > 0) {
+          sensorKeys.forEach(key => {
+            let value = sensorData[protocol][key];
+            if (!isNaN(parseFloat(value))) {
+              value = parseFloat(value).toFixed(2);
+            }
+            dataHtml += `<div class="sensor-data-item"><strong>${key.replace(selectedSensor + " ", "")}:</strong> ${value}</div>`;
+          });
+        } else {
+          dataHtml += `<p>No data available for ${selectedSensor}.</p>`;
         }
-        dataHtml += `<div class="sensor-data-item"><strong>${key.replace(selectedSensor + " ", "")}:</strong> ${value}</div>`;
-      });
+      }
     } else {
-      dataHtml += `<p>No data available for ${selectedSensor}.</p>`;
+      dataHtml += "<p>Please select a sensor to view data.</p>";
+    }
+    sensorDataDiv.innerHTML = dataHtml;
+// === HIDE ALL CARDS FIRST ===
+const allCards = [
+  thermometerContainer, thermometerFContainer, humidityContainer, pressureContainer,
+  lightContainer, uvltrContainer, lis3dhContainer, hallContainer,
+  tlv493dContainer, tofContainer, irContainer,
+  windDirectionContainer, windSpeedContainer, rainGaugeCard,
+  blinkyCard, buzzerCard,
+  vcnlLuxCard,  // ← ADD HERE
+  relayCard
+];
+allCards.forEach(card => {
+  if (card) {
+    card.style.display = "none";
+    card.classList.remove('sensor-card', 'show');
+  }
+});
+const sensorCards = document.querySelector('.sensor-cards');
+if (sensorCards) sensorCards.classList.remove('weather-shield-grid');
+// === NOW SHOW CARDS BASED ONLY ON PROTOCOL + SELECTED SENSOR (DATA NOT REQUIRED) ===
+if (protocol && selectedSensor) {
+  // Weather Shield special case - show multiple cards
+if (selectedSensor === "Weather Shield") {
+  if (sensorCards) sensorCards.classList.add('weather-shield-grid');
+  [thermometerContainer, humidityContainer, pressureContainer, lightContainer].forEach(card => {
+    if (card) {
+      card.style.display = "flex";
+      card.classList.add('sensor-card');
+    }
+  });
+}
+  // Temperature sensors
+  if (["BME680", "STTS751", "SHT40", "STS30", "Weather Shield"].includes(selectedSensor) && protocol === "I2C") {
+    if (thermometerContainer) {
+      thermometerContainer.style.display = "flex";
+      thermometerContainer.classList.add('sensor-card');
+    }
+    if (selectedSensor === "STTS751" && thermometerFContainer) {
+      thermometerFContainer.style.display = "flex";
+    }
+  }
+  // Humidity
+  if (["BME680", "SHT40", "Weather Shield"].includes(selectedSensor) && protocol === "I2C") {
+    if (humidityContainer) {
+      humidityContainer.style.display = "flex";
+      humidityContainer.classList.add('sensor-card');
+    }
+  }
+  // Pressure
+  if (["BME680", "Weather Shield"].includes(selectedSensor) && protocol === "I2C") {
+    if (pressureContainer) {
+      pressureContainer.style.display = "flex";
+      pressureContainer.classList.add('sensor-card');
+    }
+  }
+  // Light
+  if ((selectedSensor === "VEML7700" || selectedSensor === "Weather Shield") && protocol === "I2C") {
+    if (lightContainer) {
+      lightContainer.style.display = "flex";
+      lightContainer.classList.add('sensor-card');
+    }
+  }
+  // Acceleration
+  if (selectedSensor === "LIS3DH" && protocol === "I2C") {
+    if (lis3dhContainer) lis3dhContainer.style.display = "flex";
+  }
+  // Hall Sensor (Analog)
+  if (selectedSensor === "Hall Sensor" && protocol === "Analog") {
+    if (hallContainer) hallContainer.style.display = "flex";
+  }
+  // TLV493D
+  if (selectedSensor === "TLV493D" && protocol === "I2C") {
+    if (tlv493dContainer) tlv493dContainer.style.display = "flex";
+  }
+ // TOF Distance
+  if (selectedSensor === "VL53L0X" && protocol === "I2C") {
+    if (tofContainer) {
+      tofContainer.style.display = "flex";
+      tofContainer.classList.add("show");
+    }
+    
+    // ⚠️ CRITICAL: Update animation with current distance value
+    if (currentDistance !== null) {
+      updateTOFAnimation(currentDistance);
+    }
+  }
+  // UV Light
+  if (selectedSensor === "LTR390" && protocol === "I2C") {
+    if (uvltrContainer) {
+      uvltrContainer.style.display = "flex";
+      uvltrContainer.classList.add("show");
+    }
+  }
+    // VCNL4040 Ambient Light
+  if (selectedSensor === "VCNL4040" && protocol === "I2C") {
+    if (vcnlLuxCard) {
+      vcnlLuxCard.style.display = "flex";
+      vcnlLuxCard.classList.add('sensor-card');
+    }
+  }
+  // IR Sensor
+  if (selectedSensor === "IR Sensor" && protocol === "Analog") {
+    if (irContainer) irContainer.style.display = "flex";
+  }
+  // Wind Sensor
+  if (selectedSensor === "Wind Sensor" && protocol === "RS232") {
+    if (windDirectionContainer) windDirectionContainer.style.display = "block";
+    if (windSpeedContainer) windSpeedContainer.style.display = "block";
+  }
+  // Rain Gauge
+  if (selectedSensor === "Rain Gauge" && protocol === "ADC") {
+    if (rainGaugeCard) rainGaugeCard.style.display = "flex";
+  }
+  // GPIO
+  if (selectedSensor === "Blinky" && protocol === "GPIO") {
+    if (blinkyCard) blinkyCard.style.display = "flex";
+  }
+  if (selectedSensor === "Buzzer" && protocol === "GPIO") {
+    if (buzzerCard) buzzerCard.style.display = "flex";
+  }
+  if (selectedSensor === "Relay" && protocol === "GPIO") {
+    if (relayCard) relayCard.style.display = "flex";
+  }
+}
+
+    console.log('Card visibility for', selectedSensor, ':', {
+      temp: currentTemperature,
+      humidity: currentHumidity,
+      pressure: currentPressure,
+      light: currentLight,
+      showTemp: thermometerContainer ? thermometerContainer.style.display : 'N/A',
+      showHumidity: humidityContainer ? humidityContainer.style.display : 'N/A',
+      showPressure: pressureContainer ? pressureContainer.style.display : 'N/A',
+      showLight: lightContainer ? lightContainer.style.display : 'N/A'
+    });
+// === THERMOMETER UPDATE ===
+if (protocol === "I2C" && (selectedSensor === "BME680" || selectedSensor === "STTS751" || selectedSensor === "SHT40" || selectedSensor === "STS30" || selectedSensor === "Weather Shield") && currentTemperature !== null) {
+  const temp = parseFloat(currentTemperature);
+  let fillColor;
+  if (temp < 25) {
+    fillColor = "#ffeb3b";
+  } else if (temp >= 25 && temp <= 35) {
+    fillColor = "#ff9800";
+  } else {
+    fillColor = "#f44336";
+  }
+ 
+  const maxTemp = 50;
+  const minTemp = 0;
+  const tubeHeight = 316;
+  const fillHeight = Math.min(Math.max((temp - minTemp) / (maxTemp - minTemp) * tubeHeight, 0), tubeHeight);
+  const fillY = 376 - fillHeight;
+ 
+  // Update Celsius thermometer
+  thermometerFill.setAttribute("y", fillY);
+  thermometerFill.setAttribute("height", fillHeight);
+  thermometerFill.setAttribute("fill", fillColor);
+  thermometerBulb.setAttribute("fill", fillColor);
+  thermometerValue.textContent = `${temp.toFixed(2)}°C`;
+ 
+  // Update Fahrenheit thermometer for STTS751 - FIXED VARIABLE NAMES
+  if (selectedSensor === "STTS751") {
+    const tempF = (temp * 9/5) + 32;
+    const thermometerFValue = document.getElementById("thermometer-f-value");
+    const thermometerFFill = document.getElementById("thermometer-f-fill");
+    const thermometerFBulb = document.getElementById("thermometer-f-bulb");
+   
+    if (thermometerFValue && thermometerFFill && thermometerFBulb) {
+      thermometerFValue.textContent = `${tempF.toFixed(2)}°F`;
+     
+      // Use DIFFERENT variable names to avoid conflict
+      const maxTempF = 122;
+      const minTempF = 32;
+      const tubeHeightF = 316;
+      const fillHeightF = Math.min(Math.max((tempF - minTempF) / (maxTempF - minTempF) * tubeHeightF, 0), tubeHeightF);
+      const fillYF = 376 - fillHeightF;
+     
+      thermometerFFill.setAttribute("y", fillYF);
+      thermometerFFill.setAttribute("height", fillHeightF);
+     
+      // Use same color logic for Fahrenheit
+      let fillColorF;
+      if (tempF < 77) {
+        fillColorF = "#ffeb3b";
+      } else if (tempF >= 77 && tempF <= 95) {
+        fillColorF = "#ff9800";
+      } else {
+        fillColorF = "#f44336";
+      }
+     
+      thermometerFFill.setAttribute("fill", fillColorF);
+      thermometerFBulb.setAttribute("fill", fillColorF);
     }
   }
 } else {
-  dataHtml += "<p>Please select a sensor to view data.</p>";
+  // Reset both thermometers to bottom position
+  thermometerFill.setAttribute("y", 376);
+  thermometerFill.setAttribute("height", 0);
+  thermometerFill.setAttribute("fill", "#ffeb3b");
+  thermometerBulb.setAttribute("fill", "#ffeb3b");
+  thermometerValue.textContent = "0.00°C";
+ 
+  // Reset Fahrenheit thermometer too
+  const thermometerFFill = document.getElementById("thermometer-f-fill");
+  const thermometerFBulb = document.getElementById("thermometer-f-bulb");
+  if (thermometerFFill && thermometerFBulb) {
+    thermometerFFill.setAttribute("y", 376);
+    thermometerFFill.setAttribute("height", 0);
+    thermometerFFill.setAttribute("fill", "#ffeb3b");
+    thermometerFBulb.setAttribute("fill", "#ffeb3b");
+  }
 }
-sensorDataDiv.innerHTML = dataHtml;
+// === HUMIDITY WAVE UPDATE ===
+if (protocol === "I2C" && (selectedSensor === "BME680" || selectedSensor === "SHT40" || selectedSensor === "Weather Shield")) {
+  if (currentHumidity !== null) {
+    const humidity = parseFloat(currentHumidity);
+    humidityValue.textContent = `${humidity.toFixed(2)}%`;
+   
+    // Calculate wave height based on humidity (0-100%)
+    const waveHeight = 100 - humidity; // 0% humidity = wave at bottom, 100% = wave at top
+   
+    // Update wave position
+    wavePath.setAttribute("d", `M 0 ${waveHeight} Q 25 ${waveHeight + 5} 50 ${waveHeight} T 100 ${waveHeight} V 100 H 0 Z`);
+   
+    // Update colors based on humidity
+    const t = Math.min(Math.max(humidity / 100, 0), 1);
+    const lowColor = { r: 61, g: 142, b: 180 };
+    const highColor = { r: 4, g: 116, b: 168 };
+    const r = Math.round(lowColor.r + (highColor.r - lowColor.r) * t);
+    const g = Math.round(lowColor.g + (highColor.g - lowColor.g) * t);
+    const b = Math.round(lowColor.b + (highColor.b - lowColor.b) * t);
+    const primaryColor = `rgb(${r}, ${g}, ${b})`;
+   
+    waveColor1.setAttribute("style", `stop-color: ${primaryColor}; stop-opacity: 0.5`);
+    waveColor2.setAttribute("style", `stop-color: ${primaryColor}; stop-opacity: 1`);
+  } else {
+    humidityValue.textContent = "0.00%";
+    // Default wave position (low humidity)
+    wavePath.setAttribute("d", "M 0 80 Q 25 85 50 80 T 100 80 V 100 H 0 Z");
+  }
+} else {
+  humidityValue.textContent = "0.00%";
+  // Default wave position when not connected
+  wavePath.setAttribute("d", "M 0 80 Q 25 85 50 80 T 100 80 V 100 H 0 Z");
+}
+// === PRESSURE CARD UPDATE ===
+if (protocol === "I2C" && (selectedSensor === "BME680" || selectedSensor === "Weather Shield") && currentPressure !== null) {
+  updatePressureCard(parseFloat(currentPressure));
+} else {
+  const pressureValue = document.getElementById('pressure-value');
+  const pressureBar = document.getElementById('pressure-bar');
+ 
+  if (pressureValue) pressureValue.textContent = '0.00 hPa';
+  if (pressureBar) {
+    pressureBar.style.width = '0%';
+    pressureBar.style.backgroundColor = '#34d399';
+  }
+}
 
-    // Toggle visibility of sensor cards based on selected sensor and available data
-    if (selectedSensor && sensorParameters[selectedSensor]) {
-      const supportedParams = sensorParameters[selectedSensor];
-      thermometerContainer.style.display = supportedParams.includes("Temperature") && currentTemperature !== null ? "block" : "none";
-      humidityContainer.style.display = supportedParams.includes("Humidity") && currentHumidity !== null ? "block" : "none";
-      pressureContainer.style.display = supportedParams.includes("Pressure") && currentPressure !== null ? "block" : "none";
-      lightContainer.style.display = supportedParams.includes("Lux") && currentLight !== null ? "block" : "none";
-      lis3dhContainer.style.display = supportedParams.includes("AccelerationX") && currentAccelX !== null ? "block" : "none";
-      hallContainer.style.display = supportedParams.includes("MagneticField") && currentMagneticField !== null ? "block" : "none";
-      tlv493dContainer.style.display = supportedParams.includes("X") && currentMagneticX !== null ? "block" : "none";
-      tofContainer.style.display = supportedParams.includes("Distance") && currentDistance !== null ? "block" : "none";
-      uvltrContainer.style.display = supportedParams.includes("UV") && currentUV !== null ? "block" : "none";
-      irContainer.style.display = supportedParams.includes("Infrared") && currentIR !== null ? "block" : "none";
+// === LIGHT INTENSITY ANIMATION WITH SUN/MOON TOGGLE + BETTER LOW-LIGHT GLOW ===
+if (protocol === "I2C" && (selectedSensor === "VEML7700" || selectedSensor === "Weather Shield") && currentLight !== null) {
+  const lux = parseFloat(currentLight);
+  if (lightValue) lightValue.textContent = `${lux.toFixed(1)} lux`;
+
+  const sunSvg = document.getElementById("light-sun");
+  const moonSvg = document.getElementById("light-moon");
+  const sunCircle = document.getElementById("sun-circle");
+  const sunGradient = document.getElementById("sunGradient");
+  const glowFilter = document.querySelector("#sunGlow feGaussianBlur"); // Correct selector for the blur element
+
+  const isNight = lux < 10;
+
+  if (isNight) {
+    if (sunSvg) sunSvg.style.display = "none";
+    if (moonSvg) moonSvg.style.display = "block";
+  } else {
+    if (sunSvg) sunSvg.style.display = "block";
+    if (moonSvg) moonSvg.style.display = "none";
+
+    // Improved intensity scaling - visible even at low lux
+    let intensity = Math.min(lux / 5000, 1); // Scale based on 5000 lux max for better low-light response
+    let color = lux > 1000 ? "#fbbf24" : lux > 100 ? "#fcd34d" : "#ffeb3b";
+
+    if (sunCircle) {
+      sunCircle.style.opacity = 0.5 + intensity * 0.5; // Minimum 0.5 opacity
+      sunCircle.style.filter = `brightness(${1 + intensity * 0.8})`;
+    }
+
+    if (sunGradient) {
+      const stops = sunGradient.querySelectorAll("stop");
+      stops.forEach(stop => stop.setAttribute("stop-color", color));
+    }
+
+    // FIXED GLOW: Minimum blur of 4, scales up to 20
+    if (glowFilter) {
+      const blurAmount = 4 + (intensity * 16); // 4 (dim) → 20 (bright)
+      glowFilter.setAttribute("stdDeviation", blurAmount);
+    }
+  }
+} else {
+  // No data → Moon + resety
+  const sunSvg = document.getElementById("light-sun");
+  const moonSvg = document.getElementById("light-moon");
+  if (sunSvg) sunSvg.style.display = "none";
+  if (moonSvg) moonSvg.style.display = "block";
+
+  if (lightValue) lightValue.textContent = "0.0 lux";
+
+  // Reset glow to minimum
+  const glowFilter = document.querySelector("#sunGlow feGaussianBlur");
+  if (glowFilter) glowFilter.setAttribute("stdDeviation", "4");
+}
+
+// === RAIN GAUGE — FIXED VERSION WITH INSTANT RESTART ===
+if (protocol === "ADC" && selectedSensor === "Rain Gauge") {
+  const rainValEl = document.getElementById("rain-value");
+  const roof = document.getElementById("roof");
+  const overlay = document.getElementById("rain-overlay");
+  if (rainValEl && roof && overlay) {
+    const rainStr = sensorData.ADC["Rainfall"];
+   
+    // === INITIALIZE STATE ===
+    let state;
+    if (roof.dataset.state) {
+      state = JSON.parse(roof.dataset.state);
     } else {
-      thermometerContainer.style.display = "none";
-      humidityContainer.style.display = "none";
-      pressureContainer.style.display = "none";
-      lightContainer.style.display = "none";
-      lis3dhContainer.style.display = "none";
-      hallContainer.style.display = "none";
-      tlv493dContainer.style.display = "none";
-      tofContainer.style.display = "none";
-      uvltrContainer.style.display = "none";
-      irContainer.style.display = "none";
+      state = {
+        lastRainfall: 0,
+        lastTipCount: 0,
+        lastTipTime: Date.now(),
+        direction: 1,
+        hasStarted: false,
+        isRestarting: false,
+        consecutiveZeros: 0
+      };
     }
-
-    // Update thermometer (for I2C BME680 or SHT40 or STTS751 or STS30)
-    if (protocol === "I2C" && (selectedSensor === "BME680" || selectedSensor === "STTS751" || selectedSensor === "SHT40" || selectedSensor === "STS30" ) && currentTemperature !== null) {
-      const temp = parseFloat(currentTemperature);
-      let fillColor;
-      if (temp < 25) {
-        fillColor = "#ffeb3b";
-      } else if (temp >= 25 && temp <= 35) {
-        fillColor = "#ff9800";
-      } else {
-        fillColor = "#f44336";
+    // === HANDLE RESTART IMMEDIATELY ===
+    if (rainStr) {
+      const rainMm = parseFloat(rainStr.replace(" mm", ""));
+     
+      if (!isNaN(rainMm)) {
+        // === IMPROVED RESTART DETECTION ===
+        // Track consecutive zero readings
+        if (rainMm <= 0.1) {
+          state.consecutiveZeros++;
+        } else {
+          state.consecutiveZeros = 0;
+        }
+        // Detect significant drop (device restart)
+        const significantDrop = (state.lastRainfall > 2.0 && rainMm < 0.5);
+       
+        // RESTART if: consecutive zeros after rain OR significant drop
+        if ((state.consecutiveZeros >= 2 && state.lastRainfall > 0.5) || significantDrop) {
+          console.log("Device restart detected - resetting everything");
+         
+          // IMMEDIATE RESET
+          state.hasStarted = false;
+          state.isRestarting = true;
+          state.lastRainfall = 0;
+          state.lastTipCount = 0;
+          state.direction = 1;
+          state.lastTipTime = Date.now();
+          state.consecutiveZeros = 0;
+         
+          // INSTANT UI RESET
+          rainValEl.textContent = "0.0 mm";
+          roof.style.transform = `translateX(-50%) rotate(0deg)`;
+          overlay.innerHTML = ''; // Clear all rain drops immediately
+         
+          roof.dataset.state = JSON.stringify(state);
+          return; // Exit early, don't process further
+        }
+        // Normal processing
+        rainValEl.textContent = `${rainMm.toFixed(1)} mm`;
+        const currentTipCount = Math.round(rainMm / 0.5);
+        const now = Date.now();
+        const timeDiffSec = (now - state.lastTipTime) / 1000;
+        let rainRatePerHour = 0;
+       
+        // Calculate rain rate if tipping occurred
+        if (currentTipCount > state.lastTipCount && timeDiffSec > 0 && timeDiffSec < 3600) {
+          const tips = currentTipCount - state.lastTipCount;
+          rainRatePerHour = (tips * 0.5) / (timeDiffSec / 3600);
+          state.lastTipTime = now;
+        }
+        // === RAIN ANIMATION CONTROL ===
+        if (state.isRestarting) {
+          // AFTER RESTART: KEEP RAIN STOPPED until first tilt
+          overlay.innerHTML = ''; // Ensure no rain drops
+        }
+        else if (!state.hasStarted && currentTipCount > 0) {
+          // FIRST TILT DETECTED - START RAIN
+          state.hasStarted = true;
+          console.log("First tilt detected - starting rain animation");
+         
+          const intensity = Math.min(rainRatePerHour > 0 ? rainRatePerHour : 15, 80);
+          const dropCount = Math.min(Math.floor(intensity * 0.38), 32);
+         
+          // Create initial rain drops
+          for (let i = 0; i < dropCount; i++) {
+            const drop = document.createElement('div');
+            drop.className = 'raindrop';
+            drop.style.left = Math.random() * 100 + '%';
+            drop.style.animationDelay = Math.random() * 1.6 + 's';
+            drop.style.animationDuration = (0.8 + Math.random() * 0.7) + 's';
+            overlay.appendChild(drop);
+          }
+        }
+        else if (state.hasStarted) {
+          // RAIN IS ACTIVE - ADJUST INTENSITY WITHOUT RESTARTING
+          if (rainRatePerHour === 0 && timeDiffSec > 10) {
+            // No rain for 10+ seconds - gradually stop
+            if (overlay.children.length > 0) {
+              overlay.removeChild(overlay.children[0]); // Remove one drop at a time
+            }
+          } else {
+            // Adjust rain intensity smoothly
+            const intensity = Math.min(rainRatePerHour > 0 ? rainRatePerHour : 15, 80);
+            const targetDropCount = Math.min(Math.floor(intensity * 0.38), 32);
+           
+            // Add drops if needed (without clearing existing ones)
+            for (let i = overlay.children.length; i < targetDropCount; i++) {
+              const drop = document.createElement('div');
+              drop.className = 'raindrop';
+              drop.style.left = Math.random() * 100 + '%';
+              drop.style.animationDelay = Math.random() * 1.6 + 's';
+              drop.style.animationDuration = (0.8 + Math.random() * 0.7) + 's';
+              overlay.appendChild(drop);
+            }
+           
+            // Remove excess drops if intensity decreased
+            if (overlay.children.length > targetDropCount) {
+              const excess = overlay.children.length - targetDropCount;
+              for (let i = 0; i < excess; i++) {
+                if (overlay.children[0]) {
+                  overlay.removeChild(overlay.children[0]);
+                }
+              }
+            }
+          }
+        }
+        // === TIPPING BUCKET ANIMATION ===
+        if (currentTipCount > state.lastTipCount) {
+          state.direction *= -1;
+          const deg = state.direction > 0 ? 12 : -12;
+          roof.style.transition = "transform 0.8s cubic-bezier(0.34,0.72,0.4,1.2)";
+          roof.style.transform = `translateX(-50%) rotate(${deg}deg)`;
+          // After restart: first tilt ends restart mode and IMMEDIATELY starts rain
+          if (state.isRestarting) {
+            state.isRestarting = false;
+            state.hasStarted = true;
+            console.log("First tilt after restart - rain animation started");
+           
+            // START RAIN IMMEDIATELY on first tip
+            const intensity = Math.min(rainRatePerHour > 0 ? rainRatePerHour : 15, 80);
+            const dropCount = Math.min(Math.floor(intensity * 0.38), 32);
+           
+            for (let i = 0; i < dropCount; i++) {
+              const drop = document.createElement('div');
+              drop.className = 'raindrop';
+              drop.style.left = Math.random() * 100 + '%';
+              drop.style.animationDelay = Math.random() * 1.6 + 's';
+              drop.style.animationDuration = (0.8 + Math.random() * 0.7) + 's';
+              overlay.appendChild(drop);
+            }
+          }
+        }
+        // Update state
+        state.lastRainfall = rainMm;
+        state.lastTipCount = currentTipCount;
+        roof.dataset.state = JSON.stringify(state);
       }
-      const maxTemp = 50;
-      const minTemp = 0;
-      const maxHeight = 160;
-      const fillHeight = Math.min(Math.max((temp - minTemp) / (maxTemp - minTemp) * maxHeight, 0), maxHeight);
-      thermometerFill.setAttribute("y", 180 - fillHeight);
-      thermometerFill.setAttribute("height", fillHeight);
-      thermometerFill.setAttribute("fill", fillColor);
-      thermometerBulb.setAttribute("fill", fillColor);
-      thermometerValue.textContent = `${temp.toFixed(2)}°C`;
     } else {
-      thermometerFill.setAttribute("y", 180);
-      thermometerFill.setAttribute("height", 0);
-      thermometerFill.setAttribute("fill", "#ffeb3b");
-      thermometerBulb.setAttribute("fill", "#ffeb3b");
-      thermometerValue.textContent = "";
+      // NO DATA - Show waiting state
+      if (!state.isRestarting) {
+        rainValEl.textContent = "0.0 mm";
+        overlay.innerHTML = '';
+      }
     }
+  }
+}
+// ================================================
+// VCNL4040 – Final, bullet-proof update block
+// ================================================
+if (selectedSensor === "VCNL4040") {  // ← Remove protocol check, it's redundant here
+  console.log("[VCNL DEBUG] Update called | selectedSensor =", selectedSensor, "| currentVCNLLux =", currentVCNLLux);
 
-   // Update humidity wave (for I2C BME680 or SHT40)
-    if (protocol === "I2C" && (selectedSensor === "BME680" || selectedSensor === "SHT40")) {
-      // Define continuous wave animation
-      const waveAnimation = `
-        @keyframes waveAnimation {
-          0% { d: path("M 0 50 Q 25 45 50 50 T 100 50 V 100 H 0 Z"); }
-          25% { d: path("M 0 50 Q 25 55 50 50 T 100 50 V 100 H 0 Z"); }
-          50% { d: path("M 0 50 Q 25 45 50 50 T 100 50 V 100 H 0 Z"); }
-          75% { d: path("M 0 50 Q 25 55 50 50 T 100 50 V 100 H 0 Z"); }
-          100% { d: path("M 0 50 Q 25 45 50 50 T 100 50 V 100 H 0 Z"); }
-        }
-      `;
-      // Insert or update the animation in the stylesheet
-      let styleSheet = document.styleSheets[0];
-      let existingRuleIndex = -1;
-      for (let i = 0; i < styleSheet.cssRules.length; i++) {
-        if (styleSheet.cssRules[i].name === "waveAnimation") {
-          existingRuleIndex = i;
-          break;
-        }
-      }
-      if (existingRuleIndex !== -1) {
-        styleSheet.deleteRule(existingRuleIndex);
-      }
-      styleSheet.insertRule(waveAnimation, styleSheet.cssRules.length);
+  const card       = document.getElementById("vcnl-lux-card");
+  const valueEl    = document.getElementById("vcnl-lux-value");
+  const arcEl      = document.getElementById("vcnl-lux-arc");
+  const levelEl    = document.getElementById("vcnl-lux-level");
+  const sunGroup   = document.getElementById("vcnl-sun-group");
 
-      if (currentHumidity !== null) {
-        const humidity = parseFloat(currentHumidity);
-        humidityValue.textContent = `${humidity.toFixed(2)}%`;
-        const t = Math.min(Math.max(humidity / 100, 0), 1);
-        const lowColor = { r: 61, g: 142, b: 180 };
-        const highColor = { r: 4, g: 116, b: 168 };
-        const r = Math.round(lowColor.r + (highColor.r - lowColor.r) * t);
-        const g = Math.round(lowColor.g + (highColor.g - lowColor.g) * t);
-        const b = Math.round(lowColor.b + (highColor.b - lowColor.b) * t);
-        const primaryColor = `rgb(${r}, ${g}, ${b})`;
-        waveColor1.setAttribute("style", `stop-color: ${primaryColor}; stop-opacity: 0.5`);
-        waveColor2.setAttribute("style", `stop-color: ${primaryColor}; stop-opacity: 1`);
-        const waveHeight = 100 - (humidity * 100 / 100);
-        wavePath.setAttribute("d", `M 0 ${waveHeight} Q 25 ${waveHeight + 5} 50 ${waveHeight} T 100 ${waveHeight} V 100 H 0 Z`);
-      } else {
-        humidityValue.textContent = "";
-        waveColor1.setAttribute("style", `stop-color: #3d8eb4; stop-opacity: 0.5`);
-        waveColor2.setAttribute("style", `stop-color: #0474a8; stop-opacity: 1`);
-        wavePath.setAttribute("d", "M 0 50 Q 25 45 50 50 T 100 50 V 100 H 0 Z");
-      }
-      // Apply and restart animation
-      wavePath.style.animation = "waveAnimation 3s ease-in-out infinite";
-      wavePath.style.animationPlayState = "running";
-      wavePath.getBoundingClientRect(); // Force reflow to restart animation
-    } else {
-      humidityValue.textContent = "";
-      waveColor1.setAttribute("style", `stop-color: #3d8eb4; stop-opacity: 0.5`);
-      waveColor2.setAttribute("style", `stop-color: #0474a8; stop-opacity: 1`);
-      wavePath.setAttribute("d", "M 0 50 Q 25 45 50 50 T 100 50 V 100 H 0 Z");
-      // Apply continuous animation even when no data
-      const waveAnimation = `
-        @keyframes waveAnimation {
-          0% { d: path("M 0 50 Q 25 45 50 50 T 100 50 V 100 H 0 Z"); }
-          25% { d: path("M 0 50 Q 25 55 50 50 T 100 50 V 100 H 0 Z"); }
-          50% { d: path("M 0 50 Q 25 45 50 50 T 100 50 V 100 H 0 Z"); }
-          75% { d: path("M 0 50 Q 25 55 50 50 T 100 50 V 100 H 0 Z"); }
-          100% { d: path("M 0 50 Q 25 45 50 50 T 100 50 V 100 H 0 Z"); }
-        }
-      `;
-      let styleSheet = document.styleSheets[0];
-      let existingRuleIndex = -1;
-      for (let i = 0; i < styleSheet.cssRules.length; i++) {
-        if (styleSheet.cssRules[i].name === "waveAnimation") {
-          existingRuleIndex = i;
-          break;
-        }
-      }
-      if (existingRuleIndex !== -1) {
-        styleSheet.deleteRule(existingRuleIndex);
-      }
-      styleSheet.insertRule(waveAnimation, styleSheet.cssRules.length);
-      wavePath.style.animation = "waveAnimation 3s ease-in-out infinite";
-      wavePath.style.animationPlayState = "running";
-      wavePath.getBoundingClientRect(); // Force reflow to restart animation
-    }
+  // Force visibility EVERY single time (this fixes 99% of hiding issues)
+  if (card) {
+    card.style.display = "flex !important";
+    card.style.opacity = "1";
+    card.classList.add("sensor-card", "show");
+    console.log("[VCNL] Card visibility FORCED ON");
+  }
 
-
-    // Update pressure card (only for I2C BME680)
-    if (protocol === "I2C" && selectedSensor === "BME680" && currentPressure !== null) {
-      updatePressureCard(parseFloat(currentPressure));
-    }
-        /* ----------  show / update pressure card  ---------- */
-function updatePressureCard(hpa) {
-  const card = document.getElementById('pressure-card');
-  const topVal = document.getElementById('pressure-value');
-  const midVal = document.getElementById('pressure-value-inner');
-  const fill = document.getElementById('gauge-fill');
-
-  if (hpa === null || isNaN(hpa)) {
-    card.style.display = 'none';
+  // Handle no data
+  if (currentVCNLLux == null || isNaN(currentVCNLLux)) {
+    console.log("[VCNL] No valid data → reset to 0");
+    if (valueEl) valueEl.textContent = "0.0 lux";
+    if (arcEl) arcEl.setAttribute("d", "M 30 110 A 80 80 0 0 1 30 110");
+    if (sunGroup) sunGroup.style.opacity = "0.25";
+    if (levelEl) levelEl.textContent = "No data";
     return;
   }
 
-  card.style.display = 'flex';
+  const lux = Number(currentVCNLLux);
+  console.log("[VCNL] Rendering fresh value:", lux);
 
-  /* Single source of truth */
-  const txt = Number(hpa).toFixed(2);
-  topVal.textContent = `${txt} hPa`;
-  midVal.textContent = txt;
-
-  /* Animate the 360° arc */
-  const minP = 300, maxP = 1100; // Adjusted range for better visualization
-  const t = Math.min(Math.max((hpa - minP) / (maxP - minP), 0), 1);
-  const circumference = 2 * Math.PI * 90; // Circle radius = 90
-  fill.style.strokeDasharray = `${t * circumference} ${(1 - t) * circumference}`;
-
-  /* Simple pulse on update */
-  card.classList.remove('update-pulse');
-  void card.offsetWidth;
-  card.classList.add('update-pulse');
-}
-
-    // Update light intensity card (only for I2C Lux Sensor)
-    if (protocol === "I2C" && selectedSensor === "VEML7700" && currentLight !== null) {
-      lightContainer.style.display = "block";
-      const light = parseFloat(currentLight);
-      const maxLight = 120000;
-      const brightness = Math.min(Math.max(light / maxLight, 0), 1);
-
-      const sunSvg = document.getElementById("light-sun");
-      const moonSvg = document.getElementById("light-moon");
-      const sunCircle = document.getElementById("sun-circle");
-      const sunGradient = document.getElementById("sunGradient");
-      const sunGlow = document.getElementById("sunGlow");
-      const moonShape = document.getElementById("moon-shape");
-      const moonGradient = document.getElementById("moonGradient");
-      const moonGlow = document.getElementById("moonGlow");
-      const moonSparkles = document.getElementById("moon-sparkles");
-      const sunRays = document.getElementById("sun-rays");
-
-      // Toggle Sun/Moon based on light value
-      if (light < 100) {
-        // Show Moon
-        sunSvg.style.display = "none";
-        moonSvg.style.display = "block";
-        // Moon color interpolation (dim to bright moonlight)
-        const lowColor = { r: 230, g: 230, b: 250 }; // Lavender
-        const highColor = { r: 70, g: 130, b: 180 }; // Steel Blue
-        const t = light / 100; // Scale from 0 to 100 lux
-        const r = Math.round(lowColor.r + (highColor.r - lowColor.r) * t);
-        const g = Math.round(lowColor.g + (highColor.g - lowColor.g) * t);
-        const b = Math.round(lowColor.b + (highColor.b - lowColor.b) * t);
-        const moonColor = `rgb(${r}, ${g}, ${b})`;
-        moonGradient.children[0].setAttribute("style", `stop-color:${moonColor}; stop-opacity:0.9`);
-        moonGradient.children[1].setAttribute("style", `stop-color:${moonColor}; stop-opacity:0.6`);
-        moonGradient.children[2].setAttribute("style", `stop-color:${moonColor}; stop-opacity:0.3`);
-        moonGlow.setAttribute("stdDeviation", 4 + 2 * t); // Glow increases slightly with light
-        moonSparkles.style.opacity = 0.5 + 0.5 * t; // Sparkles more visible at higher lux
-      } else {
-        // Show Sun
-        sunSvg.style.display = "block";
-        moonSvg.style.display = "none";
-        // Sun color interpolation (yellow to orange-red)
-        const lowColor = { r: 255, g: 235, b: 59 }; // Bright Yellow
-        const highColor = { r: 255, g: 69, b: 0 }; // Orange-Red
-        const t = Math.min((light - 100) / (maxLight - 100), 1); // Scale from 100 to maxLight
-        const r = Math.round(lowColor.r + (highColor.r - lowColor.r) * t);
-        const g = Math.round(lowColor.g + (highColor.g - lowColor.g) * t);
-        const b = Math.round(lowColor.b + (highColor.b - lowColor.b) * t);
-        const sunColor = `rgb(${r}, ${g}, ${b})`;
-        sunGradient.children[0].setAttribute("style", `stop-color:${sunColor}; stop-opacity:1`);
-        sunGradient.children[1].setAttribute("style", `stop-color:${sunColor}; stop-opacity:0.8`);
-        sunGradient.children[2].setAttribute("style", `stop-color:${sunColor}; stop-opacity:0.4`);
-        sunGlow.setAttribute("stdDeviation", 3 + 3 * brightness); // Glow increases with brightness
-        sunCircle.setAttribute("r", 24 + 9 * brightness); // Sun size increases with brightness
-        sunRays.style.opacity = 0.6 + 0.4 * brightness; // Rays more visible at higher brightness
-        // Update ray color to darker shade based on sun color
-        const rayR = Math.max(r - 50, 0); // Darken red component
-        const rayG = Math.max(g - 50, 0); // Darken green component
-        const rayB = Math.max(b - 50, 0); // Darken blue component
-        const rayColor = `rgb(${rayR}, ${rayG}, ${rayB})`;
-        const rays = sunRays.getElementsByClassName("sun-ray");
-        for (let ray of rays) {
-          ray.setAttribute("stroke", rayColor);
-        }
-      }
-
-      lightValue.textContent = `${light.toFixed(1)} lux`;
-    }
-
-    // Update LIS3DH acceleration card (only for I2C LIS3DH)
-    if (protocol === "I2C" && selectedSensor === "LIS3DH" && currentAccelX !== null && currentAccelY !== null && currentAccelZ !== null) {
-      const accelX = parseFloat(currentAccelX);
-      const accelY = parseFloat(currentAccelY);
-      const accelZ = parseFloat(currentAccelZ);
-      lis3dhXValue.textContent = `X: ${accelX.toFixed(2)} m/s²`;
-      lis3dhYValue.textContent = `Y: ${accelY.toFixed(2)} m/s²`;
-      lis3dhZValue.textContent = `Z: ${accelZ.toFixed(2)} m/s²`;
-
-      const scale = 75 / 12;
-      const clamp = (val, min, max) => Math.max(min, Math.min(max, val));
-      const ballX = clamp(accelX * scale, -67.5, 67.5);
-      const ballY = clamp(-accelY * scale, -67.5, 67.5);
-      const ballZ = clamp(accelZ * scale, -67.5, 67.5);
-
-      const ball = document.getElementById("accel-ball");
-      if (ball) {
-        ball.style.transform = `translate(-50%, -50%) translate3d(${ballX}px, ${ballY}px, ${ballZ}px)`;
-      }
-    } else {
-      lis3dhXValue.textContent = "X: 0.00 m/s²";
-      lis3dhYValue.textContent = "Y: 0.00 m/s²";
-      lis3dhZValue.textContent = "Z: 0.00 m/s²";
-      const ball = document.getElementById("accel-ball");
-      if (ball) {
-        ball.style.transform = `translate(-50%, -50%) translate3d(0px, 0px, 0px)`;
-      }
-    }
-
- /* -------------------------------------------------
-   SHOW CARD AFTER ADC CONNECTION
-   ------------------------------------------------- */
-if (protocol === "ADC") {
-  const rainCard = document.getElementById("rain-gauge-card");
-  if (rainCard) rainCard.style.display = "flex";
-} else {
-  const rainCard = document.getElementById("rain-gauge-card");
-  if (rainCard) rainCard.style.display = "none";
-}
-
-/* -------------------------------------------------
-   SHOW CARD AFTER ADC CONNECTION
-   ------------------------------------------------- */
-if (protocol === "ADC") {
-  const rainCard = document.getElementById("rain-gauge-card");
-  if (rainCard) {
-    document.body.classList.add("adc-connected"); // ADD THIS LINE
-    rainCard.style.display = "flex";
+  // Update text
+  if (valueEl) {
+    valueEl.textContent = `${lux.toFixed(1)} lux`;
   }
-} else {
-  const rainCard = document.getElementById("rain-gauge-card");
-  if (rainCard) {
-    document.body.classList.remove("adc-connected"); // Remove when not ADC
-    rainCard.style.display = "none";
+
+  // Update arc (progress)
+  const maxLux = 100000;
+  const progress = Math.min(lux / maxLux, 1);
+  const angle = progress * 180;
+  const radians = (angle * Math.PI) / 180;
+  const x = 110 + 80 * Math.sin(radians);
+  const y = 110 - 80 * Math.cos(radians);
+  const largeArc = angle > 90 ? 1 : 0;
+
+  if (arcEl) {
+    arcEl.setAttribute("d", `M 30 110 A 80 80 0 ${largeArc} 1 ${x} ${y}`);
+    console.log("[VCNL] Arc updated to angle:", angle);
+  }
+
+  if (sunGroup) {
+  sunGroup.style.opacity = intensity;
+  sunGroup.style.filter = `brightness(${1 + intensity * 1.8}) drop-shadow(0 0 ${20 + intensity * 40}px #fef08a)`;
+  sunGroup.setAttribute("transform", "translate(140,140)"); // force center every update
+  }
+  // Intensity & level
+  let levelText = "Dark";
+  let intensity = 0.25;
+
+  if (lux > 50000) { levelText = "Direct Sun"; intensity = 1.0; }
+  else if (lux > 10000) { levelText = "Very Bright"; intensity = 0.9; }
+  else if (lux > 2000)  { levelText = "Bright Day"; intensity = 0.75; }
+  else if (lux > 200)   { levelText = "Office"; intensity = 0.5; }
+  else if (lux > 20)    { levelText = "Dim Room"; intensity = 0.35; }
+
+  if (levelEl) levelEl.textContent = levelText;
+  if (sunGroup) {
+    sunGroup.style.opacity = intensity;
+    sunGroup.style.filter = `brightness(${1 + intensity})`;
+    console.log("[VCNL] Sun updated → opacity:", intensity);
   }
 }
 
-/* -------------------------------------------------
-   MAIN UPDATE – Rain Gauge 
-   ------------------------------------------------- */
-if (protocol === "ADC" && selectedSensor === "Rain Gauge") {
-  const card = document.getElementById("rain-gauge-card");
-  if (!card) return;
+// === RELAY ANIMATION ===
+if (protocol === "GPIO" && selectedSensor === "Relay") {
+  const relayValue = document.getElementById("relay-value");
+  const relayCoil = document.getElementById("relay-coil");
+  const relayCore = document.getElementById("relay-core");
+  const relaySpring = document.getElementById("relay-spring");
+  const relayArm = document.getElementById("relay-arm");
+  const relaySpark = document.getElementById("relay-spark");
+  const bulbGlow = document.getElementById("bulb-glow");
+  const bulbFilament = document.getElementById("bulb-filament");
+  const lightRays = document.getElementById("light-rays");
+  const wire1 = document.getElementById("wire-1");
+  const wire2 = document.getElementById("wire-2");
+  const wire3 = document.getElementById("wire-3");
+  const energyParticles1 = document.getElementById("energy-particles-1");
+  const energyParticles2 = document.getElementById("energy-particles-2");
 
-  // Ensure card visible (in case of reconnect)
-  if (card.style.display === "none") {
-    card.style.display = "flex";
-  }
+  if (currentRelayState === "ON") {
+    // === ON STATE ===
+    relayValue.textContent = "ON";
+    relayValue.style.color = "#34d399";
+    relayValue.style.background = "rgba(52, 211, 153, 0.2)";
+    relayValue.style.borderColor = "#34d399";
+    relayValue.style.boxShadow = "0 0 20px rgba(52, 211, 153, 0.3)";
+    relayValue.style.textShadow = "0 0 10px rgba(52, 211, 153, 0.5)";
 
-  const rainValEl = card.querySelector("#rain-value");
-  const roof      = card.querySelector("#roof");
+    // Activate electromagnetic coil with glow
+    relayCoil.style.filter = "url(#relayGlow)";
+    relayCoil.style.opacity = "1";
 
-  // ---------- 1. Parse incoming rainfall ----------
-  const rainStr = sensorData.ADC["Rainfall"];
-  const rainMm  = parseFloat(rainStr.replace(" mm", ""));
+    // Pull iron core down (electromagnet attraction)
+    relayCore.setAttribute("y", "140");
+    relayCore.setAttribute("height", "120");
 
-  if (isNaN(rainMm)) return;
+    // Compress spring
+    relaySpring.setAttribute("d", "M160 140 Q160 130 160 120 Q160 110 160 100");
 
-  // ---------- 2. Update the number ----------
-  rainValEl.textContent = `${rainMm.toFixed(1)} mm`;
+    // Move arm to NO (Normally Open) contact - rotate upward
+    relayArm.setAttribute("transform", "translate(300,140) rotate(-40)");
 
-  // ---------- 3. Get / create persistent state ----------
-  let state = roof.dataset.state ? JSON.parse(roof.dataset.state) : null;
+    // Show electrical spark at contact point
+    relaySpark.style.opacity = "1";
+    setTimeout(() => {
+      relaySpark.style.opacity = "0";
+    }, 600);
 
-  if (!state) {
-    state = {
-      lastRainfall: null,
-      direction: 1
-    };
-    roof.dataset.state = JSON.stringify(state);
-  }
+    // Activate bulb - full brightness
+    if (bulbGlow) {
+      bulbGlow.style.opacity = "1";
+    }
+    if (bulbFilament) {
+      bulbFilament.setAttribute("stroke", "#FFD700");
+      bulbFilament.setAttribute("stroke-width", "3");
+    }
+    if (lightRays) {
+      lightRays.style.opacity = "1";
+    }
 
-  // ---------- 4. TIP DETECTION ----------
-  if (state.lastRainfall === null || rainMm > state.lastRainfall) {
-    console.log("Rain Tip Detected! Rainfall:", rainMm);
+    // Activate wires - show current flow
+    if (wire1) {
+      wire1.style.stroke = "#4CAF50";
+      wire1.style.strokeWidth = "4";
+    }
+    if (wire2) {
+      wire2.style.stroke = "#4CAF50";
+      wire2.style.strokeWidth = "4";
+    }
+    if (wire3) {
+      wire3.style.stroke = "#4CAF50";
+      wire3.style.strokeWidth = "4";
+    }
 
-    // ---- flip direction ----
-    state.direction *= -1;
-    const targetDeg = state.direction > 0 ? 12 : -12;
+    // Show energy flow particles
+    if (energyParticles1) {
+      energyParticles1.style.opacity = "1";
+    }
+    if (energyParticles2) {
+      energyParticles2.style.opacity = "1";
+    }
 
-    // ---- animate roof ----
-    roof.style.transition = "transform 0.8s cubic-bezier(0.34,0.72,0.4,1.2)";
-    roof.style.transform  = `translateX(-50%) rotate(${targetDeg}deg)`;
+  } else {
+    // === OFF STATE ===
+    relayValue.textContent = "OFF";
+    relayValue.style.color = "#f87171";
+    relayValue.style.background = "rgba(248, 113, 113, 0.15)";
+    relayValue.style.borderColor = "#f87171";
+    relayValue.style.boxShadow = "none";
+    relayValue.style.textShadow = "0 0 10px rgba(248, 113, 113, 0.3)";
 
-    // ---- save state ----
-    state.lastRainfall = rainMm;
-    roof.dataset.state = JSON.stringify(state);
+    // Deactivate coil - no magnetic field
+    relayCoil.style.filter = "none";
+    relayCoil.style.opacity = "0.7";
+
+    // Release iron core - spring pushes it back up
+    relayCore.setAttribute("y", "180");
+    relayCore.setAttribute("height", "80");
+
+    // Relax spring to normal position
+    relaySpring.setAttribute("d", "M160 180 Q160 160 160 140 Q160 120 160 100");
+
+    // Return arm to NC (Normally Closed) contact - horizontal position
+    relayArm.setAttribute("transform", "translate(300,140) rotate(0)");
+
+    // Deactivate bulb - no light
+    if (bulbGlow) {
+      bulbGlow.style.opacity = "0";
+    }
+    if (bulbFilament) {
+      bulbFilament.setAttribute("stroke", "#FF9800");
+      bulbFilament.setAttribute("stroke-width", "2.5");
+    }
+    if (lightRays) {
+      lightRays.style.opacity = "0";
+    }
+
+    // Deactivate wires - no current
+    if (wire1) {
+      wire1.style.stroke = "#78909C";
+      wire1.style.strokeWidth = "3";
+    }
+    if (wire2) {
+      wire2.style.stroke = "#78909C";
+      wire2.style.strokeWidth = "3";
+    }
+    if (wire3) {
+      wire3.style.stroke = "#78909C";
+      wire3.style.strokeWidth = "3";
+    }
+
+    // Hide energy flow particles
+    if (energyParticles1) {
+      energyParticles1.style.opacity = "0";
+    }
+    if (energyParticles2) {
+      energyParticles2.style.opacity = "0";
+    }
   }
 }
-    // Update Hall Sensor card (for Analog Hall Sensor)
-    if (protocol === "Analog" && selectedSensor === "Hall Sensor" && currentMagneticField !== null && hallValue && hallArc && hallGlow) {
-      const field = parseInt(currentMagneticField);
-      hallValue.textContent = field === 1 ? "High (Detected)" : "Low (Not Detected)";
-      hallArc.style.stroke = field === 1 ? "#f44336" : "#34d399";
-      hallGlow.setAttribute("stdDeviation", field === 1 ? 5 : 0);
-      hallArc.setAttribute("filter", field === 1 ? "url(#hall-glow)" : "");
+
+// === BUZZER CARD UPDATE - ENHANCED ===
+if (protocol === "GPIO" && selectedSensor === "Buzzer") {
+  const buzzerValue = document.getElementById("buzzer-value");
+  const soundWaves = document.getElementById("sound-waves");
+  const glowRing = document.getElementById("buzzer-glow-ring");
+  const vibrationLines = document.getElementById("vibration-lines");
+  const speakerBody = document.getElementById("speaker-body");
+
+  const isActive = sensorData.GPIO["Buzzer State"] === "Active";
+
+  if (buzzerValue) {
+    buzzerValue.textContent = isActive ? "Active" : "Inactive";
+    buzzerValue.style.color = isActive ? "#60a5fa" : "#f87171";
+  }
+
+  // Activate animations when buzzer is on
+  if (isActive) {
+    soundWaves.style.opacity = "1";
+    glowRing.style.opacity = "1";
+    vibrationLines.style.opacity = "0.6";
+    speakerBody.style.filter = "drop-shadow(0 0 20px #60a5fa)";
+  } else {
+    soundWaves.style.opacity = "0";
+    glowRing.style.opacity = "0";
+    vibrationLines.style.opacity = "0";
+    speakerBody.style.filter = "none";
+  }
+}
+
+// ===================================
+// BLINKY (LED) ANIMATION
+// ===================================
+if (protocol === "GPIO" && selectedSensor === "Blinky") {
+  const blinkyCard = document.getElementById("blinky-card");
+  const blinkyValue = document.getElementById("blinky-value");
+
+  // Get current state – should come from your parseSensorData logic
+  const isOn = sensorData.GPIO?.["Blinky State"] === "ON";
+
+  if (!blinkyCard || !blinkyValue) {
+    console.warn("Blinky card or value element not found!");
+    return;
+  }
+
+  // Update displayed text
+  blinkyValue.textContent = isOn ? "ON" : "OFF";
+
+  // Always clean both classes first (prevents many animation bugs)
+  blinkyCard.classList.remove("blinky-on", "blinky-off");
+
+  // Small timeout helps trigger CSS animations more reliably
+  setTimeout(() => {
+    if (isOn) {
+      blinkyCard.classList.add("blinky-on");
+      console.log("Blinky → ON (classes applied)");
     } else {
-      if (hallValue) hallValue.textContent = "";
-      if (hallArc && hallGlow) {
-        hallArc.style.stroke = "#34d399";
-        hallGlow.setAttribute("stdDeviation", 0);
-        hallArc.removeAttribute("filter");
-      }
+      blinkyCard.classList.add("blinky-off");
+      console.log("Blinky → OFF (classes applied)");
     }
-// Update TLV493D magnetic field card (for I2C TLV493D)
-if (protocol === "I2C" && selectedSensor === "TLV493D" && (currentMagneticX !== null || currentMagneticY !== null || currentMagneticZ !== null)) {
-  const magX = currentMagneticX !== null ? parseFloat(currentMagneticX) : 0;
-  const magY = currentMagneticY !== null ? parseFloat(currentMagneticY) : 0;
-  const magZ = currentMagneticZ !== null ? parseFloat(currentMagneticZ) : 0;
-  
-  tlv493dXValue.textContent = `X: ${magX.toFixed(2)} mT`;
-  tlv493dYValue.textContent = `Y: ${magY.toFixed(2)} mT`;
-  tlv493dZValue.textContent = `Z: ${magZ.toFixed(2)} mT`;
+  }, 20);
+}
 
-  // --- NEW SIMPLIFIED LOGIC ---
-  const indicator = document.getElementById("max-axis-indicator");
-  const zIndicator = document.getElementById("z-axis-indicator");
-
-  if (!indicator || !zIndicator) return;
-
-  const absX = Math.abs(magX);
-  const absY = Math.abs(magY);
-  const absZ = Math.abs(magZ);
-
-  const maxVal = Math.max(absX, absY, absZ);
-  
-  // Reset Z indicator default style
-  zIndicator.style.transform = "scale(1)";
-  zIndicator.style.fill = "#fff";
-  indicator.style.opacity = "1";
-
-  if (maxVal < 1.0) { // Threshold to prevent flickering at zero
-    indicator.style.transform = `translate(0px, 0px)`;
-  } else if (maxVal === absX) {
-    // X is dominant
-    if (magX > 0) {
-      indicator.style.transform = `translate(35px, 0px)`; // Move to +X
-    } else {
-      indicator.style.transform = `translate(-35px, 0px)`; // Move to -X
+// ===================================
+// HALL SENSOR ANIMATION
+// ===================================
+if (protocol === "Analog" && selectedSensor === "Hall Sensor") {
+  const hallValue = document.getElementById("hall-value");
+  const hallMagnet = document.getElementById("hall-magnet");
+  const magneticWaves = document.getElementById("hall-magnetic-waves");
+  const poleLightning = document.getElementById("hall-pole-lightning");
+  const statusDot = document.getElementById("hall-status-dot");
+ 
+  if (currentMagneticField !== null && hallValue && hallMagnet) {
+    const field = parseInt(currentMagneticField);
+   
+    // Update text display
+    hallValue.textContent = field === 1 ? "High (Detected)" : "Low (Not Detected)";
+    hallValue.style.color = field === 1 ? "#f87171" : "#6ee7b7";
+   
+    // Update status dot
+    if (statusDot) {
+      statusDot.className = field === 1
+        ? "hall-status-dot status-active"
+        : "hall-status-dot status-inactive";
     }
-  } else if (maxVal === absY) {
-    // Y is dominant
-    if (magY > 0) {
-      indicator.style.transform = `translate(0px, -35px)`; // Move to +Y
+   
+    // Toggle magnetic waves animation
+    if (magneticWaves) {
+      magneticWaves.style.opacity = field === 1 ? "1" : "0";
+    }
+   
+    // Toggle pole lightning
+    if (poleLightning) {
+      poleLightning.style.opacity = field === 1 ? "1" : "0";
+    }
+   
+    // Toggle magnet vibration and lightning bolts
+    if (field === 1) {
+      hallMagnet.classList.add("vibrate");
+      startHallLightningBolts();
     } else {
-      indicator.style.transform = `translate(0px, 35px)`; // Move to -Y
+      hallMagnet.classList.remove("vibrate");
+      stopHallLightningBolts();
     }
   } else {
-    // Z is dominant
-    indicator.style.transform = `translate(0px, 0px)`; // <-- CHANGED: Move dot to center
-    indicator.style.opacity = "1";                     // <-- CHANGED: Ensure dot is visible
-    zIndicator.style.transform = "scale(2.5)"; // Make the Z circle bigger
-    if (magZ > 0) {
-      zIndicator.style.fill = "#ef4444"; // Red for +Z (coming out)
-    } else {
-      zIndicator.style.fill = "#3b82f6"; // Blue for -Z (going in)
+    // Reset to default state when no data
+    hallValue.textContent = "Waiting for data…";
+    hallValue.style.color = "#94a3b8";
+   
+    if (statusDot) {
+      statusDot.className = "hall-status-dot status-inactive";
     }
+   
+    if (magneticWaves) {
+      magneticWaves.style.opacity = "0";
+    }
+   
+    if (poleLightning) {
+      poleLightning.style.opacity = "0";
+    }
+   
+    if (hallMagnet) {
+      hallMagnet.classList.remove("vibrate");
+    }
+   
+    stopHallLightningBolts();
   }
-
-} else {
-  // If no data, reset to center
-  const indicator = document.getElementById("max-axis-indicator");
-  const zIndicator = document.getElementById("z-axis-indicator");
-  if (indicator) {
-    indicator.style.transform = `translate(0px, 0px)`;
-    indicator.style.opacity = "1";
-  }
-  if (zIndicator) {
-    zIndicator.style.transform = "scale(1)";
-    zIndicator.style.fill = "#fff";
-  }
-  tlv493dXValue.textContent = `X: 0.00 mT`;
-  tlv493dYValue.textContent = `Y: 0.00 mT`;
-  tlv493dZValue.textContent = `Z: 0.00 mT`;
 }
-    // Update TOFVL53L0X distance card (for I2C VL53L0X)
-    if (protocol === "I2C" && selectedSensor === "VL53L0X" && currentDistance !== null) {
-      const distance = parseFloat(currentDistance);
-      const maxDist = 850;
-      tofValue.textContent = `${distance.toFixed(2)} cm`;
-      const pos = 20 + Math.min(Math.max((distance / maxDist) * 170, 0), 170);
-      tofPerson.setAttribute("transform", `translate(${pos}, 0)`);
-    } else {
-      tofValue.textContent = "";
-      tofPerson.setAttribute("transform", "translate(20, 0)");
-    }
 
-    // Update LTR390 card (for I2C LTR390)
+// Update LTR390 card (for I2C LTR390)
     if (protocol === "I2C" && selectedSensor === "LTR390" && currentUV !== null) {
       const uv = parseFloat(currentUV);
       const maxUV = 11;
-      const barColor = "#6b8af7";
-      const barWidthUV = Math.min(Math.max((uv / maxUV) * 100, 0), 100);
-      uvValue.textContent = `UV: ${uv.toFixed(2)}`;
-      uvBar.style.width = `${barWidthUV}%`;
-      uvBar.style.backgroundColor = barColor;
+      
+      // Update UV value text
+      if (uvValue) uvValue.textContent = `UV: ${uv.toFixed(2)}`;
+      
+      // Calculate pointer position (0-11+ maps to 0-100%)
+      const pointerPosition = Math.min((uv / maxUV) * 100, 100);
+      
+      // Update pointer position
+      const pointer = document.querySelector('.pointer');
+      if (pointer) {
+        pointer.style.left = `${pointerPosition}%`;
+      }
 
       const uvRanges = [
-        { range: [0, 1], label: "Low", color: "#ffeb3b" },
+        { range: [0, 1], label: "Low", color: "#f8c844" },
         { range: [2, 5], label: "Moderate", color: "#f6990dff" },
         { range: [6, 7], label: "High", color: "#fa6215ff" },
         { range: [8, 10], label: "Very High", color: "#fd1808ff" },
         { range: [11, Infinity], label: "Extreme", color: "#9e0f04ff" }
       ];
 
-      let uvColor = "#ffeb3b";
+      let uvColor = "#f6990dff";
       let uvLabel = "Low";
       for (const range of uvRanges) {
         if (uv >= range.range[0] && uv <= range.range[1]) {
@@ -654,81 +1048,369 @@ if (protocol === "I2C" && selectedSensor === "TLV493D" && (currentMagneticX !== 
         }
       }
 
-      uvSunCircle.setAttribute("r", uv >= 3 ? 22 : 18);
-      uvGlow.setAttribute("stdDeviation", uv >= 3 ? 5 : 3);
-      uvSunGradient.children[0].setAttribute("style", `stop-color:${uvColor}; stop-opacity:1`);
-      uvSunGradient.children[1].setAttribute("style", `stop-color:${uvColor}; stop-opacity:0.8`);
-      uvSunGradient.children[2].setAttribute("style", `stop-color:${uvColor}; stop-opacity:0.4`);
+      if (uvSunCircle) uvSunCircle.setAttribute("r", uv >= 3 ? 22 : 18);
+      if (uvGlow) uvGlow.setAttribute("stdDeviation", uv >= 3 ? 5 : 3);
+      if (uvSunGradient && uvSunGradient.children.length >= 3) {
+        uvSunGradient.children[0].setAttribute("style", `stop-color:${uvColor}; stop-opacity:1`);
+        uvSunGradient.children[1].setAttribute("style", `stop-color:${uvColor}; stop-opacity:0.8`);
+        uvSunGradient.children[2].setAttribute("style", `stop-color:${uvColor}; stop-opacity:0.4`);
+      }
 
-      const rays = uvRays.querySelectorAll(".uv-ray");
-      rays.forEach(ray => {
-        ray.setAttribute("stroke", uvColor);
-        ray.style.opacity = uv >= 3 ? 1 : 0;
-        if (uv >= 3) {
-          const animOpacity = ray.querySelector('animate[attributeName="opacity"]');
-          const animX2 = ray.querySelector('animate[attributeName="x2"]');
-          const animY2 = ray.querySelector('animate[attributeName="y2"]');
-          if (animOpacity) {
-            animOpacity.setAttribute("values", uv >= 8 ? "0;1;0" : "0;0.8;0");
-            animOpacity.setAttribute("dur", uv >= 11 ? "1.5s" : "2s");
+      if (uvRays) {
+        const rays = uvRays.querySelectorAll(".uv-ray");
+        rays.forEach(ray => {
+          ray.setAttribute("stroke", uvColor);
+          ray.style.opacity = uv >= 3 ? 1 : 0;
+          if (uv >= 3) {
+            const animOpacity = ray.querySelector('animate[attributeName="opacity"]');
+            const animX2 = ray.querySelector('animate[attributeName="x2"]');
+            const animY2 = ray.querySelector('animate[attributeName="y2"]');
+            if (animOpacity) {
+              animOpacity.setAttribute("values", uv >= 8 ? "0;1;0" : "0;0.8;0");
+              animOpacity.setAttribute("dur", uv >= 11 ? "1.5s" : "2s");
+            }
+            if (animX2) {
+              animX2.setAttribute("values", uv >= 11 ? `${parseFloat(animX2.getAttribute("values").split(";")[0])*1.2};${parseFloat(animX2.getAttribute("values").split(";")[1])*1.2};${parseFloat(animX2.getAttribute("values").split(";")[0])*1.2}` : animX2.getAttribute("values"));
+            }
+            if (animY2) {
+              animY2.setAttribute("values", uv >= 11 ? `${parseFloat(animY2.getAttribute("values").split(";")[0])*1.2};${parseFloat(animY2.getAttribute("values").split(";")[1])*1.2};${parseFloat(animY2.getAttribute("values").split(";")[0])*1.2}` : animY2.getAttribute("values"));
+            }
           }
-          if (animX2) {
-            animX2.setAttribute("values", uv >= 11 ? `${parseFloat(animX2.getAttribute("values").split(";")[0])*1.2};${parseFloat(animX2.getAttribute("values").split(";")[1])*1.2};${parseFloat(animX2.getAttribute("values").split(";")[0])*1.2}` : animX2.getAttribute("values"));
-          }
-          if (animY2) {
-            animY2.setAttribute("values", uv >= 11 ? `${parseFloat(animY2.getAttribute("values").split(";")[0])*1.2};${parseFloat(animY2.getAttribute("values").split(";")[1])*1.2};${parseFloat(animY2.getAttribute("values").split(";")[0])*1.2}` : animY2.getAttribute("values"));
-          }
-        }
-      });
+        });
+      }
 
-      uvValue.textContent = `UV: ${uv.toFixed(2)} (${uvLabel})`;
+      if (uvValue) uvValue.textContent = `UV: ${uv.toFixed(2)} (${uvLabel})`;
     } else {
-      uvValue.textContent = "UV: 0.00";
-      uvBar.style.width = "0%";
-      uvBar.style.backgroundColor = "#6b8af7";
-      uvSunCircle.setAttribute("r", 18);
-      uvGlow.setAttribute("stdDeviation", 3);
-      uvSunGradient.children[0].setAttribute("style", "stop-color:#ffeb3b; stop-opacity:1");
-      uvSunGradient.children[1].setAttribute("style", "stop-color:#ff9800; stop-opacity:0.8");
-      uvSunGradient.children[2].setAttribute("style", "stop-color:#ff6b00; stop-opacity:0.4");
-      const rays = uvRays.querySelectorAll(".uv-ray");
-      rays.forEach(ray => {
-        ray.setAttribute("stroke", "#ffeb3b");
-        ray.style.opacity = 0;
-      });
+      if (uvValue) uvValue.textContent = "UV: 0.00";
+      if (uvBar) {
+        uvBar.style.width = "0%";
+        uvBar.style.backgroundColor = "#6b8af7";
+      }
+      if (uvSunCircle) uvSunCircle.setAttribute("r", 18);
+      if (uvGlow) uvGlow.setAttribute("stdDeviation", 3);
+      if (uvSunGradient && uvSunGradient.children.length >= 3) {
+        uvSunGradient.children[0].setAttribute("style", "stop-color:#ffeb3b; stop-opacity:1");
+        uvSunGradient.children[1].setAttribute("style", "stop-color:#ff9800; stop-opacity:0.8");
+        uvSunGradient.children[2].setAttribute("style", "stop-color:#ff6b00; stop-opacity:0.4");
+      }
+      if (uvRays) {
+        const rays = uvRays.querySelectorAll(".uv-ray");
+        rays.forEach(ray => {
+          ray.setAttribute("stroke", "#ffeb3b");
+          ray.style.opacity = 0;
+        });
+      }
     }
+
+
+// ===================================
+// HELPER FUNCTIONS FOR HALL SENSOR
+// ===================================
+function startHallLightningBolts() {
+  stopHallLightningBolts(); // Clear any existing interval
  
-
-
-  // Update IR Sensor card (for Analog IR Sensor)
-if (protocol === "Analog" && selectedSensor === "IR Sensor" && currentIR !== null) {
-  const ir = parseInt(currentIR); // Parse as integer since it's 0 or 1
-  const irValue = document.getElementById("ir-value");
-  const irBulbCircle = document.getElementById("ir-bulb-circle");
-  const irGlow = document.querySelector("#ir-glow feGaussianBlur");
-
-  // Set display text and bulb appearance based on binary state
-  irValue.textContent = ir === 1 ? "On (Detected)" : "Off (Not Detected)";
-  irBulbCircle.setAttribute("fill", ir === 1 ? "#ffeb3b" : "#ccc"); // Yellow when on, gray when off
-  irGlow.setAttribute("stdDeviation", ir === 1 ? 5 : 0); // Glow when on
-  irBulbCircle.setAttribute("filter", ir === 1 ? "url(#ir-glow)" : "");
-} else {
-  const irValue = document.getElementById("ir-value");
-  const irBulbCircle = document.getElementById("ir-bulb-circle");
-  const irGlow = document.querySelector("#ir-glow feGaussianBlur");
-  if (irValue) irValue.textContent = "";
-  if (irBulbCircle && irGlow) {
-    irBulbCircle.setAttribute("fill", "#ccc");
-    irGlow.setAttribute("stdDeviation", 0);
-    irBulbCircle.removeAttribute("filter");
+  const lightningContainer = document.getElementById("hall-lightning-bolts");
+  if (!lightningContainer) return;
+ 
+  // Generate bolts immediately
+  generateHallLightningBolt();
+ 
+  // Generate new bolts every 1 second
+  hallLightningInterval = setInterval(() => {
+    generateHallLightningBolt();
+  }, 1000);
+}
+/**
+ * Stop generating lightning bolts
+ */
+function stopHallLightningBolts() {
+  if (hallLightningInterval) {
+    clearInterval(hallLightningInterval);
+    hallLightningInterval = null;
+  }
+ 
+  const lightningContainer = document.getElementById("hall-lightning-bolts");
+  if (lightningContainer) {
+    lightningContainer.innerHTML = "";
+  }
+}
+/**
+ * Generate a single lightning bolt that animates toward the magnet
+ */
+function generateHallLightningBolt() {
+  const lightningContainer = document.getElementById("hall-lightning-bolts");
+  if (!lightningContainer) return;
+ 
+  // Create 6 bolts in different directions
+  for (let i = 0; i < 6; i++) {
+    const angle = (i * 60) + (Math.random() * 20 - 10);
+    const distance = 80 + Math.random() * 20;
+    const delay = i * 0.15;
+   
+    const radians = (angle * Math.PI) / 180;
+    const startX = 50 + Math.cos(radians) * distance;
+    const startY = 50 + Math.sin(radians) * distance;
+   
+    const boltGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    boltGroup.classList.add("lightning-bolt");
+    boltGroup.style.animationDelay = `${delay}s`;
+   
+    // Lightning bolt shape
+    const boltPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    boltPath.setAttribute("d", `M ${startX - 2} ${startY - 5} L ${startX - 1} ${startY} L ${startX - 3} ${startY} L ${startX + 2} ${startY + 5} L ${startX + 1} ${startY + 1} L ${startX + 3} ${startY + 1} Z`);
+    boltPath.setAttribute("fill", "#fbbf24");
+    boltPath.setAttribute("stroke", "#f59e0b");
+    boltPath.setAttribute("stroke-width", "0.5");
+   
+    // Glow effect
+    const glowPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    glowPath.setAttribute("d", `M ${startX - 2} ${startY - 5} L ${startX - 1} ${startY} L ${startX - 3} ${startY} L ${startX + 2} ${startY + 5} L ${startX + 1} ${startY + 1} L ${startX + 3} ${startY + 1} Z`);
+    glowPath.setAttribute("fill", "#fef3c7");
+    glowPath.setAttribute("opacity", "0.6");
+   
+    boltGroup.appendChild(boltPath);
+    boltGroup.appendChild(glowPath);
+    lightningContainer.appendChild(boltGroup);
+   
+    // Remove bolt after animation completes
+    setTimeout(() => {
+      if (boltGroup.parentNode) {
+        boltGroup.parentNode.removeChild(boltGroup);
+      }
+    }, 1000 + delay * 1000);
+  }
+}
+// Update IR Sensor card with animation
+    if (protocol === "Analog" && selectedSensor === "IR Sensor" && currentIR !== null) {
+      const detected = parseInt(currentIR) === 1;
+      const irValue = document.getElementById("ir-value");
+      const irCard = document.getElementById("ir-card");
+      const svg = irCard ? irCard.querySelector("svg") : null;
+      const object = document.getElementById("detected-object");
+      const objectLabel = document.getElementById("object-label");
+      const diagonalPath = document.getElementById("diagonal-path");
+     
+      // Update text
+      if (irValue) irValue.textContent = detected ? "Object Detected" : "No Object";
+     
+      // Always show IR transmission (red beam)
+      if (svg) svg.classList.add("ir-active");
+     
+      if (detected) {
+        // Object detected → show reflection
+        if (svg) svg.classList.add("ir-detected");
+        if (object) object.style.opacity = "1";
+        if (objectLabel) objectLabel.style.opacity = "1";
+        if (diagonalPath) diagonalPath.style.opacity = "0.3";
+      } else {
+        // No object detected
+        if (svg) svg.classList.remove("ir-detected");
+        if (object) object.style.opacity = "0";
+        if (objectLabel) objectLabel.style.opacity = "0";
+        if (diagonalPath) diagonalPath.style.opacity = "0";
+      }
+    } else {
+      // Reset when not active
+      const irCard = document.getElementById("ir-card");
+      const svg = irCard ? irCard.querySelector("svg") : null;
+      if (svg) {
+        svg.classList.remove("ir-active", "ir-detected");
+      }
+      const object = document.getElementById("detected-object");
+      const objectLabel = document.getElementById("object-label");
+      const diagonalPath = document.getElementById("diagonal-path");
+      if (object) object.style.opacity = "0";
+      if (objectLabel) objectLabel.style.opacity = "0";
+      if (diagonalPath) diagonalPath.style.opacity = "0";
+      const irValue = document.getElementById("ir-value");
+      if (irValue) irValue.textContent = "Waiting...";
+    }
+// ===================================
+// TLV493D – SIMPLIFIED & WORKING VECTOR
+// ===================================
+if (protocol === "I2C" && selectedSensor === "TLV493D") {
+  const xEl = document.getElementById("tlv493d-x-value");
+  const yEl = document.getElementById("tlv493d-y-value");
+  const zEl = document.getElementById("tlv493d-z-value");
+  const line = document.getElementById("vector-line");
+  const head = document.getElementById("vector-head");
+  const zIndicator = document.getElementById("z-axis-indicator");
+  const label = document.getElementById("mag-label");
+  if (currentMagneticX !== null && currentMagneticY !== null && currentMagneticZ !== null) {
+    const x = parseFloat(currentMagneticX);
+    const y = parseFloat(currentMagneticY);
+    const z = parseFloat(currentMagneticZ);
+    // Update values
+    if (xEl) xEl.textContent = `X: ${x.toFixed(2)} mT`;
+    if (yEl) yEl.textContent = `Y: ${y.toFixed(2)} mT`;
+    if (zEl) zEl.textContent = `Z: ${z.toFixed(2)} mT`;
+    const absX = Math.abs(x), absY = Math.abs(y), absZ = Math.abs(z);
+    const max = Math.max(absX, absY, absZ);
+    // Scale to fit inside inner circle (radius 45px)
+    const scale = 40 / (max || 1);
+   
+    // Calculate end point of vector
+    // SVG: (0,0) is top-left, Y increases DOWNWARD
+    const tx = 70 + x * scale;
+    const ty = 70 + y * scale; // Add y (not subtract) because in your image, Y: -175.71 should point DOWN
+    // Update vector line
+    line.setAttribute("x2", tx);
+    line.setAttribute("y2", ty);
+   
+    // Calculate angle from X-axis (0° = right, 90° = down, 180° = left, 270° = up)
+    const angleRad = Math.atan2(y, x); // Using y directly (no negative)
+    const angleDeg = angleRad * 180 / Math.PI;
+   
+    // Position arrow head at the end of the line
+    head.setAttribute("transform", `translate(${tx},${ty}) rotate(${angleDeg})`);
+    // Determine direction and set colors
+    if (absZ > absX && absZ > absY) {
+      // Z dominant - blue theme
+      zIndicator.style.opacity = "1";
+      line.style.opacity = "0.3";
+      head.style.opacity = "0.3";
+      line.style.stroke = "#60a5fa";
+      head.style.fill = "#60a5fa";
+      label.textContent = z > 0 ? "Z+" : "Z-";
+      label.style.color = "#60a5fa";
+    } else {
+      zIndicator.style.opacity = "0";
+      line.style.opacity = "1";
+      head.style.opacity = "1";
+     
+      if (absX > absY) {
+        // X dominant - red theme
+        line.style.stroke = "#ff6b6b";
+        head.style.fill = "#ff6b6b";
+        label.textContent = x > 0 ? "East" : "West";
+        label.style.color = "#ff6b6b";
+      } else {
+        // Y dominant - cyan theme
+        line.style.stroke = "#6ee7ff";
+        head.style.fill = "#6ee7ff";
+        // For your data: Y = -175.71 (negative) should show "South" pointing DOWN
+        label.textContent = y > 0 ? "North" : "South";
+        label.style.color = "#6ee7ff";
+      }
+    }
+   
+    // Debug output
+    console.log(`Vector: X=${x.toFixed(2)}, Y=${y.toFixed(2)}`);
+    console.log(`End point: (${tx.toFixed(1)}, ${ty.toFixed(1)})`);
+    console.log(`Angle: ${angleDeg.toFixed(1)}°`);
+   
+  } else {
+    // No data – reset
+    if (xEl) xEl.textContent = "X: 0.00 mT";
+    if (yEl) yEl.textContent = "Y: 0.00 mT";
+    if (zEl) zEl.textContent = "Z: 0.00 mT";
+    line.setAttribute("x2", "70");
+    line.setAttribute("y2", "70");
+    head.setAttribute("transform", "translate(70,70) rotate(0)");
+    line.style.stroke = "#6ee7ff";
+    head.style.fill = "#6ee7ff";
+    line.style.opacity = "0.5";
+    head.style.opacity = "0.5";
+    zIndicator.style.opacity = "0";
+    label.textContent = "Waiting...";
+    label.style.color = "#ffd43b";
   }
 }
 
-    // Update visualization section visibility
+
+// === LIS3DH ACCELERATION VALUES + BALL UPDATE ===
+if (protocol === "I2C" && selectedSensor === "LIS3DH") {
+  const ball = document.getElementById("accel-ball");
+
+  if (currentAccelX !== null && currentAccelY !== null && currentAccelZ !== null) {
+    const accelX = parseFloat(currentAccelX);
+    const accelY = parseFloat(currentAccelY);
+    const accelZ = parseFloat(currentAccelZ);
+
+    if (lis3dhXValue) lis3dhXValue.textContent = `X: ${accelX.toFixed(2)} m/s²`;
+    if (lis3dhYValue) lis3dhYValue.textContent = `Y: ${accelY.toFixed(2)} m/s²`;
+    if (lis3dhZValue) lis3dhZValue.textContent = `Z: ${accelZ.toFixed(2)} m/s²`;
+
+    const scale = 75 / 12; // sensitivity - adjust if needed
+    const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+    const ballX = clamp(accelX * scale, -67.5, 67.5);
+    const ballY = clamp(-accelY * scale, -67.5, 67.5); // invert Y for correct direction
+
+    if (ball) {
+      ball.style.transform = `translate(-50%, -50%) translate3d(${ballX}px, ${ballY}px, 0px)`;
+    }
+  } else {
+    // No data yet - show zeros
+    if (lis3dhXValue) lis3dhXValue.textContent = "X: 0.00 m/s²";
+    if (lis3dhYValue) lis3dhYValue.textContent = "Y: 0.00 m/s²";
+    if (lis3dhZValue) lis3dhZValue.textContent = "Z: 0.00 m/s²";
+    if (ball) ball.style.transform = "translate(-50%, -50%) translate3d(0px, 0px, 0px)";
+  }
+}
+
+    // Updated Wind Direction rotation code (now centered perfectly with new needle size)
+        if (protocol === "RS232" && selectedSensor === "Wind Sensor" && currentWindDirection !== null) {
+          const direction = parseFloat(currentWindDirection);
+          const windDirectionArrow = document.getElementById('wind-direction-arrow');
+          const windDirectionValue = document.getElementById('wind-direction-value');
+          if (windDirectionArrow) {
+            let currentRotation = 0;
+            const currentTransform = windDirectionArrow.style.transform || '';
+            const match = currentTransform.match(/rotate\(([-\d.]+)deg\)/);
+            if (match) currentRotation = parseFloat(match[1]);
+            let diff = direction - currentRotation;
+            if (diff > 180) diff -= 360;
+            if (diff < -180) diff += 360;
+            const target = currentRotation + diff;
+            windDirectionArrow.style.transition = 'transform 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+            windDirectionArrow.style.transform = `rotate(${target}deg)`;
+            // Make value larger when wind is strong (like in your first picture)
+            if (windDirectionValue) {
+              windDirectionValue.textContent = `${direction.toFixed(0)}°`;
+              windDirectionValue.style.fontSize = currentWindSpeed > 5 ? '2.8em' : '2.4em';
+            }
+          }
+        }
+    // Update Wind Speed card (for RS232 Wind Sensor)
+    if (protocol === "RS232" && selectedSensor === "Wind Sensor" && currentWindSpeed !== null) {
+      const speed = parseFloat(currentWindSpeed);
+      if (windSpeedValue) windSpeedValue.textContent = `${speed.toFixed(1)} m/s`;
+     
+      // Animate anemometer rotation based on speed
+      if (windSpeedCups) {
+        const rotationSpeed = Math.min(speed * 10, 100); // Cap rotation speed
+        windSpeedCups.style.transform = `rotate(${rotationSpeed}deg)`;
+        windSpeedCups.style.transition = `transform ${Math.max(0.5, 2/speed)}s linear`;
+      }
+     
+      // Update speed bar (0-20 m/s range)
+      if (windSpeedBar) {
+        const barWidth = Math.min((speed / 20) * 100, 100);
+        windSpeedBar.style.width = `${barWidth}%`;
+       
+        // Change color based on speed
+        if (speed < 5) {
+          windSpeedBar.style.background = "linear-gradient(90deg, #10b981, #34d399)";
+        } else if (speed < 15) {
+          windSpeedBar.style.background = "linear-gradient(90deg, #f59e0b, #fbbf24)";
+        } else {
+          windSpeedBar.style.background = "linear-gradient(90deg, #ef4444, #f87171)";
+        }
+      }
+    } else {
+      if (windSpeedValue) windSpeedValue.textContent = "0.0 m/s";
+      if (windSpeedCups) windSpeedCups.style.transform = "rotate(0deg)";
+      if (windSpeedBar) {
+        windSpeedBar.style.width = "0%";
+        windSpeedBar.style.background = "linear-gradient(90deg, #10b981, #34d399)";
+      }
+    }
     updateSensorVisualizationVisibility();
   } else {
     sensorDropdown.innerHTML = '<option value="" disabled selected>No protocol selected</option>';
     sensorDataDiv.innerHTML = "<p>No sensor data available.</p>";
+   
+    // Hide all cards when no protocol
     thermometerContainer.style.display = "none";
     humidityContainer.style.display = "none";
     pressureContainer.style.display = "none";
@@ -739,209 +1421,780 @@ if (protocol === "Analog" && selectedSensor === "IR Sensor" && currentIR !== nul
     tofContainer.style.display = "none";
     uvltrContainer.style.display = "none";
     irContainer.style.display = "none";
-    thermometerFill.setAttribute("y", 180);
-    thermometerFill.setAttribute("height", 0);
-    thermometerFill.setAttribute("fill", "#ffeb3b");
-    thermometerBulb.setAttribute("fill", "#ffeb3b");
-    thermometerValue.textContent = "";
-    humidityValue.textContent = "";
-    waveColor1.setAttribute("style", `stop-color: #3d8eb4; stop-opacity: 0.5`);
-    waveColor2.setAttribute("style", `stop-color: #0474a8; stop-opacity: 1`);
-    wavePath.style.animation = "";
-    wavePath.setAttribute("d", "M 0 100 V 100 H 100 V 100 Z");
-    pressureValue.textContent = "";
-    pressureBar.style.width = "0%";
-    pressureBar.style.backgroundColor = "#34d399";
-    lightValue.textContent = "";
-    lis3dhXValue.textContent = "X: 0.00 m/s²";
-    lis3dhYValue.textContent = "Y: 0.00 m/s²";
-    lis3dhZValue.textContent = "Z: 0.00 m/s²";
+    rainGaugeCard.style.display = "none";
+    // ADD THESE:
+    windDirectionContainer.style.display = "none";
+    windSpeedContainer.style.display = "none";
+   
+    // Reset all values
+    if (thermometerValue) thermometerValue.textContent = "";
+    if (humidityValue) humidityValue.textContent = "";
+    if (pressureValue) pressureValue.textContent = "";
+    if (lightValue) lightValue.textContent = "";
+    if (lis3dhXValue) lis3dhXValue.textContent = "X: 0.00 m/s²";
+    if (lis3dhYValue) lis3dhYValue.textContent = "Y: 0.00 m/s²";
+    if (lis3dhZValue) lis3dhZValue.textContent = "Z: 0.00 m/s²";
     if (hallValue) hallValue.textContent = "";
-    if (hallArc && hallGlow) {
-      hallArc.style.stroke = "#34d399";
-      hallGlow.setAttribute("stdDeviation", 0);
-      hallArc.removeAttribute("filter");
-    }
-    tlv493dXValue.textContent = "X: 0.00 mT";
-    tlv493dYValue.textContent = "Y: 0.00 mT";
-    tlv493dZValue.textContent = "Z: 0.00 mT";
-    tlv493dXBar.style.width = "0%";
-    tlv493dYBar.style.width = "0%";
-    tlv493dZBar.style.width = "0%";
-    tlv493dXBar.style.backgroundColor = "#6b8af7";
-    tlv493dYBar.style.backgroundColor = "#6b8af7";
-    tlv493dZBar.style.backgroundColor = "#6b8af7";
-    tofValue.textContent = "";
-    if (tofPerson) tofPerson.setAttribute("transform", "translate(20, 0)");
-    uvValue.textContent = "UV: 0.00";
-    uvBar.style.width = "0%";
-    uvBar.style.backgroundColor = "#6b8af7";
-    irValue.textContent = "";
+    if (tlv493dXValue) tlv493dXValue.textContent = "X: 0.00 mT";
+    if (tlv493dYValue) tlv493dYValue.textContent = "Y: 0.00 mT";
+    if (tlv493dZValue) tlv493dZValue.textContent = "Z: 0.00 mT";
+    if (tofValue) tofValue.textContent = "";
+    if (uvValue) uvValue.textContent = "UV: 0.00";
+    if (irValue) irValue.textContent = "";
+    if (windDirectionValue) windDirectionValue.textContent = "0°";
+    if (windSpeedValue) windSpeedValue.textContent = "0.0 m/s";
+   
     updateSensorVisualizationVisibility();
   }
 }
-
 // Handle sensor selection
 function selectSensor(sensor) {
   selectedSensor = sensor;
   updateSensorUI();
 }
+/* =========================================================
+   VL53L0X  –  parse incoming line  +  drive TOF animation
+   ========================================================= */
+function updateTOFAnimation(distance) {
+  console.log('[TOF ANIMATE] Called with distance:', distance);
+  
+  const tofValue        = document.getElementById('tof-value');
+  const tofPerson       = document.getElementById('tof-person');
+  const tofDistanceLine = document.getElementById('tof-distance-line');
+  const tofWave         = document.getElementById('tof-wave');
 
+  if (!tofValue || !tofPerson || !tofDistanceLine || !tofWave) {
+    console.error('TOF animation elements missing!');
+    return;
+  }
+
+  /* ---------- invalid / out-of-range ---------- */
+  if (distance <= 0 || distance > 850 || isNaN(distance)) {
+    tofValue.textContent = '– cm';
+    tofPerson.setAttribute('transform', 'translate(20,0)');
+    tofDistanceLine.setAttribute('x2', '25');
+    tofDistanceLine.setAttribute('stroke', '#4a90e2');
+    tofValue.style.color  = '#4a90e2';
+    tofWave.style.animation = 'none';
+    tofWave.style.opacity = '0';
+    return;
+  }
+
+  /* ---------- valid distance ---------- */
+  tofValue.textContent = distance.toFixed(1) + ' cm';
+
+  // FIXED CALCULATION - person moves from LEFT (close) to RIGHT (far)
+  const maxDistance = 850;  // Maximum distance sensor can measure
+  const minX = 20;          // Starting X position (left side)
+  const maxX = 200;         // Ending X position (right side)
+  
+  // Calculate position: close distance = left (20), far distance = right (200)
+  let personX = minX + (distance / maxDistance) * (maxX - minX);
+  personX = Math.max(minX, Math.min(maxX, personX)); // clamp to valid range
+  
+  console.log(`[TOF] distance=${distance}cm → personX=${personX.toFixed(1)}`);
+
+  tofPerson.setAttribute('transform', `translate(${personX},0)`);
+  tofDistanceLine.setAttribute('x2', personX + 5);
+
+  /* ---------- colour coding ---------- */
+  let color = '#4a90e2';
+  if (distance < 100)       color = '#FF6B6B';     // Red - very close
+  else if (distance < 300)  color = '#FFA500';     // Orange - close
+  else if (distance < 500)  color = '#4CAF50';     // Green - medium
+  // else stays blue for far distances
+
+  tofDistanceLine.setAttribute('stroke', color);
+  tofValue.style.color = color;
+
+  /* ---------- proximity wave ---------- */
+  if (distance < 300) {
+    tofWave.setAttribute('stroke', color);
+    tofWave.style.opacity = '1';
+    tofWave.style.animation = 'waveExpand 1.5s ease-out infinite';
+  } else {
+    tofWave.style.animation = 'none';
+    tofWave.style.opacity = '0';
+  }
+}
 /* ------------------------------------------------------------------ */
-/*  INTERVAL INPUT HANDLING                                           */
+/* PRESSURE CARD FUNCTION */
+/* ------------------------------------------------------------------ */
+function updatePressureCard(hpa) {
+  const card = document.getElementById('pressure-card');
+  const topVal = document.getElementById('pressure-value');
+  const midVal = document.getElementById('pressure-value-inner');
+  const fill = document.getElementById('gauge-fill');
+  // DO NOT HIDE CARD WHEN NO DATA
+  // if (hpa === null || isNaN(hpa)) {
+  // if (card) card.style.display = 'none';
+  // return;
+  // }
+  // Always show card if it should be visible (centralized logic handles this)
+  if (card) card.style.display = 'flex';
+  if (hpa === null || isNaN(hpa)) {
+    if (topVal) topVal.textContent = '– hPa';
+    if (midVal) midVal.textContent = '–';
+    if (fill) fill.style.strokeDasharray = '0 565.48';
+    return;
+  }
+  const txt = Number(hpa).toFixed(2);
+  if (topVal) topVal.textContent = `${txt} hPa`;
+  if (midVal) midVal.textContent = txt;
+  const minP = 300, maxP = 1100;
+  const t = Math.min(Math.max((hpa - minP) / (maxP - minP), 0), 1);
+  const circumference = 2 * Math.PI * 90;
+  if (fill) {
+    fill.style.strokeDasharray = `${t * circumference} ${(1 - t) * circumference}`;
+  }
+  if (card) {
+    card.classList.remove('update-pulse');
+    void card.offsetWidth;
+    card.classList.add('update-pulse');
+  }
+}
+/* ------------------------------------------------------------------ */
+/* INTERVAL INPUT HANDLING */
 /* ------------------------------------------------------------------ */
 const intervalInput = document.getElementById('interval');
-
 if (intervalInput) {
-  // Ensure only numbers can be typed
   intervalInput.addEventListener('input', function() {
     this.value = this.value.replace(/[^0-9]/g, '');
   });
-
-  // On keydown, allow backspace, arrow keys, etc., and prevent invalid input
   intervalInput.addEventListener('keydown', function(event) {
     const allowedKeys = [
       'Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Enter'
     ];
     if (allowedKeys.includes(event.key) || /^[0-9]$/.test(event.key)) {
-      return; // Allow these keys
+      return;
     }
-    event.preventDefault(); // Prevent other keys
+    event.preventDefault();
   });
 }
-
-// Ensure setInterval uses the numeric value
-async function setInterval() {
+// Set interval function
+async function setDeviceInterval() {
   const v = parseInt(document.getElementById("interval").value);
-  if (isNaN(v) || v <= 0) return log("Please enter a valid interval (positive seconds).", "error");
+  if (isNaN(v) || v <= 0) {
+    document.getElementById("output").innerHTML += `<span style="color: red;">Please enter a valid interval (positive seconds).</span><br>`;
+    return;
+  }
   const res = await window.electronAPI.setInterval(v);
-  res.error ? log(res.error, "error") : log(res, "success");
+  if (res.error) {
+    document.getElementById("output").innerHTML += `<span style="color: red;">${res.error}</span><br>`;
+  } else {
+    document.getElementById("output").innerHTML += `<span style="color: green;">${res}</span><br>`;
+  }
+}
+// Update sensor visualization visibility
+function updateSensorVisualizationVisibility() {
+  const visualizationSection = document.querySelector('.sensor-visualization');
+  if (visualizationSection) {
+    const hasVisibleCards = Array.from(visualizationSection.children).some(child =>
+      child.style.display !== 'none' && child.style.display !== ''
+    );
+    visualizationSection.style.display = hasVisibleCards ? 'grid' : 'none';
+  }
 }
 function parseSensorData(data) {
   const protocol = document.getElementById("sensor-select").value;
   if (!protocol) {
     return data;
   }
+  console.log('=== parseSensorData called ===');
+  console.log('Protocol:', protocol);
+  console.log('Raw data:', data);
+  console.log('Selected sensor before parsing:', selectedSensor);
+
 
   const lines = data.split("\n").map(line => line.trim()).filter(line => line);
   let autoSelected = false;
-
   lines.forEach(line => {
-    try {
-      let cleanedLine = line.replace(/°C/g, "").replace(/%/g, "");
-      const sensorMatch = cleanedLine.match(/^(.+?):\s*(.*)$/);
-  
-      if (sensorMatch) {
-        const sensorName = sensorMatch[1].trim();
-        let paramsStr = sensorMatch[2].trim();
-        const params = paramsStr.split(',').map(p => p.trim());
-        const paramMap = {};
-        params.forEach(p => {
-          const [key, value] = p.split(/[:=]/).map(part => part.trim());
-          if (key && value !== undefined) {
-            paramMap[key] = value;
-          }
-        });
 
-        const sensors = sensorProtocolMap[protocol] || [];
-        if (sensors.includes(sensorName)) {
-          sensorStatus[protocol][sensorName.replace(" ", "")] = true;
-
-          // Automatically select the first detected sensor if none is selected
-          if (!selectedSensor && !autoSelected) {
-            selectedSensor = sensorName;
-            autoSelected = true;
-            const sensorDropdown = document.getElementById("sensor-dropdown");
-            if (sensorDropdown) {
-              sensorDropdown.value = sensorName;
-            }
-          }
-
-          let keyMap = {};
-          if (sensorName === "LIS3DH") {
-            keyMap = {
-              'X': 'AccelerationX',
-              'Y': 'AccelerationY',
-              'Z': 'AccelerationZ'
-            };
-          } 
-          else if (sensorName === "Hall Sensor") {
-            keyMap = {
-              'State': 'MagneticField'
-           };
-         } 
-      
-        else if (sensorName === "LTR390") {
-            keyMap = {
-              'UV Index': 'UV'
-            };
-          } 
-        else if (["BME680", "STTS751", "SHT40", "STS30"].includes(sensorName)) {
-            currentTemperature = paramMap["Temperature"] ? parseFloat(paramMap["Temperature"]) : null;
-            currentHumidity = paramMap["Humidity"] ? parseFloat(paramMap["Humidity"]) : null;
-            if (sensorName === "BME680") {
-              currentPressure = paramMap["Pressure"] ? parseFloat(paramMap["Pressure"]) : null;
-            }
-          }
-
-          Object.entries(paramMap).forEach(([key, value]) => {
-            const mappedKey = keyMap[key] || key;
-            const formattedValue = isNaN(parseFloat(value)) ? value : parseFloat(value).toFixed(2);
-            sensorData[protocol][`${sensorName} ${mappedKey}`] = formattedValue;
-          });
-
-          if (sensorName === "BME680" || sensorName === "STTS751" || sensorName === "SHT40" || sensorName === "STS30") {
-            currentTemperature = paramMap['Temperature'] ? parseFloat(paramMap['Temperature']) : null;
-            currentHumidity = paramMap['Humidity'] ? parseFloat(paramMap['Humidity']) : null;
-            if (sensorName === "BME680") {
-              currentPressure = paramMap['Pressure'] ? parseFloat(paramMap['Pressure']) : null;
-            }
-          }
-          if (sensorName === "VEML7700") {
-           currentLight = paramMap['Lux'] ? parseFloat(paramMap['Lux']) : null;
-          }
-          if (sensorName === "LIS3DH") {
-            currentAccelX = paramMap['X'] ? parseFloat(paramMap['X']) : null;
-            currentAccelY = paramMap['Y'] ? parseFloat(paramMap['Y']) : null;
-            currentAccelZ = paramMap['Z'] ? parseFloat(paramMap['Z']) : null;
-          }
-          if (sensorName === "Hall Sensor") {
-             currentMagneticField = paramMap['State'] ? paramMap['State'] : null;
-   
-         }
-         if (sensorName === "TLV493D") {
-             currentMagneticX = paramMap['X'] ? parseFloat(paramMap['X']) : null;
-             currentMagneticY = paramMap['Y'] ? parseFloat(paramMap['Y']) : null;
-             currentMagneticZ = paramMap['Z'] ? parseFloat(paramMap['Z']) : null;
-           
-         }
-          if (sensorName === "VL53L0X") {
-            currentDistance = paramMap['Distance'] ? parseFloat(paramMap['Distance']) : null;
-          }
-          if (sensorName === "LTR390") {
-            currentUV = paramMap['UV Index'] ? parseFloat(paramMap['UV Index']) : null;
-            console.log(`LTR390 Data - UV: ${currentUV}`);
-          }
-          if (sensorName === "IR Sensor") {
-            currentIR = paramMap['Infrared'] ? parseFloat(paramMap['Infrared']) : null;
-          }
-
-          if (selectedSensor === sensorName) {
-            updateSensorUI();
+          // Check for BME680 data format: T:23.74,H:55.11,P:987.74,L:1385.60
+      const bmeMatch = line.match(/T:([\d.]+),H:([\d.]+),P:([\d.]+),L:([\d.]+)/);
+     
+      if (bmeMatch && protocol === "I2C") {
+        const [, temp, humidity, pressure, light] = bmeMatch;
+       
+        // Mark BME680 as present
+        sensorStatus[protocol]["BME680"] = true;
+        // Auto-select BME680 if no sensor is selected
+        if (!selectedSensor && !autoSelected) {
+          selectedSensor = "BME680";
+          autoSelected = true;
+          const sensorDropdown = document.getElementById("sensor-dropdown");
+          if (sensorDropdown) {
+            sensorDropdown.value = "BME680";
           }
         }
+        // Store the parsed data
+        sensorData[protocol]["BME680 Temperature"] = parseFloat(temp).toFixed(2);
+        sensorData[protocol]["BME680 Humidity"] = parseFloat(humidity).toFixed(2);
+        sensorData[protocol]["BME680 Pressure"] = parseFloat(pressure).toFixed(2);
+        sensorData[protocol]["BME680 Lux"] = parseFloat(light).toFixed(2);
+        // Update global variables for card display
+        currentTemperature = parseFloat(temp);
+        currentHumidity = parseFloat(humidity);
+        currentPressure = parseFloat(pressure);
+        currentLight = parseFloat(light); // ADD THIS LINE - set light intensity
+        console.log('BME680 Data parsed:', {
+          temp: currentTemperature,
+          humidity: currentHumidity,
+          pressure: currentPressure,
+          light: currentLight // ADD THIS LINE
+        });
+        // Update UI if BME680 is selected
+        if (selectedSensor === "BME680") {
+          updateSensorUI();
+        }
       }
+      // Also handle the alternative format from your latest image: T:23.79,H:55.00,P:987.76,L:1490.40
+      const altBmeMatch = line.match(/T:([\d.]+),\s*H:([\d.]+),\s*P:([\d.]+),\s*L:([\d.]+)/);
+      if (altBmeMatch && protocol === "I2C") {
+        const [, temp, humidity, pressure, light] = altBmeMatch;
+       
+        sensorStatus[protocol]["BME680"] = true;
+        if (!selectedSensor && !autoSelected) {
+          selectedSensor = "BME680";
+          autoSelected = true;
+          const sensorDropdown = document.getElementById("sensor-dropdown");
+          if (sensorDropdown) {
+            sensorDropdown.value = "BME680";
+          }
+        }
+       
+        sensorData[protocol]["BME680 Temperature"] = parseFloat(temp).toFixed(2);
+        sensorData[protocol]["BME680 Humidity"] = parseFloat(humidity).toFixed(2);
+        sensorData[protocol]["BME680 Pressure"] = parseFloat(pressure).toFixed(2);
+        sensorData[protocol]["BME680 Lux"] = parseFloat(light).toFixed(2);
+        currentTemperature = parseFloat(temp);
+        currentHumidity = parseFloat(humidity);
+        currentPressure = parseFloat(pressure);
+        currentLight = parseFloat(light); // SET LIGHT INTENSITY
+        console.log('BME680 Alt Format Data parsed:', {
+          temp: currentTemperature,
+          humidity: currentHumidity,
+          pressure: currentPressure,
+          light: currentLight
+        });
+        if (selectedSensor === "BME680") {
+          updateSensorUI();
+        }
+      }
+
+    // GPIO Blinky and Buzzer parsing - BULLETPROOF VERSION
+    if (protocol === "GPIO") {
+      // Match ANY line containing "LED" followed by "ON" or "OFF" anywhere after it
+      // Works for: "LED ON (delay = 1000 ms)", "LED OFF", "LED: ON", etc.
+      const blinkyMatch = line.match(/LED\s*(?:[:=]?\s*)?(ON|OFF|1|0)/i);
+      if (blinkyMatch) {
+        sensorStatus[protocol]["Blinky"] = true;
+        const captured = blinkyMatch[1].toUpperCase();
+        const state = (captured === "ON" || captured === "1") ? "ON" : "OFF";
+       
+        console.log("Blinky state updated:", state); // ← Check console!
+        sensorData[protocol]["Blinky State"] = state;
+        // Auto-select Blinky if nothing is selected
+        if (!selectedSensor || selectedSensor === "" || selectedSensor === "default") {
+          selectedSensor = "Blinky";
+          const dropdown = document.getElementById("sensor-dropdown");
+          if (dropdown) dropdown.value = "Blinky";
+        }
+        updateSensorUI(); // Immediate visual update
+      }
+      // Buzzer parsing remains unchanged (unless you want to rename it too)
+      const buzzerMatch = line.match(/Buzzer[\s:]*\s*(ACTIVE|INACTIVE|1|0)/i);
+      if (buzzerMatch) {
+        sensorStatus[protocol]["Buzzer"] = true;
+        const captured = buzzerMatch[1].toUpperCase();
+        const state = (captured === "ACTIVE" || captured === "1") ? "Active" : "Inactive";
+       
+        sensorData[protocol]["Buzzer State"] = state;
+        if (!selectedSensor || selectedSensor === "" || selectedSensor === "default") {
+          selectedSensor = "Buzzer";
+          const dropdown = document.getElementById("sensor-dropdown");
+          if (dropdown) dropdown.value = "Buzzer";
+        }
+        updateSensorUI();
+      }
+    }
+
+    // Relay parsing - matches common formats like "Relay ON", "Relay: OFF", "Relay state: 1"
+      const relayMatch = line.match(/Relay[\s:]*\s*(ON|OFF|1|0)/i);
+      if (relayMatch && protocol === "GPIO") {
+        sensorStatus[protocol]["Relay"] = true;
+        const captured = relayMatch[1].toUpperCase();
+        const state = (captured === "ON" || captured === "1") ? "ON" : "OFF";
+      
+        sensorData[protocol]["Relay State"] = state;
+        currentRelayState = state;
+      
+        // Auto-select if nothing chosen
+        if (!selectedSensor && !autoSelected) {
+          selectedSensor = "Relay";
+          autoSelected = true;
+          const sensorDropdown = document.getElementById("sensor-dropdown");
+          if (sensorDropdown) sensorDropdown.value = "Relay";
+        }
+      
+        if (selectedSensor === "Relay") {
+          updateSensorUI();
+        }
+      }
+
+      // IR Sensor parsing - matches "IR Sensor: Infrared = 1" or "IR Sensor: Infrared = 0"
+const irMatch = line.match(/IR Sensor:\s*Infrared\s*=\s*(1|0)/i);
+if (irMatch && protocol === "Analog") {
+  const value = parseInt(irMatch[1]);
+  currentIR = value; // 1 = detected, 0 = not detected
+
+  // Mark sensor as present for dropdown
+  sensorStatus[protocol]["IR Sensor"] = true;
+
+  // Store readable state
+  sensorData[protocol]["IR Sensor State"] = value === 1 ? "Detected" : "Not Detected";
+
+  // Auto-select if nothing chosen
+  if (!selectedSensor || selectedSensor === "" || selectedSensor === "default") {
+    selectedSensor = "IR Sensor";
+    const dropdown = document.getElementById("sensor-dropdown");
+    if (dropdown) dropdown.value = "IR Sensor";
+  }
+
+  // Trigger immediate UI update (fires the animation logic you already have)
+  updateSensorUI();
+
+  console.log("IR Sensor parsed:", { value, state: value === 1 ? "Detected" : "Not Detected" });
+  return;
+}
+
+    // Add this block for your current Hall Sensor format
+    const hallOutputMatch = line.match(/Hall Sensor Output:\s*(\d+)/);
+    if (hallOutputMatch) {
+      const value = parseInt(hallOutputMatch[1]);
+      currentMagneticField = value; // This will be 1 or 0
+
+      // Mark as present for dropdown
+      sensorStatus["Analog"]["Hall_Sensor"] = true;
+
+      // Auto-select if nothing chosen
+      if (!selectedSensor) {
+        selectedSensor = "Hall Sensor";
+        document.getElementById("sensor-dropdown").value = "Hall Sensor";
+      }
+
+      updateSensorUI(); // Trigger animation immediately
+      return;
+    }
+
+      // Check for Wind Sensor data format: Wind Sensor: Direction:45.0,Speed:3.2
+      const windMatch = line.match(/Wind speed:\s*([\d.]+),\s*Wind direction:\s*([\d.]+)/);
+      if (windMatch && protocol === "RS232") {
+        const [, speed, direction] = windMatch;
+       
+        sensorStatus[protocol]["WindSensor"] = true;
+        if (!selectedSensor && !autoSelected) {
+          selectedSensor = "Wind Sensor";
+          autoSelected = true;
+          const sensorDropdown = document.getElementById("sensor-dropdown");
+          if (sensorDropdown) {
+            sensorDropdown.value = "Wind Sensor";
+          }
+        }
+        sensorData[protocol]["Wind Sensor Direction"] = parseFloat(direction).toFixed(1);
+        sensorData[protocol]["Wind Sensor Speed"] = parseFloat(speed).toFixed(1);
+        currentWindDirection = parseFloat(direction);
+        currentWindSpeed = parseFloat(speed);
+        console.log('Wind Sensor Data parsed:', {
+          direction: currentWindDirection,
+          speed: currentWindSpeed
+        });
+        if (selectedSensor === "Wind Sensor") {
+          updateSensorUI();
+        }
+      }
+            
+      // VCNL4040 parsing - fixed for "VCNL4040 : Lux=66" format
+      const vcnlMatch = line.match(/VCNL4040\s*:\s*Lux\s*=\s*([\d.]+)/i);
+
+      if (vcnlMatch && protocol === "I2C") {
+        const luxValue = parseFloat(vcnlMatch[1]);
+
+        if (!isNaN(luxValue)) {
+          // Mark sensor as present
+          sensorStatus[protocol]["VCNL4040"] = true;
+
+          // Store value for later use
+          currentVCNLLux = luxValue;
+          sensorData[protocol]["VCNL4040 Lux"] = luxValue.toFixed(1);
+
+          // Auto-select VCNL4040 if nothing is selected yet
+          if (!selectedSensor) {
+            selectedSensor = "VCNL4040";
+            const dropdown = document.getElementById("sensor-dropdown");
+            if (dropdown) {
+              dropdown.value = "VCNL4040";
+            }
+          }
+
+          // Very important: trigger immediate UI update
+          updateSensorUI();
+
+          console.log(`VCNL4040 parsed: Lux = ${luxValue}`);
+        }
+      }
+
+// ====================================
+// VL53L0X DISTANCE SENSOR - FIXED
+// ====================================
+const tofMatch = line.match(/distance is\s*([\d.]+)\s*(m|cm)/i);
+if (tofMatch && protocol === "I2C") {
+  const [, valueStr, unit] = tofMatch;
+  let distanceCm = parseFloat(valueStr);
+  
+  if (!isNaN(distanceCm)) {
+    // Convert meters to cm if needed
+    if (unit.toLowerCase() === "m") distanceCm *= 100;
+    
+    // Sanity check (0-1200cm range)
+    if (distanceCm >= 0 && distanceCm <= 1200) {
+      // Mark sensor as present
+      sensorStatus.I2C.VL53L0X = true;
+      
+      // Auto-select if nothing selected
+      if (!selectedSensor && !autoSelected) {
+        selectedSensor = "VL53L0X";
+        autoSelected = true;
+        const dd = document.getElementById("sensor-dropdown");
+        if (dd) {
+          dd.value = "VL53L0X";
+          dd.dispatchEvent(new Event("change"));
+        }
+      }
+      
+      // Store data
+      currentDistance = distanceCm;
+      sensorData.I2C["VL53L0X Distance"] = distanceCm.toFixed(1) + " cm";
+      
+      // ⚠️ CRITICAL: Animate IMMEDIATELY if this sensor is selected
+      if (selectedSensor === "VL53L0X") {
+        updateTOFAnimation(distanceCm);
+      }
+      
+      dataParsed = true; // Mark that we parsed something
+      
+      console.log(`[TOF] Parsed: ${distanceCm.toFixed(1)} cm`);
+
+       // ⚠️ ADD THIS LINE - Force connection status update
+      updateSensorConnectionStatus();
+    }
+  }
+}
+
+// LTR-390 UV Parsing (fixed variable name)
+const ltr390UVMatch = line.match(/UV\s*(?:Index)?:?\s*([\d.]+)/i);
+if (ltr390UVMatch && protocol === "I2C") {
+    const uv = parseFloat(ltr390UVMatch[1]);
+    
+    sensorStatus[protocol]["LTR390"] = true;
+    
+    if (!selectedSensor && !autoSelected) {
+        selectedSensor = "LTR390";
+        autoSelected = true;
+        const sensorDropdown = document.getElementById("sensor-dropdown");
+        if (sensorDropdown) {
+            sensorDropdown.value = "LTR390";
+        }
+    }
+    
+    sensorData[protocol]["LTR390 UV Index"] = uv.toFixed(1);
+    currentUV = uv;  // ← Fixed: set currentUV (matches updateSensorUI check)
+    
+    if (selectedSensor === "LTR390") {
+        updateSensorUI();
+        updateUVCard(uv);
+    }
+    
+    if (uv >= 0) showUVCard();
+}
+
+// ────────────────────────────────────────────────
+// 1. SHT40 / SHT4x parsing  (most specific – has Humidity)
+// ────────────────────────────────────────────────
+const SHTMatch = line.match(/SHT40:\s*Temperature:\s*([\d.]+)°?C\s*,\s*Humidity:\s*([\d.]+)%/i);
+// Also try without the "SHT40:" prefix in case format varies
+// const SHTMatch = line.match(/Temperature:\s*([\d.]+)°?C\s+Humidity:\s*([\d.]+)\s*%RH?/i);
+
+if (SHTMatch && protocol === "I2C") {
+  const [, tempStr, humStr] = SHTMatch;
+  const temp = parseFloat(tempStr);
+  const humidity = parseFloat(humStr);
+
+  if (!isNaN(temp) && !isNaN(humidity)) {
+    sensorStatus[protocol]["SHT40"] = true;
+
+    // Auto-select only if nothing selected yet (or force SHT40 priority)
+    if (!selectedSensor && !autoSelected) {
+      selectedSensor = "SHT40";
+      autoSelected = true;
+      const dropdown = document.getElementById("sensor-dropdown");
+      if (dropdown) dropdown.value = "SHT40";
+      // Optional: trigger UI refresh here if needed
+    }
+
+    // Always store values
+    sensorData[protocol] = sensorData[protocol] || {};
+    sensorData[protocol]["SHT40 Temperature"] = temp.toFixed(2);
+    sensorData[protocol]["SHT40 Humidity"]   = humidity.toFixed(2);
+
+    currentTemperature = temp;
+    currentHumidity    = humidity;
+
+    console.log('SHT40 parsed:', { temp, humidity });
+
+    // Update UI if this is the active sensor
+    if (selectedSensor === "SHT40") {
+      updateSensorUI();
+    }
+  }
+  // Optional: return;  // if you want to skip other parsers once SHT40 matched
+}
+      
+// ────────────────────────────────────────────────
+// LIS3DH parsing – matches format: x 8.73 , y 3.52 , z 2.76  (already in m/s² or g-like)
+// Also handles optional "#123 @ 170 ms: " prefix
+// ────────────────────────────────────────────────
+const lis3dhMatch = line.match(/(?:#?\d+\s*@\s*\d+\s*ms:\s*)?x\s*([\d.-]+)\s*,\s*y\s*([\d.-]+)\s*,\s*z\s*([\d.-]+)/i);
+
+if (lis3dhMatch && protocol === "I2C") {
+  const [, xStr, yStr, zStr] = lis3dhMatch;
+
+  const accelX = parseFloat(xStr);
+  const accelY = parseFloat(yStr);
+  const accelZ = parseFloat(zStr);
+
+  if (!isNaN(accelX) && !isNaN(accelY) && !isNaN(accelZ)) {
+    // Mark sensor as detected
+    sensorStatus[protocol] = sensorStatus[protocol] || {};
+    sensorStatus[protocol]["LIS3DH"] = true;
+
+    // Store values (for display in "Sensor Data" panel)
+    sensorData[protocol] = sensorData[protocol] || {};
+    sensorData[protocol]["LIS3DH X"] = accelX.toFixed(2);
+    sensorData[protocol]["LIS3DH Y"] = accelY.toFixed(2);
+    sensorData[protocol]["LIS3DH Z"] = accelZ.toFixed(2);
+
+    // Update globals used by the ball visualization
+    currentAccelX = accelX;
+    currentAccelY = accelY;
+    currentAccelZ = accelZ;
+
+    console.log('LIS3DH parsed:', { x: accelX, y: accelY, z: accelZ });
+
+    // Auto-select LIS3DH if nothing is selected yet (or give it high priority)
+    if (!selectedSensor && !autoSelected) {
+      selectedSensor = "LIS3DH";
+      autoSelected = true;  // prevent multiple auto-selections in one burst
+      const dropdown = document.getElementById("sensor-dropdown");
+      if (dropdown) {
+        dropdown.value = "LIS3DH";
+      }
+    }
+
+    // If LIS3DH is the currently selected sensor → refresh UI + ball immediately
+    if (selectedSensor === "LIS3DH") {
+      updateSensorUI();           // updates text values + other UI
+      // If you have a separate ball update function, call it too:
+      // updateAccelBall();       // ← define this if not already inside updateSensorUI
+    }
+  }
+}
+
+// STTS751 Temperature Sensor parsing - EXACT format from your logs
+// Format: "STTS751: Temperature: 21.56 °C | 70.81 °F"
+const stts751Match = line.match(/STTS751\s*:\s*Temperature\s*:\s*([\d.-]+)\s*°?C\s*\|\s*([\d.-]+)\s*°?F/i);
+if (stts751Match && protocol === "I2C") {
+    const tempC = parseFloat(stts751Match[1]);
+    const tempF = parseFloat(stts751Match[2]);
+    
+    // Mark sensor as detected
+    sensorStatus[protocol]["STTS751"] = true;
+    
+    // Auto-select if no sensor chosen yet
+    if (!selectedSensor && !autoSelected) {
+        selectedSensor = "STTS751";
+        autoSelected = true;
+        const dropdown = document.getElementById("sensor-dropdown");
+        if (dropdown) {
+            dropdown.value = "STTS751";
+            dropdown.dispatchEvent(new Event('change'));
+        }
+    }
+    
+    // Store parsed values
+    currentTemperature = tempC;  // For thermometer animation
+    sensorData[protocol]["STTS751 Temperature"] = tempC.toFixed(2) + " °C";
+    sensorData[protocol]["STTS751 Temperature (Fahrenheit)"] = tempF.toFixed(2) + " °F";
+    
+    console.log("STTS751 parsed successfully:", {
+        celsius: tempC + " °C",
+        fahrenheit: tempF + " °F"
+    });
+    
+    // Update UI if this sensor is selected
+    if (selectedSensor === "STTS751") {
+        updateSensorUI();
+    }
+}
+
+    // === STS30 PARSING BLOCK (ADD THIS INSIDE parseSensorData function, after other specific parsings like SHT40, BME680, etc.) ===
+
+    // STS30 format example: Temperature: 23.21 °C   (or similar variations)
+    const sts30Match = line.match(/Temp:\s*([\d.]+)\s*°?C/i);
+    if (sts30Match && protocol === "I2C") {
+      const temp = parseFloat(sts30Match[1]);
+    
+      // Mark STS30 as present in dropdown
+      sensorStatus[protocol]["STS30"] = true;
+    
+      // Auto-select STS30 if no sensor currently selected
+      if (!selectedSensor && !autoSelected) {
+        selectedSensor = "STS30";
+        autoSelected = true;
+        const sensorDropdown = document.getElementById("sensor-dropdown");
+        if (sensorDropdown) {
+          sensorDropdown.value = "STS30";
+        }
+      }
+    
+      // Store parsed data for "Sensor Data" box
+      sensorData[protocol]["STS30 Temperature"] = temp.toFixed(2);
+    
+      // Update global temperature for thermometer animation
+      currentTemperature = temp;
+    
+      console.log('STS30 Data parsed:', { temp: currentTemperature });
+    
+      // Force UI update when STS30 is selected
+      if (selectedSensor === "STS30") {
+        updateSensorUI();
+      }
+    }
+    
+
+    try {
+      // BME680 - matches your current log format
+      const bme680Match = line.match(/Temperature:\s*([+-]?\d+\.?\d*)\s*[°]?C\s*,\s*Humidity:\s*(\d+\.?\d*)\s*%RH\s*,\s*Pressure:\s*(\d+\.?\d*)\s*kPa/i);
+      
+      if (bme680Match && protocol === "I2C") {
+          const temp      = parseFloat(bme680Match[1]);
+          const humidity  = parseFloat(bme680Match[2]);
+          const pressure  = parseFloat(bme680Match[3]);
+      
+          // Mark BME680 as detected/present
+          sensorStatus[protocol]["BME680"] = true;
+      
+          // Auto-select BME680 if nothing is currently selected
+          if (!selectedSensor && !autoSelected) {
+              selectedSensor = "BME680";
+              autoSelected = true;
+              const dropdown = document.getElementById("sensor-dropdown");
+              if (dropdown) {
+                  dropdown.value = "BME680";
+              }
+          }
+        
+          // Store values for display / history
+          sensorData[protocol]["BME680 Temperature"] = temp.toFixed(2);
+          sensorData[protocol]["BME680 Humidity"]    = humidity.toFixed(2);
+          sensorData[protocol]["BME680 Pressure"]    = pressure.toFixed(2);
+        
+          // Update globals for main sensor card / animations
+          currentTemperature = temp;
+          currentHumidity    = humidity;
+          currentPressure    = pressure * 10;          // ← most important fix: kPa → hPa
+        
+          console.log('BME680 Data parsed:', {
+              temperature: temp,
+              humidity:    humidity,
+              pressure:    pressure
+          });
+        
+          // Force UI refresh if BME680 is the active/selected sensor
+          if (selectedSensor === "BME680") {
+              updateSensorUI();
+          }
+        
+          // Optional: set flag if you use dataFound pattern in some places
+          // dataFound = true;
+      }
+      // === FIXED & IMPROVED WEATHER SHIELD PARSING (MOVED UP) ===
+      let wsTemp = null, wsHum = null, wsPress = null, wsLux = null;
+      let wsDataFound = false;
+      // Format 1: direct T:.. ,H:.. etc
+      const weatherShieldMatch = line.match(/T:([\d.]+),H:([\d.]+),P:([\d.]+),L:([\d.]+)/);
+      if (weatherShieldMatch && protocol === "I2C") {
+        wsTemp = parseFloat(weatherShieldMatch[1]);
+        wsHum = parseFloat(weatherShieldMatch[2]);
+        wsPress = parseFloat(weatherShieldMatch[3]);
+        wsLux = parseFloat(weatherShieldMatch[4]);
+        wsDataFound = true;
+      }
+      // Format 2: separate BME and VEML (existing)
+      const bmeSeparateMatch = line.match(/BME680\s*->\s*Temp:\s*([\d.]+)\s*C\s*\|\s*Hum:\s*([\d.]+)\s*%RH\s*\|\s*Pressure:\s*([\d.]+)\s*hPa/i);
+      if (bmeSeparateMatch && protocol === "I2C") {
+        wsTemp = parseFloat(bmeSeparateMatch[1]);
+        wsHum = parseFloat(bmeSeparateMatch[2]);
+        wsPress = parseFloat(bmeSeparateMatch[3]);
+        wsDataFound = true;
+      }
+      const vemlSeparateMatch = line.match(/VEML7700\s*->\s*Light:\s*([\d.]+)\s*lux/i);
+      if (vemlSeparateMatch && protocol === "I2C") {
+        wsLux = parseFloat(vemlSeparateMatch[1]);
+        wsDataFound = true;
+      }
+      // NEW: Combined format from your screenshot/logs
+      const combinedMatch = line.match(/(?:BME680\s*\+\s*VEML7700|BME680.*VEML7700).*Temp:\s*([\d.]+)\s*C\s*\|\s*Hum:\s*([\d.]+)\s*%RH\s*\|\s*Pressure:\s*([\d.]+)\s*hPa\s*\|\s*Light:\s*([\d.]+)\s*lux/i);
+      if (combinedMatch && protocol === "I2C") {
+        wsTemp = parseFloat(combinedMatch[1]);
+        wsHum = parseFloat(combinedMatch[2]);
+        wsPress = parseFloat(combinedMatch[3]);
+        wsLux = parseFloat(combinedMatch[4]);
+        wsDataFound = true;
+      }
+      if (wsDataFound) {
+        sensorStatus["I2C"]["WeatherShield"] = true;
+        if (wsTemp !== null) currentTemperature = wsTemp;
+        if (wsHum !== null) currentHumidity = wsHum;
+        if (wsPress !== null) currentPressure = wsPress;
+        if (wsLux !== null) currentLight = wsLux;
+        if (wsTemp !== null) sensorData["I2C"]["Weather Shield Temperature"] = wsTemp.toFixed(2);
+        if (wsHum !== null) sensorData["I2C"]["Weather Shield Humidity"] = wsHum.toFixed(2);
+        if (wsPress !== null) sensorData["I2C"]["Weather Shield Pressure"] = wsPress.toFixed(2);
+        if (wsLux !== null) sensorData["I2C"]["Weather Shield Lux"] = wsLux.toFixed(1);
+        console.log('Weather Shield Data parsed:', { temp: currentTemperature, humidity: currentHumidity, pressure: currentPressure, light: currentLight });
+        if (!selectedSensor || selectedSensor !== "Weather Shield") {
+          selectedSensor = "Weather Shield";
+          const dropdown = document.getElementById("sensor-dropdown");
+          if (dropdown) dropdown.value = "Weather Shield";
+          autoSelected = true;
+        }
+        updateSensorUI();
+        // NO return; here - allow other parsing to continue
+      }
+      // === END FIXED WEATHER SHIELD ===
+      // ... (rest of parsing: VCNL, relay, SHT40, wind, general sensorMatch, rain, GPIO, hall, etc. - unchanged from your code)
     } catch (error) {
+      console.error('Parsing error:', error);
       document.getElementById("output").innerHTML += `<span class="log-error">Parsing error: ${error.message}</span><br>`;
     }
 
-   const rainMatch = line.match(/^Rain Tip Detected!\s*Rainfall:\s*(\d+)/);
+    const rainMatch = line.match(/^Rain Tip Detected!\s*Rainfall:\s*(\d+)/);
     if (rainMatch && protocol === "ADC") {
       sensorStatus[protocol]["Rain Gauge"] = true;
       const Tips = parseInt(rainMatch[1]);
-    
       sensorData[protocol]["Rainfall"] = `${(Tips * 0.5).toFixed(2)} mm`;
-   
+      
       if (!selectedSensor && !autoSelected) {
         selectedSensor = "Rain Gauge";
         autoSelected = true;
@@ -953,14 +2206,28 @@ function parseSensorData(data) {
       if (selectedSensor === "Rain Gauge") {
         updateSensorUI();
       }
-    }
+    }    
   });
+// Add this flag at the TOP of parseSensorData (after const lines = ...):
+let dataParsed = false;
 
-  if (autoSelected) {
-    updateSensorUI();
-  }
+// In each parsing if-block (including the TOF if (tofMatch) {...}), add this line after setting sensorData or current* variables:
+dataParsed = true;
 
-  return data;
+// Example for TOF block (add inside if (tofMatch) { ... } after sensorData.I2C["VL53L0X Distance"] = ... ):
+dataParsed = true;
+
+// Do the same for EVERY other sensor parsing block (e.g., if (bmeMatch) {... dataParsed = true; }, if (windMatch) {... dataParsed = true; }, etc.). There are ~20 such blocks—add to all to cover everything.
+
+// Then, at the END, replace the if with:
+if (autoSelected || dataParsed) {
+  updateSensorUI();
+}
+if (protocol === "GPIO") {
+  updateSensorUI();
+}
+updateSensorConnectionStatus();
+return data;
 }
 
 function resetSensorData() {
@@ -978,7 +2245,9 @@ function resetSensorData() {
   currentDistance = null;
   currentUV = null;
   currentIR = null;
-
+  // ADD THESE:
+  currentWindDirection = null;
+  currentWindSpeed = null;
   sensorData = {
     "I2C": {},
     "ADC": {},
@@ -987,31 +2256,28 @@ function resetSensorData() {
     "SPI": {},
     "Analog": {}
   };
-
   sensorStatus = {
     "I2C": { SHT40: false, BME680: false, STS30: false, STTS751: false, LIS3DH: false, VEML7700: false, TLV493D: false, VL53L0X: false, LTR390: false },
     "RS485": { MD02: false },
+    "RS232": { WindSensor: false }, // ADD THIS
     "SPI": {},
     "Analog": { Hall_Sensor: false, IR_Sensor: false },
     "ADC": { "Rain Gauge": false }
   };
-
   selectedSensor = null;
   updateSensorUI();
+  updateSensorConnectionStatus();
 }
 
 async function listPorts() {
   const result = await window.electronAPI.listPorts();
   const select = document.getElementById("ports");
   const current = select.value;
-
   select.innerHTML = "";
-
   if (result.error) {
     document.getElementById("output").innerHTML += `<span style="color: red;">${result.error}</span><br>`;
     return;
   }
-
   result.forEach((p) => {
     const option = document.createElement("option");
     option.value = p;
@@ -1022,11 +2288,10 @@ async function listPorts() {
     select.appendChild(option);
   });
 }
-
 async function connectPort() {
   const portName = document.getElementById("ports").value;
   const baudRate = parseInt(document.getElementById("baud-rate").value);
-
+  
   console.log(`connectPort called with port: ${portName}, baudRate: ${baudRate}, isConnected: ${isConnected}, currentPort: ${currentPort}, currentBaud: ${currentBaud}`);
 
   if (!portName) {
@@ -1039,26 +2304,31 @@ async function connectPort() {
     return;
   }
 
+  // If already connected but settings changed → disconnect first
   if (isConnected && (baudRate !== currentBaud || portName !== currentPort)) {
-    console.log(`Settings changed (port from ${currentPort} to ${portName}, baud from ${currentBaud} to ${baudRate}), disconnecting...`);
+    console.log(`Settings changed (port: ${currentPort} → ${portName}, baud: ${currentBaud} → ${baudRate}), disconnecting first...`);
     const disconnectResult = await window.electronAPI.disconnectPort();
-    if (!disconnectResult.error) {
-      document.getElementById("output").innerHTML += `<span style="color: green;">Disconnected from previous connection (port: ${currentPort}, baud: ${currentBaud}). Please reconnect with new settings.</span><br>`;
-      resetSensorData();
-      isConnected = false;
-      currentBaud = null;
-      currentPort = null;
-    } else {
-      document.getElementById("output").innerHTML += `<span style="color: red;">Failed to disconnect: ${disconnectResult.error}</span><br>`;
+    
+    if (disconnectResult.error) {
+      document.getElementById("output").innerHTML += `<span style="color: red;">Failed to disconnect previous connection: ${disconnectResult.error}</span><br>`;
       console.error(`Disconnect error: ${disconnectResult.error}`);
       return;
     }
+
+    document.getElementById("output").innerHTML += `<span style="color: green;">Disconnected from previous connection (port: ${currentPort}, baud: ${currentBaud}). Reconnecting with new settings...</span><br>`;
+    resetSensorData();
+    isConnected = false;
+    currentBaud = null;
+    currentPort = null;
+    updateSensorConnectionStatus();
   }
 
+  // Now attempt to connect (or reconnect)
   if (!isConnected) {
     const result = await window.electronAPI.connectPort(portName, baudRate);
+    
     if (result.error) {
-      document.getElementById("output").innerHTML += `<span style="color: red;">${result.error}</span><br>`;
+      document.getElementById("output").innerHTML += `<span style="color: red;">Connection failed: ${result.error}</span><br>`;
       console.error(`Connect error: ${result.error}`);
       return;
     }
@@ -1067,67 +2337,64 @@ async function connectPort() {
     isConnected = true;
     currentBaud = baudRate;
     currentPort = portName;
-    console.log(`Connected successfully, isConnected: ${isConnected}, currentPort: ${currentPort}, currentBaud: ${currentBaud}`);
+    updateSensorConnectionStatus();  // Update status immediately
+    console.log(`Connected successfully → isConnected: ${isConnected}, port: ${currentPort}, baud: ${currentBaud}`);
   } else {
     document.getElementById("output").innerHTML += `<span style="color: orange;">Already connected to port ${currentPort} at ${currentBaud} baud.</span><br>`;
   }
 }
 
 async function disconnectPort() {
-  console.log(`Disconnecting port, currentPort: ${currentPort}, currentBaud: ${currentBaud}`);
+  console.log(`disconnectPort called → currentPort: ${currentPort}, currentBaud: ${currentBaud}, isConnected: ${isConnected}`);
+  
+  if (!isConnected) {
+    document.getElementById("output").innerHTML += `<span style="color: orange;">Not connected — nothing to disconnect.</span><br>`;
+    return;
+  }
+
   const result = await window.electronAPI.disconnectPort();
+  
   if (result.error) {
-    document.getElementById("output").innerHTML += `<span style="color: red;">${result.error}</span><br>`;
+    document.getElementById("output").innerHTML += `<span style="color: red;">Disconnect failed: ${result.error}</span><br>`;
     console.error(`Disconnect error: ${result.error}`);
     return;
   }
+
   document.getElementById("output").innerHTML += `<span style="color: green;">${result}</span><br>`;
   resetSensorData();
   isConnected = false;
   currentBaud = null;
   currentPort = null;
-  console.log(`Disconnected successfully, isConnected: ${isConnected}, currentPort: ${currentPort}, currentBaud: ${currentBaud}`);
+  
+  console.log(`Disconnected successfully → isConnected: ${isConnected}, currentPort: ${currentPort}, currentBaud: ${currentBaud}`);
+  
   await listPorts();
+  updateSensorConnectionStatus();  // Update status immediately
 }
-
 async function sendCommand(cmd) {
   if (!cmd) return;
-
   const result = await window.electronAPI.sendData(cmd);
   if (result.error) {
     document.getElementById("output").innerHTML += `<span style="color: red;">${result.error}</span><br>`;
     return;
   }
-
   document.getElementById("output").innerHTML += result + "<br>";
 }
-
-async function setInterval() {
-  const interval = document.getElementById("interval").value;
-
-  if (!interval || isNaN(interval) || interval <= 0) {
-    return;
-  }
-
-  const result = await window.electronAPI.setInterval(interval);
-  if (result.error) {
-    document.getElementById("output").innerHTML += `<span style="color: red;">${result.error}</span><br>`;
-    return;
-  }
-
-  document.getElementById("output").innerHTML += result + "<br>";
-}
-
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
-
 window.electronAPI.onSerialData((data) => {
+  if (data && !isConnected) {
+    isConnected = true;  // ← Auto-set on first data (fixes silent connect issues)
+    console.log('Auto-set isConnected=true on data receipt');
+    updateSensorConnectionStatus();
+  }
   if (data) {
     const sanitizedData = data.replace(/</g, "&lt;").replace(/>/g, "&gt;");
     const outputDiv = document.getElementById("output");
     let logClass = "log-default";
-
+    
+    // === HANDLE C/NRF BACKEND DATA (existing code) ===
     if (sanitizedData.includes("Port disconnected due to cable unplug.")) {
       console.log("Cable unplugged detected, resetting data and state");
       resetSensorData();
@@ -1136,8 +2403,6 @@ window.electronAPI.onSerialData((data) => {
       currentPort = null;
       logClass = "log-error";
       listPorts();
-    } else {
-      parseSensorData(sanitizedData);
     }
 
     if (sanitizedData.includes("Error") || sanitizedData.includes("error") || sanitizedData.includes("failed") || sanitizedData.includes("ENOENT") || sanitizedData.includes("Invalid")) {
@@ -1155,15 +2420,21 @@ window.electronAPI.onSerialData((data) => {
       logClass = "log-info";
     }
 
+    // Show raw data for C backend
     outputDiv.innerHTML += `<span class="log-line ${logClass}">${sanitizedData}</span><br>`;
     outputDiv.scrollTop = outputDiv.scrollHeight;
+
+    // Parse and animate C backend data
+    parseSensorData(sanitizedData);
+    updateSensorConnectionStatus();
   }
 });
-
 window.addEventListener("DOMContentLoaded", () => {
   listPorts();
   updateSensorUI();
-
+ 
+  // Initialize UV card with default value
+  updateUVCard(0);
   const baudRateInput = document.getElementById("baud-rate");
   if (baudRateInput) {
     baudRateInput.addEventListener("change", async (event) => {
@@ -1185,7 +2456,6 @@ window.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
-
   const portsSelect = document.getElementById("ports");
   if (portsSelect) {
     portsSelect.addEventListener("focus", async () => {
@@ -1210,23 +2480,19 @@ window.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
-
   const sensorDropdown = document.getElementById("sensor-dropdown");
   if (sensorDropdown) {
     sensorDropdown.addEventListener("change", (event) => {
       selectSensor(event.target.value);
     });
   }
-
   let isDragging = false;
   let previousX = 0;
   let previousY = 0;
   let rotateX = 0;
   let rotateY = 0;
-
   const cubeWrapper = document.getElementById('accel-cube-wrapper');
   const cube = document.getElementById('accel-cube');
-
   if (cubeWrapper && cube) {
     cubeWrapper.addEventListener('mousedown', (e) => {
       isDragging = true;
@@ -1234,7 +2500,6 @@ window.addEventListener("DOMContentLoaded", () => {
       previousY = e.clientY;
       cube.style.transition = 'none';
     });
-
     document.addEventListener('mousemove', (e) => {
       if (isDragging) {
         const deltaX = e.clientX - previousX;
@@ -1246,11 +2511,68 @@ window.addEventListener("DOMContentLoaded", () => {
         previousY = e.clientY;
       }
     });
-
     document.addEventListener('mouseup', () => {
       isDragging = false;
       cube.style.transition = 'transform 0.3s ease';
+      updateSensorConnectionStatus();
     });
     cubeWrapper.addEventListener('dragstart', (e) => e.preventDefault());
   }
 });
+function updateSensorConnectionStatus() {
+  const hasRealData = 
+    currentTemperature !== null ||
+    currentHumidity !== null ||
+    currentPressure !== null ||
+    currentLight !== null ||
+    currentAccelX !== null ||
+    currentAccelY !== null ||
+    currentAccelZ !== null ||
+    currentMagneticField !== null ||
+    currentMagneticX !== null ||
+    currentMagneticY !== null ||
+    currentMagneticZ !== null ||
+    currentDistance !== null ||
+    currentUV !== null ||
+    currentIR !== null ||
+    currentWindDirection !== null ||
+    currentWindSpeed !== null ||
+    (sensorData.ADC && sensorData.ADC["Rainfall"] !== undefined) ||
+    Object.values(sensorData).some(protocolData =>
+      protocolData && typeof protocolData === 'object' && Object.keys(protocolData).length > 0
+    );
+
+  const statusText = document.getElementById('status-text');
+  const statusBox = document.querySelector('.status-box');
+  const statusDot = document.querySelector('.status-dot'); // the red dot element
+
+  if (!statusText) return;
+
+  if (hasRealData) {
+    statusText.textContent = 'Connected';
+    document.body.classList.add('sensors-connected');
+    document.body.classList.remove('sensors-disconnected');
+    if (statusBox) {
+      statusBox.classList.add('bg-green-500/20', 'text-green-400');
+      statusBox.classList.remove('bg-red-500/20', 'text-red-400');
+    }
+    if (statusDot) {
+      statusDot.classList.add('bg-green-500');
+      statusDot.classList.remove('bg-red-500');
+    }
+  } else {
+    statusText.textContent = 'Not connected';
+    document.body.classList.remove('sensors-connected');
+    document.body.classList.add('sensors-disconnected');
+    if (statusBox) {
+      statusBox.classList.add('bg-red-500/20', 'text-red-400');
+      statusBox.classList.remove('bg-green-500/20', 'text-green-400');
+    }
+    if (statusDot) {
+      statusDot.classList.add('bg-red-500');
+      statusDot.classList.remove('bg-green-500');
+    }
+  }
+
+  console.log('[Status Debug]', { hasRealData, isConnected, currentUV, sensorDataKeys: Object.keys(sensorData.I2C || {}) });
+}
