@@ -4,6 +4,11 @@ const { SerialPort } = require("serialport");
 const fs = require("fs").promises;
 const dns = require("dns").promises;
 
+// AUTO RELOAD
+require("electron-reload")(__dirname, {
+  electron: require(`${__dirname}/node_modules/electron`)
+});
+
 let mainWindow;
 let port;
 let responseBuffer = "";
