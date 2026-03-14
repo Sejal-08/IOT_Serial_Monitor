@@ -5,7 +5,7 @@ const selectedBackend = localStorage.getItem('selectedDevice'); // 'c' or 'pytho
 let isPythonBackend = selectedBackend === 'python';
 
 const sensorProtocolMap = {
-  "I2C": ["SHT40", "BME680", "STS30", "STTS751", "LIS3DH", "VEML7700", "TLV493D", "VL53L0X", "LTR390", "Weather Shield", "VCNL4040"],
+  "I2C": ["SHT40", "BME680", "STS30", "STTS751", "LIS3DH", "VEML7700", "TLV493D", "VL53L0X", "LTR390", "Weather Shield", "VCNL4040", "SEN66"],
   "RS485": ["MD02"],
   "RS232": ["Wind Sensor"],
   "SPI": [],
@@ -15,7 +15,7 @@ const sensorProtocolMap = {
 };
 // Track sensor presence and data
 let sensorStatus = {
-  "I2C": { SHT40: false, BME680: false, STS30: false, STTS751: false, LIS3DH: false, VEML7700: false, TLV493D: false, VL53L0X: false, LTR390: false, WeatherShield: false },
+  "I2C": { SHT40: false, BME680: false, STS30: false, STTS751: false, LIS3DH: false, VEML7700: false, TLV493D: false, VL53L0X: false, LTR390: false, WeatherShield: false ,  SEN66: false },
   "RS485": { MD02: false },
   "RS232": { WindSensor: false },
   "SPI": {},
@@ -51,6 +51,24 @@ let currentIR = null;
 let currentRelayState = null;
 let currentWindDirection = null;
 let currentWindSpeed = null;
+// ── SEN66 globals ──
+let currentSEN66_PM1  = null;
+let currentSEN66_PM25 = null;
+let currentSEN66_PM4  = null;
+let currentSEN66_PM10 = null;
+let currentSEN66_Hum  = null;
+let currentSEN66_Temp = null;
+let currentSEN66_VOC  = null;
+let currentSEN66_NOx  = null;
+let currentSEN66_CO2  = null;
+
+ 
+// ── SEN66 particle canvas state ──
+let _sen66Canvas    = null;
+let _sen66Ctx       = null;
+let _sen66Particles = [];
+let _sen66AnimFrame = null;
+let _sen66PM25Level = 0;
 let prevAzimuth = 0;
 let prevPolar = 0;
 let prevMagnitude = 0;
@@ -136,6 +154,7 @@ function updateSensorUI() {
   const tlvVecStops = document.querySelectorAll("#vecGradient stop");
   const vcnlLuxCard = document.getElementById("vcnl-lux-card");     // For VCNL4040
   const relayCard = document.getElementById("relay-card");         // For Relay
+  const sen66Card             = document.getElementById("sen66-card");
   if (tlvLine && tlvHead && tlvZCircle) {
     tlvLine.style.transition = "opacity 0.2s ease";
     tlvHead.style.transition = "transform 0.3s ease, opacity 0.2s ease";
@@ -163,6 +182,7 @@ function updateSensorUI() {
   const sensorParameters = {
     "BME680": ["Temperature", "Humidity", "Pressure"],
     "SHT40": ["Temperature", "Humidity"],
+    "SEN66": ["PM1.0", "PM2.5", "PM4", "PM10", "Temperature", "Humidity", "VOC", "NOx", "CO2"],
     "STTS751": ["Temperature"],
     "VEML7700": ["Lux"],
     "STS30": ["Temperature"],
@@ -219,15 +239,29 @@ const allCards = [
   tlv493dContainer, tofContainer, irContainer,
   windDirectionContainer, windSpeedContainer, rainGaugeCard,
   blinkyCard, buzzerCard,
-  vcnlLuxCard,  // ← ADD HERE
-  relayCard
-];
+  vcnlLuxCard,  
+  relayCard,
+  // SEN66 individual cards
+      document.getElementById("sen66-pm1-card"),
+      document.getElementById("sen66-pm25-card"),
+      document.getElementById("sen66-pm4-card"),
+      document.getElementById("sen66-pm10-card"),
+      document.getElementById("sen66-voc-card"),
+      document.getElementById("sen66-nox-card"),
+      document.getElementById("sen66-co2-card"),
+    ];
+
 allCards.forEach(card => {
   if (card) {
     card.style.display = "none";
     card.classList.remove('sensor-card', 'show');
   }
 });
+
+  // Stop SEN66 particles if switching away (legacy cleanup – no-op now)
+    if (selectedSensor !== "SEN66") {
+      // nothing to stop
+    }
 const sensorCards = document.querySelector('.sensor-cards');
 if (sensorCards) sensorCards.classList.remove('weather-shield-grid');
 // === NOW SHOW CARDS BASED ONLY ON PROTOCOL + SELECTED SENSOR (DATA NOT REQUIRED) ===
@@ -324,6 +358,8 @@ if (selectedSensor === "Weather Shield") {
   if (selectedSensor === "Rain Gauge" && protocol === "ADC") {
     if (rainGaugeCard) rainGaugeCard.style.display = "flex";
   }
+
+  
   // GPIO
   if (selectedSensor === "Blinky" && protocol === "GPIO") {
     if (blinkyCard) blinkyCard.style.display = "flex";
@@ -334,7 +370,28 @@ if (selectedSensor === "Weather Shield") {
   if (selectedSensor === "Relay" && protocol === "GPIO") {
     if (relayCard) relayCard.style.display = "flex";
   }
-}
+
+ // ── SEN66 – show all 7 individual param cards + temp + humidity ──
+      if (selectedSensor === "SEN66" && protocol === "I2C") {
+        // Thermometer (same as SHT40)
+        if (thermometerContainer) {
+          thermometerContainer.style.display = "flex";
+          thermometerContainer.classList.add('sensor-card');
+        }
+        // Humidity wave (same as SHT40)
+        if (humidityContainer) {
+          humidityContainer.style.display = "flex";
+          humidityContainer.classList.add('sensor-card');
+        }
+        // 7 individual PM / gas cards
+        ["sen66-pm1-card","sen66-pm25-card","sen66-pm4-card","sen66-pm10-card",
+         "sen66-voc-card","sen66-nox-card","sen66-co2-card"].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) { el.style.display = "flex"; el.classList.add('sensor-card'); }
+        });
+      }
+ 
+    } // end if (protocol && selectedSensor)
 
     console.log('Card visibility for', selectedSensor, ':', {
       temp: currentTemperature,
@@ -347,7 +404,7 @@ if (selectedSensor === "Weather Shield") {
       showLight: lightContainer ? lightContainer.style.display : 'N/A'
     });
 // === THERMOMETER UPDATE ===
-if (protocol === "I2C" && (selectedSensor === "BME680" || selectedSensor === "STTS751" || selectedSensor === "SHT40" || selectedSensor === "STS30" || selectedSensor === "Weather Shield") && currentTemperature !== null) {
+if (protocol === "I2C" && (selectedSensor === "BME680" || selectedSensor === "SEN66"|| selectedSensor === "STTS751" || selectedSensor === "SHT40" || selectedSensor === "STS30" || selectedSensor === "Weather Shield") && currentTemperature !== null) {
   const temp = parseFloat(currentTemperature);
   let fillColor;
   if (temp < 25) {
@@ -1427,27 +1484,30 @@ if (protocol === "I2C" && selectedSensor === "LIS3DH") {
         windSpeedBar.style.background = "linear-gradient(90deg, #10b981, #34d399)";
       }
     }
+
+
+   // ── SEN66 ──
+if (protocol === "I2C" && selectedSensor === "SEN66") {
+  _updateSEN66Card();
+} else {
+  _sen66StopParticles(); // Stop particles if SEN66 is NOT selected
+}
     updateSensorVisualizationVisibility();
   } else {
+    // No protocol selected
     sensorDropdown.innerHTML = '<option value="" disabled selected>No protocol selected</option>';
-    sensorDataDiv.innerHTML = "<p>No sensor data available.</p>";
-   
-    // Hide all cards when no protocol
-    thermometerContainer.style.display = "none";
-    humidityContainer.style.display = "none";
-    pressureContainer.style.display = "none";
-    lightContainer.style.display = "none";
-    lis3dhContainer.style.display = "none";
-    hallContainer.style.display = "none";
-    tlv493dContainer.style.display = "none";
-    tofContainer.style.display = "none";
-    uvltrContainer.style.display = "none";
-    irContainer.style.display = "none";
-    rainGaugeCard.style.display = "none";
-    // ADD THESE:
-    windDirectionContainer.style.display = "none";
-    windSpeedContainer.style.display = "none";
-   
+    sensorDataDiv.innerHTML  = "<p>No sensor data available.</p>";
+ 
+    const hideList = [
+      thermometerContainer, humidityContainer, pressureContainer, lightContainer,
+      lis3dhContainer, hallContainer, tlv493dContainer, tofContainer, uvltrContainer,
+      irContainer, rainGaugeCard, windDirectionContainer, windSpeedContainer,
+      document.getElementById("sen66-pm1-card"), document.getElementById("sen66-pm25-card"),
+      document.getElementById("sen66-pm4-card"),  document.getElementById("sen66-pm10-card"),
+      document.getElementById("sen66-voc-card"),  document.getElementById("sen66-nox-card"),
+      document.getElementById("sen66-co2-card"),
+    ];
+    hideList.forEach(el => { if (el) el.style.display = "none"; });
     // Reset all values
     if (thermometerValue) thermometerValue.textContent = "";
     if (humidityValue) humidityValue.textContent = "";
@@ -1465,12 +1525,22 @@ if (protocol === "I2C" && selectedSensor === "LIS3DH") {
     if (irValue) irValue.textContent = "";
     if (windDirectionValue) windDirectionValue.textContent = "0°";
     if (windSpeedValue) windSpeedValue.textContent = "0.0 m/s";
+     _sen66StopParticles();
    
     updateSensorVisualizationVisibility();
   }
 }
-// Handle sensor selection
 function selectSensor(sensor) {
+  // If switching away from SEN66, restore original thermometer/humidity titles
+  if (selectedSensor === "SEN66" && sensor !== "SEN66") {
+    const thermoTitle = document.querySelector("#thermometer-container h4");
+    if (thermoTitle) thermoTitle.textContent = "Temperature";
+    const humTitle = document.querySelector("#humidity-card h4");
+    if (humTitle) humTitle.textContent = "Humidity";
+    // Clear shared globals so they don't bleed into other sensors
+    currentTemperature = null;
+    currentHumidity    = null;
+  }
   selectedSensor = sensor;
   updateSensorUI();
 }
@@ -1575,6 +1645,260 @@ function updatePressureCard(hpa) {
     card.classList.add('update-pulse');
   }
 }
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SEN66 – FIXED _updateSEN66Card()
+// In renderer.js, find and REPLACE the entire _updateSEN66Card function
+// with this version.
+// ─────────────────────────────────────────────────────────────────────────────
+function _updateSEN66Card() {
+if (selectedSensor !== "SEN66") return;
+  // ── Update shared card titles ──
+  const thermoTitle = document.querySelector("#thermometer-container h4");
+  if (thermoTitle) thermoTitle.textContent = "Temperature (SEN66)";
+  const humTitle = document.querySelector("#humidity-card h4");
+  if (humTitle) humTitle.textContent = "Humidity (SEN66)";
+
+  // ── FIXED setArc: uses style property so CSS transition works ──
+  // Circle r=50 → C = 2 × π × 50 = 314.159
+  function setArc(arcId, value, maxVal) {
+    const el = document.getElementById(arcId);
+    if (!el) return;
+    const C        = 314.16;
+    const ratio    = Math.min(Math.max(value / maxVal, 0), 1);
+    const filled   = (ratio * C).toFixed(2);
+    const empty    = (C - filled).toFixed(2);
+    // Apply via style so the CSS transition animates it
+    el.style.strokeDasharray  = `${filled} ${empty}`;
+    el.style.strokeDashoffset = "0";
+  }
+
+  // ── Helper: update text element ──
+  function setVal(id, text) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = text;
+  }
+
+  // ── AQI pill – PM particles ──
+  function setPMPill(pillId, val, breakpoints) {
+    const el = document.getElementById(pillId);
+    if (!el) return;
+    if (val === null) { el.textContent = "—"; el.className = "sen66-aqi-pill"; return; }
+    const [good, moderate, high] = breakpoints;
+    if      (val <= good)     { el.textContent = "Good";      el.className = "sen66-aqi-pill pill-good"; }
+    else if (val <= moderate) { el.textContent = "Moderate";  el.className = "sen66-aqi-pill pill-moderate"; }
+    else if (val <= high)     { el.textContent = "High";      el.className = "sen66-aqi-pill pill-high"; }
+    else                      { el.textContent = "Unhealthy"; el.className = "sen66-aqi-pill pill-unhealthy"; }
+  }
+
+  // ── Index pill – VOC / NOx (Sensirion 1-500 scale) ──
+  function setIndexPill(pillId, val) {
+    const el = document.getElementById(pillId);
+    if (!el) return;
+    if (val === null) { el.textContent = "—"; el.className = "sen66-aqi-pill"; return; }
+    if      (val <= 100) { el.textContent = "Good";      el.className = "sen66-aqi-pill pill-good"; }
+    else if (val <= 200) { el.textContent = "Moderate";  el.className = "sen66-aqi-pill pill-moderate"; }
+    else if (val <= 300) { el.textContent = "High";      el.className = "sen66-aqi-pill pill-high"; }
+    else                 { el.textContent = "Unhealthy"; el.className = "sen66-aqi-pill pill-unhealthy"; }
+  }
+
+  // ── CO2 pill ──
+  function setCO2Pill(pillId, val) {
+    const el = document.getElementById(pillId);
+    if (!el) return;
+    if (val === null) { el.textContent = "—"; el.className = "sen66-aqi-pill"; return; }
+    if      (val <= 600)  { el.textContent = "Fresh";    el.className = "sen66-aqi-pill pill-good"; }
+    else if (val <= 1000) { el.textContent = "Normal";   el.className = "sen66-aqi-pill pill-moderate"; }
+    else if (val <= 2000) { el.textContent = "Elevated"; el.className = "sen66-aqi-pill pill-high"; }
+    else                  { el.textContent = "High";     el.className = "sen66-aqi-pill pill-unhealthy"; }
+  }
+
+  // ── Pulse card on update ──
+  function pulseCard(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.remove("updated");
+    void el.offsetWidth; // force reflow to restart animation
+    el.classList.add("updated");
+  }
+
+  // ── PM1.0 ──
+  if (currentSEN66_PM1 !== null) {
+    setVal("sen66-pm1-val", `${currentSEN66_PM1.toFixed(1)} µg/m³`);
+    setVal("sen66-pm1-big", currentSEN66_PM1.toFixed(0));
+    setArc("sen66-pm1-arc", currentSEN66_PM1, 50);
+    setPMPill("sen66-pm1-status", currentSEN66_PM1, [10, 25, 50]);
+    pulseCard("sen66-pm1-card");
+  }
+
+  // ── PM2.5 ──
+  if (currentSEN66_PM25 !== null) {
+    setVal("sen66-pm25-val", `${currentSEN66_PM25.toFixed(1)} µg/m³`);
+    setVal("sen66-pm25-big", currentSEN66_PM25.toFixed(0));
+    setArc("sen66-pm25-arc", currentSEN66_PM25, 50);
+    setPMPill("sen66-pm25-status", currentSEN66_PM25, [12, 35.4, 55.4]);
+    pulseCard("sen66-pm25-card");
+  }
+
+  // ── PM4 ──
+  if (currentSEN66_PM4 !== null) {
+    setVal("sen66-pm4-val", `${currentSEN66_PM4.toFixed(1)} µg/m³`);
+    setVal("sen66-pm4-big", currentSEN66_PM4.toFixed(0));
+    setArc("sen66-pm4-arc", currentSEN66_PM4, 75);
+    setPMPill("sen66-pm4-status", currentSEN66_PM4, [15, 40, 75]);
+    pulseCard("sen66-pm4-card");
+  }
+
+  // ── PM10 ──
+  if (currentSEN66_PM10 !== null) {
+    setVal("sen66-pm10-val", `${currentSEN66_PM10.toFixed(1)} µg/m³`);
+    setVal("sen66-pm10-big", currentSEN66_PM10.toFixed(0));
+    setArc("sen66-pm10-arc", currentSEN66_PM10, 100);
+    setPMPill("sen66-pm10-status", currentSEN66_PM10, [20, 50, 100]);
+    pulseCard("sen66-pm10-card");
+  }
+
+  // ── VOC ──
+  if (currentSEN66_VOC !== null) {
+    setVal("sen66-voc-val", currentSEN66_VOC.toFixed(0));
+    setVal("sen66-voc-big", currentSEN66_VOC.toFixed(0));
+    setArc("sen66-voc-arc", currentSEN66_VOC, 500);
+    setIndexPill("sen66-voc-status", currentSEN66_VOC);
+    pulseCard("sen66-voc-card");
+  }
+
+  // ── NOx ──
+  if (currentSEN66_NOx !== null) {
+    setVal("sen66-nox-val", currentSEN66_NOx.toFixed(0));
+    setVal("sen66-nox-big", currentSEN66_NOx.toFixed(0));
+    setArc("sen66-nox-arc", currentSEN66_NOx, 500);
+    setIndexPill("sen66-nox-status", currentSEN66_NOx);
+    pulseCard("sen66-nox-card");
+  }
+
+  // ── CO2 ──
+  if (currentSEN66_CO2 !== null) {
+    setVal("sen66-co2-val", `${currentSEN66_CO2.toFixed(0)} ppm`);
+    setVal("sen66-co2-big", currentSEN66_CO2.toFixed(0));
+    setArc("sen66-co2-arc", currentSEN66_CO2, 2000);
+    setCO2Pill("sen66-co2-status", currentSEN66_CO2);
+    pulseCard("sen66-co2-card");
+  }
+}
+// ─────────────────────────────────────────────────────────────────────────────
+// SEN66 – PARTICLE CANVAS
+// ─────────────────────────────────────────────────────────────────────────────
+function _sen66StartParticles() {
+  // Only start if SEN66 is actually selected and I2C protocol is active
+  const protocol = document.getElementById("sensor-select")?.value;
+  if (protocol !== "I2C" || selectedSensor !== "SEN66") {
+    return;
+  }
+  if (_sen66AnimFrame) return; // already running
+  _sen66Canvas = document.getElementById("sen66-canvas");
+  if (!_sen66Canvas) return;
+  _sen66Ctx = _sen66Canvas.getContext("2d");
+  _sen66SeedParticles();
+  _sen66AnimFrame = requestAnimationFrame(_sen66AnimLoop);
+}
+ 
+function _sen66SeedParticles() {
+  const count = Math.min(Math.max(Math.floor(_sen66PM25Level * 1.6 + 5), 5), 80);
+  _sen66Particles = [];
+  for (let i = 0; i < count; i++) _sen66Particles.push(_sen66NewParticle());
+}
+ 
+function _sen66NewParticle() {
+  const pm = _sen66PM25Level;
+  let color;
+  if      (pm <= 12) color = "rgba(52,211,153,";
+  else if (pm <= 35) color = "rgba(251,191,36,";
+  else if (pm <= 55) color = "rgba(249,115,22,";
+  else               color = "rgba(239,68,68,";
+  const radius = 0.8 + Math.random() * 2.2;
+  return {
+    x:     Math.random() * 340,
+    y:     Math.random() * 130,
+    vx:    (Math.random() - 0.5) * 0.5,
+    vy:    -0.2 - Math.random() * 0.5,
+    r:     radius,
+    alpha: 0.25 + Math.random() * 0.55,
+    color: color,
+    life:  60 + Math.random() * 120,
+    age:   0,
+  };
+}
+ 
+function _sen66AnimLoop() {
+  if (!_sen66Canvas || !_sen66Ctx) return;
+  const w = _sen66Canvas.width;
+  const h = _sen66Canvas.height;
+  _sen66Ctx.clearRect(0, 0, w, h);
+ 
+  const targetCount = Math.min(Math.max(Math.floor(_sen66PM25Level * 1.6 + 5), 5), 80);
+  while (_sen66Particles.length < targetCount) _sen66Particles.push(_sen66NewParticle());
+  if (_sen66Particles.length > targetCount + 10)
+    _sen66Particles.splice(0, _sen66Particles.length - targetCount);
+ 
+  for (let i = _sen66Particles.length - 1; i >= 0; i--) {
+    const p = _sen66Particles[i];
+    p.x += p.vx; p.y += p.vy; p.age += 1;
+    const lifeRatio = p.age / p.life;
+    const alpha = lifeRatio < 0.15
+      ? (lifeRatio / 0.15) * p.alpha
+      : lifeRatio > 0.75
+        ? ((1 - lifeRatio) / 0.25) * p.alpha
+        : p.alpha;
+    _sen66Ctx.beginPath();
+    _sen66Ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    _sen66Ctx.fillStyle = p.color + alpha + ")";
+    _sen66Ctx.fill();
+    if (p.age >= p.life || p.y < -5 || p.x < -5 || p.x > w + 5) {
+      _sen66Particles[i] = _sen66NewParticle();
+      _sen66Particles[i].y = h + 5;
+    }
+  }
+  _sen66AnimFrame = requestAnimationFrame(_sen66AnimLoop);
+}
+ 
+function _sen66StopParticles() {
+  if (_sen66AnimFrame) { cancelAnimationFrame(_sen66AnimFrame); _sen66AnimFrame = null; }
+  if (_sen66Ctx && _sen66Canvas) _sen66Ctx.clearRect(0, 0, _sen66Canvas.width, _sen66Canvas.height);
+  _sen66Particles = [];
+}
+ 
+function _resetSEN66() {
+  currentSEN66_PM1 = currentSEN66_PM25 = currentSEN66_PM4 = currentSEN66_PM10 = null;
+  currentSEN66_Hum = currentSEN66_Temp = currentSEN66_VOC = currentSEN66_NOx  = null;
+  currentSEN66_CO2 = currentSEN66_Up   = null;
+  _sen66PM25Level = 0;
+ 
+  // Reset all 7 individual cards
+  const resetMap = [
+    ["sen66-pm1-val","— µg/m³"],["sen66-pm25-val","— µg/m³"],
+    ["sen66-pm4-val","— µg/m³"],["sen66-pm10-val","— µg/m³"],
+    ["sen66-voc-val","—"],["sen66-nox-val","—"],["sen66-co2-val","— ppm"],
+    ["sen66-pm1-big","—"],["sen66-pm25-big","—"],["sen66-pm4-big","—"],
+    ["sen66-pm10-big","—"],["sen66-voc-big","—"],["sen66-nox-big","—"],["sen66-co2-big","—"],
+  ];
+  resetMap.forEach(([id, txt]) => { const el = document.getElementById(id); if (el) el.textContent = txt; });
+ 
+  // Reset arcs
+  ["sen66-pm1-arc","sen66-pm25-arc","sen66-pm4-arc","sen66-pm10-arc",
+   "sen66-voc-arc","sen66-nox-arc","sen66-co2-arc"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.strokeDasharray = "0 314.16";
+  });
+ 
+  // Reset pills
+  ["sen66-pm1-status","sen66-pm25-status","sen66-pm4-status","sen66-pm10-status",
+   "sen66-voc-status","sen66-nox-status","sen66-co2-status"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.textContent = "—"; el.className = "sen66-aqi-pill"; }
+  });
+}
+ 
 /* ------------------------------------------------------------------ */
 /* INTERVAL INPUT HANDLING */
 /* ------------------------------------------------------------------ */
@@ -1631,6 +1955,8 @@ function parseSensorData(data) {
   const lines = data.split("\n").map(line => line.trim()).filter(line => line);
   let autoSelected = false;
   lines.forEach(line => {
+
+    
 
           // Check for BME680 data format: T:23.74,H:55.11,P:987.74,L:1385.60
       const bmeMatch = line.match(/T:([\d.]+),H:([\d.]+),P:([\d.]+),L:([\d.]+)/);
@@ -1704,6 +2030,49 @@ function parseSensorData(data) {
         }
       }
 
+
+      // ── SEN66 ──
+    if (protocol === "I2C") {
+      let sen66Matched = false;
+      const pm1Match  = line.match(/PM1\.0\s*:\s*([\d.]+)/i);
+      const pm25Match = line.match(/PM2\.5\s*:\s*([\d.]+)/i);
+      const pm4Match  = line.match(/PM4\s*:\s*([\d.]+)/i);
+      const pm10Match = line.match(/PM10\s*:\s*([\d.]+)/i);
+      const sen66HumMatch  = line.match(/Relative\s*Humidity\s*:\s*([\d.]+)/i);
+      const sen66TempMatch = line.match(/Temperature\s*:\s*([\d.]+)\s*°?C/i);
+      const vocMatch  = line.match(/VOC\s*:\s*([\d.]+)/i);
+      const noxMatch  = line.match(/NOx\s*:\s*([\d.]+)/i);
+      const co2Match  = line.match(/CO2\s*:\s*([\d.]+)/i);
+      const upMatch   = line.match(/UPtime\s*:\s*([\d.]+)/i);
+ 
+      if (pm1Match)        { currentSEN66_PM1  = parseFloat(pm1Match[1]);        sensorData[protocol]["SEN66 PM1.0"]       = currentSEN66_PM1.toFixed(1)  + " µg/m³"; sen66Matched = true; }
+      if (pm25Match)       { currentSEN66_PM25 = parseFloat(pm25Match[1]);       sensorData[protocol]["SEN66 PM2.5"]       = currentSEN66_PM25.toFixed(1) + " µg/m³"; sen66Matched = true; }
+      if (pm4Match)        { currentSEN66_PM4  = parseFloat(pm4Match[1]);        sensorData[protocol]["SEN66 PM4"]         = currentSEN66_PM4.toFixed(1)  + " µg/m³"; sen66Matched = true; }
+      if (pm10Match)       { currentSEN66_PM10 = parseFloat(pm10Match[1]);       sensorData[protocol]["SEN66 PM10"]        = currentSEN66_PM10.toFixed(1) + " µg/m³"; sen66Matched = true; }
+      if (sen66HumMatch)   {
+        currentSEN66_Hum  = parseFloat(sen66HumMatch[1]);
+        currentHumidity   = currentSEN66_Hum;   // ← drive shared humidity wave card
+        sensorData[protocol]["SEN66 Humidity"]    = currentSEN66_Hum.toFixed(1)  + " %";
+        sen66Matched = true;
+      }
+      if (sen66TempMatch)  {
+        currentSEN66_Temp = parseFloat(sen66TempMatch[1]);
+        currentTemperature = currentSEN66_Temp;  // ← drive shared thermometer card
+        sensorData[protocol]["SEN66 Temperature"] = currentSEN66_Temp.toFixed(2) + " °C";
+        sen66Matched = true;
+      }
+      if (vocMatch)        { currentSEN66_VOC  = parseFloat(vocMatch[1]);        sensorData[protocol]["SEN66 VOC"]         = currentSEN66_VOC.toString();              sen66Matched = true; }
+      if (noxMatch)        { currentSEN66_NOx  = parseFloat(noxMatch[1]);        sensorData[protocol]["SEN66 NOx"]         = currentSEN66_NOx.toString();              sen66Matched = true; }
+      if (co2Match)        { currentSEN66_CO2  = parseFloat(co2Match[1]);        sensorData[protocol]["SEN66 CO2"]         = currentSEN66_CO2.toFixed(0)  + " ppm";   sen66Matched = true; }
+      if (upMatch)         { currentSEN66_Up   = parseFloat(upMatch[1]);         sensorData[protocol]["SEN66 Uptime"]      = currentSEN66_Up + " s";                  sen66Matched = true; }
+ 
+      if (sen66Matched) {
+        sensorStatus[protocol]["SEN66"] = true;
+        if (!selectedSensor && !autoSelected) { selectedSensor = "SEN66"; autoSelected = true; const dd = document.getElementById("sensor-dropdown"); if (dd) dd.value = "SEN66"; }
+        dataParsed = true;
+        if (selectedSensor === "SEN66") updateSensorUI();
+      }
+    }
     // GPIO Blinky and Buzzer parsing - BULLETPROOF VERSION
     if (protocol === "GPIO") {
       // Match ANY line containing "LED" followed by "ON" or "OFF" anywhere after it
@@ -2267,6 +2636,8 @@ function resetSensorData() {
   currentDistance = null;
   currentUV = null;
   currentIR = null;
+_resetSEN66();
+  
   // ADD THESE:
   currentWindDirection = null;
   currentWindSpeed = null;
@@ -2276,15 +2647,17 @@ function resetSensorData() {
     "RS232": {},
     "RS485": {},
     "SPI": {},
-    "Analog": {}
+    "Analog": {},
+    
   };
   sensorStatus = {
-    "I2C": { SHT40: false, BME680: false, STS30: false, STTS751: false, LIS3DH: false, VEML7700: false, TLV493D: false, VL53L0X: false, LTR390: false },
+    "I2C": { SHT40: false, BME680: false, STS30: false, STTS751: false, SEN66: false, LIS3DH: false, VEML7700: false, TLV493D: false, VL53L0X: false, LTR390: false },
     "RS485": { MD02: false },
     "RS232": { WindSensor: false }, // ADD THIS
     "SPI": {},
     "Analog": { Hall_Sensor: false, IR_Sensor: false },
-    "ADC": { "Rain Gauge": false }
+    "ADC": { "Rain Gauge": false },
+   
   };
   selectedSensor = null;
   updateSensorUI();
@@ -2558,6 +2931,7 @@ function updateSensorConnectionStatus() {
     currentIR !== null ||
     currentWindDirection !== null ||
     currentWindSpeed !== null ||
+    currentSEN66_PM1 !== null || currentSEN66_PM25 !== null || currentSEN66_CO2 !== null ||
     (sensorData.ADC && sensorData.ADC["Rainfall"] !== undefined) ||
     Object.values(sensorData).some(protocolData =>
       protocolData && typeof protocolData === 'object' && Object.keys(protocolData).length > 0

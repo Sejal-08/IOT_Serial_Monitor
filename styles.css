@@ -1036,6 +1036,185 @@ body.dark-mode .gauge-inner{
   font-weight: bold;
 }
 
+
+/* ============================================================
+   SEN66 – COMPLETELY FIXED PARAMETER CARDS
+   Replace the entire old ".sen66-*" CSS block in styles.css
+   ============================================================ */
+
+/* ── Base card – matches thermometer-container / humidity-card style ── */
+.sen66-param-card {
+  /* sizing */
+  flex: 0 0 auto;
+  width: 260px;
+  min-height: 380px;
+
+  /* layout */
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  padding: 24px 20px 20px !important;
+  box-sizing: border-box;
+
+  /* appearance – exactly like the temperature card */
+  background: var(--sensor-bg) !important;
+  border: 1.5px solid var(--sensor-border) !important;
+  border-radius: 18px !important;
+  box-shadow: var(--sensor-shadow) !important;
+
+  /* behaviour */
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+  transition: all 0.4s ease;
+}
+
+/* subtle inner glow like other cards */
+.sen66-param-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(ellipse at 50% 0%,
+    rgba(255,255,255,0.04) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* ── Title ── */
+.sen66-param-card h4 {
+  font-size: 1.4rem !important;
+  font-weight: 800 !important;
+  margin: 0 0 8px 0 !important;
+  background: linear-gradient(90deg, #60a5fa, #93c5fd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  width: 100%;
+  z-index: 2;
+  position: relative;
+}
+body:not(.dark-mode) .sen66-param-card h4 {
+  background: linear-gradient(90deg, #1d4ed8, #3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Live value (below title, above gauge) ── */
+.sen66-param-value {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-color);
+  font-family: 'Courier New', monospace;
+  margin: 0 0 12px 0;
+  min-height: 24px;
+  z-index: 2;
+  position: relative;
+  transition: color 0.4s ease;
+}
+
+/* ── Gauge wrapper ── */
+.sen66-gauge-wrap {
+  width: 180px;
+  height: 180px;
+  margin: 0 auto 14px auto;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+}
+
+.sen66-gauge-svg {
+  width: 180px;
+  height: 180px;
+  display: block;
+  overflow: visible;
+}
+
+/* ── Track ring ── */
+.sen66-gauge-bg {
+  fill: rgba(148, 163, 184, 0.06);
+  stroke: rgba(148, 163, 184, 0.20);
+  stroke-width: 10;
+}
+
+/* ── Progress arc ──
+   r=50, viewBox 0 0 120 120, cx=60 cy=60
+   Circumference = 2π×50 = 314.16
+   rotate -90° so arc starts at top (12 o'clock)
+   transform-box:fill-box makes transform-origin relative to the element
+*/
+.sen66-gauge-arc {
+  fill: none;
+  stroke-width: 10;
+  stroke-linecap: round;
+  stroke-dasharray: 0 314.16;
+  stroke-dashoffset: 0;
+  transform: rotate(-90deg);
+  transform-origin: 60px 60px;
+  transform-box: fill-box;
+  transition: stroke-dasharray 1.4s cubic-bezier(0.4, 0, 0.2, 1),
+              stroke 0.6s ease;
+}
+
+/* ── Centre number (large) ── */
+.sen66-gauge-center-text {
+  fill: var(--text-color);
+  font-size: 19px;
+  font-weight: 800;
+  text-anchor: middle;
+  font-family: 'Courier New', monospace;
+}
+
+/* ── Centre unit (small) ── */
+.sen66-gauge-unit-text {
+  fill: #94a3b8;
+  font-size: 9px;
+  text-anchor: middle;
+  font-family: system-ui, sans-serif;
+}
+
+/* ── Status pill ── */
+.sen66-aqi-pill {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  padding: 5px 16px;
+  border-radius: 20px;
+  background: rgba(148, 163, 184, 0.12);
+  color: #94a3b8;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  transition: all 0.4s ease;
+  margin-top: auto;
+  z-index: 2;
+  position: relative;
+}
+
+.sen66-aqi-pill.pill-good      { background:rgba(52,211,153,0.15); color:#34d399; border-color:rgba(52,211,153,0.4); }
+.sen66-aqi-pill.pill-moderate  { background:rgba(251,191,36,0.15); color:#fbbf24; border-color:rgba(251,191,36,0.4); }
+.sen66-aqi-pill.pill-high      { background:rgba(249,115,22,0.15); color:#f97316; border-color:rgba(249,115,22,0.4); }
+.sen66-aqi-pill.pill-unhealthy { background:rgba(239,68,68,0.15);  color:#ef4444; border-color:rgba(239,68,68,0.4);  }
+
+/* ── Pulse animation on data update ── */
+@keyframes sen66CardPulse {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.025); }
+  100% { transform: scale(1); }
+}
+.sen66-param-card.updated {
+  animation: sen66CardPulse 0.55s ease-out;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .sen66-param-card { width: 200px; min-height: 320px; }
+  .sen66-gauge-wrap,
+  .sen66-gauge-svg  { width: 150px; height: 150px; }
+}
+
+
+
 /* ===================================
    HALL SENSOR - COMPLETE CSS STYLES
    =================================== */
