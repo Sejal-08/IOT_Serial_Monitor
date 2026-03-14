@@ -1050,7 +1050,7 @@ body.dark-mode .gauge-inner{
   min-height: 380px;
 
   /* layout */
-  display: flex !important;
+  display: flex ;
   flex-direction: column !important;
   align-items: center !important;
   justify-content: flex-start !important;
@@ -1149,14 +1149,15 @@ body:not(.dark-mode) .sen66-param-card h4 {
   stroke-width: 10;
   stroke-linecap: round;
   stroke-dasharray: 0 314.16;
-  stroke-dashoffset: 0;
-  transform: rotate(-90deg);
-  transform-origin: 60px 60px;
-  transform-box: fill-box;
+  /* KEY FIX: offset by C/4 = 78.54 to start at top (12 o'clock) */
+  stroke-dashoffset: 78.54;
+  /* REMOVE the transform/transform-origin/transform-box lines entirely */
   transition: stroke-dasharray 1.4s cubic-bezier(0.4, 0, 0.2, 1),
               stroke 0.6s ease;
 }
-
+.sen66-aqi-pill {
+  display: none;
+}
 /* ── Centre number (large) ── */
 .sen66-gauge-center-text {
   fill: var(--text-color);
