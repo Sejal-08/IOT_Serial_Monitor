@@ -59,6 +59,28 @@ let isConnected = false;
 let currentBaud = null;
 let currentPort = null;
 
+const MAX_LOG_LINES = 100;
+let _logLineCount = 0;
+
+function appendLog(html, cssClass = 'log-default') {
+  const outputDiv = document.getElementById('output');
+  if (!outputDiv) return;
+  const span = document.createElement('span');
+  span.className = `log-line ${cssClass}`;
+  span.innerHTML = html;
+  outputDiv.appendChild(span);
+  outputDiv.appendChild(document.createElement('br'));
+  _logLineCount++;
+  if (_logLineCount > MAX_LOG_LINES) {
+    const toRemove = (_logLineCount - MAX_LOG_LINES) * 2;
+    for (let i = 0; i < toRemove && outputDiv.firstChild; i++) {
+      outputDiv.removeChild(outputDiv.firstChild);
+    }
+    _logLineCount = MAX_LOG_LINES;
+  }
+  const distFromBottom = outputDiv.scrollHeight - outputDiv.scrollTop - outputDiv.clientHeight;
+  if (distFromBottom < 100) outputDiv.scrollTop = outputDiv.scrollHeight;
+}
 // Update sensor UI
 function updateSensorUI() {
   console.log('updateSensorUI called - selectedSensor:', selectedSensor);
@@ -2421,8 +2443,7 @@ window.electronAPI.onSerialData((data) => {
     }
 
     // Show raw data for C backend
-    outputDiv.innerHTML += `<span class="log-line ${logClass}">${sanitizedData}</span><br>`;
-    outputDiv.scrollTop = outputDiv.scrollHeight;
+  appendLog(sanitizedData, logClass);
 
     // Parse and animate C backend data
     parseSensorData(sanitizedData);
