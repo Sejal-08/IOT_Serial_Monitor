@@ -481,7 +481,7 @@ if (protocol === "I2C" && (selectedSensor === "BME680" || selectedSensor === "SE
   }
 }
 // === HUMIDITY WAVE UPDATE ===
-if (protocol === "I2C" && (selectedSensor === "BME680" || selectedSensor === "SHT40" || selectedSensor === "Weather Shield")) {
+if (protocol === "I2C" && (selectedSensor === "BME680" || selectedSensor === "SHT40" || selectedSensor === "Weather Shield" || selectedSensor === "SEN66")) {
   if (currentHumidity !== null) {
     const humidity = parseFloat(currentHumidity);
     humidityValue.textContent = `${humidity.toFixed(2)}%`;
@@ -1667,9 +1667,9 @@ function _updateSEN66Card() {
   }
   // ── Update shared card titles ──
   const thermoTitle = document.querySelector("#thermometer-container h4");
-  if (thermoTitle) thermoTitle.textContent = "Temperature (SEN66)";
+  if (thermoTitle) thermoTitle.textContent = "Temperature";
   const humTitle = document.querySelector("#humidity-card h4");
-  if (humTitle) humTitle.textContent = "Humidity (SEN66)";
+  if (humTitle) humTitle.textContent = "Humidity";
 
   function setArc(arcId, value, maxVal) {
   const el = document.getElementById(arcId);
@@ -1693,17 +1693,17 @@ function _updateSEN66Card() {
  
   // ── Pulse card on update ──
   function pulseCard(id) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.classList.remove("updated");
-    void el.offsetWidth; // force reflow to restart animation
-    el.classList.add("updated");
+    // const el = document.getElementById(id);
+    // if (!el) return;
+    // el.classList.remove("updated");
+    // void el.offsetWidth; // force reflow to restart animation
+    // el.classList.add("updated");
   }
 
   // ── PM1.0 ──
   if (currentSEN66_PM1 !== null) {
     setVal("sen66-pm1-val", `${currentSEN66_PM1.toFixed(1)} µg/m³`);
-    setVal("sen66-pm1-big", currentSEN66_PM1.toFixed(0));
+    setVal("sen66-pm1-big", currentSEN66_PM1.toFixed(1));
     setArc("sen66-pm1-arc", currentSEN66_PM1, 50);
    
     pulseCard("sen66-pm1-card");
@@ -1712,7 +1712,7 @@ function _updateSEN66Card() {
   // ── PM2.5 ──
   if (currentSEN66_PM25 !== null) {
     setVal("sen66-pm25-val", `${currentSEN66_PM25.toFixed(1)} µg/m³`);
-    setVal("sen66-pm25-big", currentSEN66_PM25.toFixed(0));
+    setVal("sen66-pm25-big", currentSEN66_PM25.toFixed(1));
     setArc("sen66-pm25-arc", currentSEN66_PM25, 50);
     
     pulseCard("sen66-pm25-card");
@@ -1721,7 +1721,7 @@ function _updateSEN66Card() {
   // ── PM4 ──
   if (currentSEN66_PM4 !== null) {
     setVal("sen66-pm4-val", `${currentSEN66_PM4.toFixed(1)} µg/m³`);
-    setVal("sen66-pm4-big", currentSEN66_PM4.toFixed(0));
+    setVal("sen66-pm4-big", currentSEN66_PM4.toFixed(1));
     setArc("sen66-pm4-arc", currentSEN66_PM4, 75);
    
     pulseCard("sen66-pm4-card");
@@ -1730,7 +1730,7 @@ function _updateSEN66Card() {
   // ── PM10 ──
   if (currentSEN66_PM10 !== null) {
     setVal("sen66-pm10-val", `${currentSEN66_PM10.toFixed(1)} µg/m³`);
-    setVal("sen66-pm10-big", currentSEN66_PM10.toFixed(0));
+    setVal("sen66-pm10-big", currentSEN66_PM10.toFixed(1));
     setArc("sen66-pm10-arc", currentSEN66_PM10, 100);
   
     pulseCard("sen66-pm10-card");

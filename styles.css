@@ -1214,7 +1214,107 @@ body:not(.dark-mode) .sen66-param-card h4 {
   .sen66-gauge-svg  { width: 150px; height: 150px; }
 }
 
+/* ============================================================
+   SEN66 – UNIFORM CARD SIZING
+   ONLY activates when SEN66 param cards are visible
+   Does NOT affect BME680 / SHT40 / Weather Shield layouts
+   ============================================================ */
 
+/* Scope everything inside a container that has visible SEN66 cards */
+.sensor-cards:has(.sen66-param-card[style*="display: flex"]) {
+  align-items: flex-start;
+}
+
+/* Thermometer card - only when SEN66 is active */
+.sensor-cards:has(.sen66-param-card[style*="display: flex"]) #thermometer-container,
+.sensor-cards:has(.sen66-param-card[style*="display: flex"]) #thermometer-f-container {
+  width: 260px !important;
+  min-width: 260px !important;
+  max-width: 260px !important;
+  min-height: 380px !important;
+  max-height: 380px !important;
+  height: 380px !important;
+  padding: 24px 20px 20px !important;
+  overflow: hidden !important;
+  flex: 0 0 260px !important;
+  box-sizing: border-box !important;
+  animation: none !important;
+}
+
+/* Humidity card - only when SEN66 is active */
+.sensor-cards:has(.sen66-param-card[style*="display: flex"]) #humidity-card {
+  width: 260px !important;
+  min-width: 260px !important;
+  max-width: 260px !important;
+  min-height: 380px !important;
+  max-height: 380px !important;
+  height: 380px !important;
+  padding: 24px 20px 20px !important;
+  overflow: hidden !important;
+  flex: 0 0 260px !important;
+  box-sizing: border-box !important;
+}
+
+/* Scale down thermometer SVG - only in SEN66 context */
+.sensor-cards:has(.sen66-param-card[style*="display: flex"]) #thermometer-container svg,
+.sensor-cards:has(.sen66-param-card[style*="display: flex"]) #thermometer-f-container svg {
+  width: 100px !important;
+  height: 200px !important;
+}
+
+/* Scale down titles - only in SEN66 context */
+.sensor-cards:has(.sen66-param-card[style*="display: flex"]) #thermometer-container h4,
+.sensor-cards:has(.sen66-param-card[style*="display: flex"]) #thermometer-f-container h4,
+.sensor-cards:has(.sen66-param-card[style*="display: flex"]) #humidity-card h4 {
+  font-size: 1.1rem !important;
+  margin-bottom: 6px !important;
+}
+
+/* Scale down value text - only in SEN66 context */
+.sensor-cards:has(.sen66-param-card[style*="display: flex"]) #thermometer-value,
+.sensor-cards:has(.sen66-param-card[style*="display: flex"]) #thermometer-f-value,
+.sensor-cards:has(.sen66-param-card[style*="display: flex"]) #humidity-value {
+  font-size: 1rem !important;
+  margin-bottom: 8px !important;
+}
+
+/* Fix humidity wave height inside compact card */
+.sensor-cards:has(.sen66-param-card[style*="display: flex"]) #humidity-wave {
+  height: 50% !important;
+}
+
+/* All SEN66 param cards - fixed uniform size */
+.sen66-param-card {
+  width: 260px !important;
+  min-width: 260px !important;
+  max-width: 260px !important;
+  min-height: 380px !important;
+  max-height: 380px !important;
+  height: 380px !important;
+  flex: 0 0 260px !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sensor-cards:has(.sen66-param-card[style*="display: flex"]) #thermometer-container,
+  .sensor-cards:has(.sen66-param-card[style*="display: flex"]) #thermometer-f-container,
+  .sensor-cards:has(.sen66-param-card[style*="display: flex"]) #humidity-card,
+  .sen66-param-card {
+    width: 200px !important;
+    min-width: 200px !important;
+    max-width: 200px !important;
+    min-height: 320px !important;
+    max-height: 320px !important;
+    height: 320px !important;
+    flex: 0 0 200px !important;
+  }
+
+  .sensor-cards:has(.sen66-param-card[style*="display: flex"]) #thermometer-container svg,
+  .sensor-cards:has(.sen66-param-card[style*="display: flex"]) #thermometer-f-container svg {
+    width: 80px !important;
+    height: 160px !important;
+  }
+}
 
 /* ===================================
    HALL SENSOR - COMPLETE CSS STYLES
