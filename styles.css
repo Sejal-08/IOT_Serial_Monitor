@@ -2041,23 +2041,45 @@ body:not(.dark-mode) #rain-gauge-card h4 {
 
 
 /* Wind Sensor Cards */
-#wind-direction-card,
-#wind-speed-card {
-  flex: 0 0 200px;
-  max-width: 200px;
-  min-height: 250px;
-  padding: 12px;
-  border-radius: 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: var(--sensor-bg);
-  border: 1px solid var(--sensor-border);
-  box-shadow: var(--sensor-shadow);
-  transition: all 0.4s ease;
+#wind-direction-card{
+  flex: 1 1 0;
+min-width: 280px;
+max-width: 340px;
+min-height: 520px;
+padding: 24px 20px;
+border-radius: 16px;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: flex-start;
+background: var(--sensor-bg);
+border: 1px solid var(--sensor-border);
+box-shadow: var(--sensor-shadow);
+transition: all 0.4s ease;
+position: relative;
+overflow: hidden;
+}
+
+/* Hall Card Title */
+#wind-direction-card h4 {
+  font-size: 2rem !important;
+  font-weight: 800 !important;
+  margin-bottom: 20px !important;
+  background: linear-gradient(90deg, #60a5fa, #93c5fd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+#wind-direction-value {
+  font-size: 1.4rem !important;
+  font-weight: 600 !important;
+  margin-bottom: 15px !important;
+  color: var(--text-color);
+  text-align: center;
+  width: 100%;
+  z-index: 10;
   position: relative;
-  overflow: hidden;
 }
 
 .compass-container,
@@ -2077,14 +2099,6 @@ body:not(.dark-mode) #rain-gauge-card h4 {
 #anemometer-cups {
   transition: transform 0.5s linear;
   transform-origin: center;
-}
-
-/* Wind speed bar styles */
-#wind-speed-bar {
-  height: 8px;
-  border-radius: 4px;
-  transition: width 0.3s ease, background 0.3s ease;
-  margin-top: 10px;
 }
 
 /* Responsive adjustments for wind cards */
@@ -2215,13 +2229,186 @@ body:not(.dark-mode) #rain-gauge-card h4 {
   opacity: 0.9;
 }
 
-/* Make Wind Direction value exactly same size as Wind Speed value */
-#wind-direction-value {
-  font-size: 1.0em !important;
-  color: #ffffff !important;
-  margin: 4px 0 12px !important;
+#wind-speed-card {
+  flex: 1 1 0;
+min-width: 280px;
+max-width: 340px;
+min-height: 520px;
+padding: 24px 20px;
+border-radius: 16px;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: flex-start;
+background: var(--sensor-bg);
+border: 1px solid var(--sensor-border);
+box-shadow: var(--sensor-shadow);
+transition: all 0.4s ease;
+position: relative;
+overflow: hidden;
+}
+/* Hall Card Title */
+#wind-speed-card h4 {
+  font-size: 2rem !important;
+  font-weight: 800 !important;
+  margin-bottom: 20px !important;
+  background: linear-gradient(90deg, #60a5fa, #93c5fd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
+/* Hall Sensor Value Display */
+#wind-speed-value {
+  font-size: 1.4rem !important;
+  font-weight: 600 !important;
+  margin-bottom: 15px !important;
+  color: var(--text-color);
+  text-align: center;
+  width: 100%;
+  z-index: 10;
+  position: relative;
+}
+
+@keyframes windBlow {
+  0%, 100% { 
+    opacity: 0.3; 
+  }
+  50% { 
+    opacity: 1; 
+  }
+}
+
+@keyframes windGlowPulse {
+  0%, 100% { 
+    filter: drop-shadow(0 0 3px rgba(147, 197, 253, 0.4))
+            drop-shadow(0 0 6px rgba(96, 165, 250, 0.2));
+  }
+  50% { 
+    filter: drop-shadow(0 0 5px rgba(147, 197, 253, 1.0))
+            drop-shadow(0 0 10px rgba(96, 165, 250, 0.8))
+            drop-shadow(0 0 20px rgba(59, 130, 246, 0.5));
+  }
+}
+
+.wind-blowing #wind-line-1,
+.wind-blowing #wind-line-2,
+.wind-blowing #wind-line-3 {
+  animation: windGlowPulse var(--wind-dur, 1.2s) ease-in-out infinite !important;
+  stroke-dasharray: none !important;
+  stroke-dashoffset: 0 !important;
+  opacity: 1 !important;
+}
+
+.wind-blowing #wind-line-1 { animation-delay: 0s !important; }
+.wind-blowing #wind-line-2 { animation-delay: 0s !important; }
+.wind-blowing #wind-line-3 { animation-delay: 0s !important; }
+
+.flow-icon-wrap { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 8px; }
+.flow-from, .flow-to { font-size: 2rem; font-weight: 700; color: var(--text-color); }
+.flow-arrow-big { font-size: 1.4rem; color: #60a5fa; }
+.flow-label { font-size: 0.72rem; color: var(--text-secondary); letter-spacing: 0.05em; }
+.flow-desc { font-size: 0.82rem; color: var(--text-secondary); margin-top: 10px; }
+.flow-degree { font-size: 1.5rem; font-weight: 500; margin-top: 8px; }
+.flow-compass-ring { width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--sensor-border); display: flex; align-items: center; justify-content: center; margin: 12px auto; position: relative; }
+.flow-ring-label { font-size: 9px; font-weight: 600; color: #64748b; position: absolute; }
+.fn { top: 4px; left: 50%; transform: translateX(-50%); }
+.fs { bottom: 4px; left: 50%; transform: translateX(-50%); }
+.fe { right: 4px; top: 50%; transform: translateY(-50%); }
+.fw { left: 4px; top: 50%; transform: translateY(-50%); }
+.flow-dot { width: 12px; height: 12px; border-radius: 50%; background: #60a5fa; }
+.flow-arrow-outer { position: absolute; width: 100%; height: 100%; top: 0; left: 0; }
+#wind-flow-card { flex: 0 0 180px; min-height: 250px; }
+
+#wind-flow-card{
+ flex: 1 1 0;
+min-width: 280px;
+max-width: 340px;
+min-height: 520px;
+padding: 24px 20px;
+border-radius: 16px;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: flex-start;
+background: var(--sensor-bg);
+border: 1px solid var(--sensor-border);
+box-shadow: var(--sensor-shadow);
+transition: all 0.4s ease;
+position: relative;
+overflow: hidden;
+}
+
+/* Hall Card Title */
+#wind-flow-card h4 {
+  font-size: 2rem !important;
+  font-weight: 800 !important;
+  margin-bottom: 20px !important;
+  background: linear-gradient(90deg, #60a5fa, #93c5fd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+#wind-flow-value {
+  font-size: 1.4rem !important;
+  font-weight: 600 !important;
+  margin-bottom: 15px !important;
+  color: var(--text-color);
+  text-align: center;
+  width: 100%;
+  z-index: 10;
+  position: relative;
+}
+.flow-compass-ring {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  border: 2px solid var(--sensor-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 16px auto;
+  position: relative;
+}
+.flow-compass-ring {
+  display: none;
+}
+
+.flow-ring-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #94a3b8;
+  position: absolute;
+}
+
+/* Cardinal directions */
+.fn  { top: 4px;  left: 50%; transform: translateX(-50%); }
+.fs  { bottom: 4px; left: 50%; transform: translateX(-50%); }
+.fe  { right: 6px; top: 50%; transform: translateY(-50%); }
+.fw  { left: 6px;  top: 50%; transform: translateY(-50%); }
+
+/* Diagonal directions */
+.fne { top: 22px;    right: 22px; }
+.fse { bottom: 22px; right: 22px; }
+.fsw { bottom: 22px; left: 22px;  }
+.fnw { top: 22px;    left: 22px;  }
+
+.flow-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #60a5fa;
+  position: absolute;
+}
+
+.flow-arrow-outer {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+}
 
 /* ====================== PERFECT RAINDROP – FALLS TO BOTTOM + HITS WATER ====================== */
 .raindrop {

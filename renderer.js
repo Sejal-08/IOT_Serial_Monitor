@@ -1,5 +1,255 @@
 let selectedSensor = null;
 let hallLightningInterval = null;  
+let _wfParticles = [];
+let _wfAnimId    = null;
+let _wfFromDeg   = 0;
+
+function _wfSpawn(fromDeg) {
+  return {
+    t: 0,
+    speed: 0.005 + Math.random() * 0.005,
+    fromDeg: fromDeg,
+    laneOffset: (Math.random() - 0.5) * 18,
+    opacity: 0.55 + Math.random() * 0.45,
+    wavePhase: Math.random() * Math.PI * 2,
+    waveAmp: 2 + Math.random() * 3,
+    waveFreq: 3 + Math.random() * 4,
+    size: 2.8 + Math.random() * 1.8
+  };
+}
+
+function _wfAnimate() {
+  const container = document.getElementById('wave-particles');
+  if (!container) return;
+
+  if (Math.random() < 0.12) _wfParticles.push(_wfSpawn(_wfFromDeg));
+  _wfParticles = _wfParticles.filter(p => p.t <= 1);
+
+  let html = '';
+  for (const p of _wfParticles) {
+    p.t += p.speed;
+    const t = p.t;
+    if (t > 1) continue;
+
+    const fromRad = (p.fromDeg - 90) * Math.PI / 180;
+    const perpRad = fromRad + Math.PI / 2;
+
+    const r = 58 * (1 - 2 * t);
+    const ax = 65 + Math.cos(fromRad) * r;
+    const ay = 65 + Math.sin(fromRad) * r;
+
+    const lx = Math.cos(perpRad) * p.laneOffset;
+    const ly = Math.sin(perpRad) * p.laneOffset;
+    const wobble = Math.sin(p.wavePhase + t * p.waveFreq) * p.waveAmp;
+    const wx = Math.cos(perpRad) * wobble;
+    const wy = Math.sin(perpRad) * wobble;
+
+    const bx = ax + lx + wx;
+    const by = ay + ly + wy;
+
+    let alpha = p.opacity;
+    if (t < 0.1) alpha *= t / 0.1;
+    if (t > 0.9) alpha *= (1 - t) / 0.1;
+
+    const scale = 0.4 + 0.6 * Math.sin(t * Math.PI);
+    const sz = p.size * scale;
+
+    // arrow points in travel direction (fromRad + π = toRad)
+    const travelRad = fromRad + Math.PI;
+    const angleDeg = (travelRad * 180 / Math.PI);
+
+    // chevron/arrow shape: two lines meeting at a point
+    const aw = sz * 1.4;   // arrow half-width
+    const ah = sz * 1.2;   // arrow depth
+
+    // tip point (forward)
+    const tipX = bx + Math.cos(travelRad) * ah;
+    const tipY = by + Math.sin(travelRad) * ah;
+
+    // left wing
+    const lwx = bx + Math.cos(travelRad + Math.PI * 0.65) * aw;
+    const lwy = by + Math.sin(travelRad + Math.PI * 0.65) * aw;
+
+    // right wing
+    const rwx = bx + Math.cos(travelRad - Math.PI * 0.65) * aw;
+    const rwy = by + Math.sin(travelRad - Math.PI * 0.65) * aw;
+
+    // tail stub (short line behind tip for > chevron feel)
+    const tailX = bx - Math.cos(travelRad) * (ah * 1.4);
+    const tailY = by - Math.sin(travelRad) * (ah * 1.4);
+
+    html += `
+      <g opacity="${alpha.toFixed(2)}">
+        <polyline 
+          points="${lwx.toFixed(1)},${lwy.toFixed(1)} ${tipX.toFixed(1)},${tipY.toFixed(1)} ${rwx.toFixed(1)},${rwy.toFixed(1)}"
+          fill="none" stroke="#60a5fa" stroke-width="${(sz * 0.9).toFixed(1)}"
+          stroke-linecap="round" stroke-linejoin="round"/>
+        <line 
+          x1="${tipX.toFixed(1)}" y1="${tipY.toFixed(1)}"
+          x2="${tailX.toFixed(1)}" y2="${tailY.toFixed(1)}"
+          stroke="#93c5fd" stroke-width="${(sz * 0.5).toFixed(1)}"
+          stroke-linecap="round" opacity="0.5"/>
+      </g>`;
+  }
+
+  container.innerHTML = html;
+  _wfAnimId = requestAnimationFrame(_wfAnimate);
+}
+
+function _wfStart() {
+  if (_wfAnimId) { cancelAnimationFrame(_wfAnimId); _wfAnimId = null; }
+  _wfParticles = [];
+  for (let i = 0; i < 12; i++) {
+    const p = _wfSpawn(_wfFromDeg);
+    p.t = Math.random();
+    _wfParticles.push(p);
+  }
+  _wfAnimate();
+}
+
+function _wfStop() {
+  if (_wfAnimId) { cancelAnimationFrame(_wfAnimId); _wfAnimId = null; }
+  _wfParticles = [];
+  const c = document.getElementById('wave-particles');
+  if (c) c.innerHTML = '';
+}
+
+function getCardinalFrom(deg) {
+  const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+  return dirs[Math.round(deg / 45) % 8];
+}
+
+function updateWindFlowCard(deg) {
+  const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+  const from = getCardinalFrom(deg);
+  const to = dirs[(dirs.indexOf(from) + 4) % 8];
+
+  document.getElementById('flow-from').textContent = from;
+  document.getElementById('flow-to').textContent   = to;
+  document.getElementById('flow-label').textContent = `WIND BLOWING FROM ${from}`;
+  document.getElementById('flow-degree').textContent = `${deg.toFixed(0)}°`;
+  document.getElementById('flow-desc').textContent   = `Moving toward ${to}`;
+
+  _wfFromDeg = deg;
+  _wfStart();
+}
+
+// ── Wind Bubble Particle System ──
+let _windBubbleInterval = null;
+let _windBubbleActive = false;
+let _windBubbleSpeed = 0;
+
+function _startWindBubbles(speed) {
+  // Always restart to apply new speed
+  _stopWindBubbles();
+  _windBubbleActive = true;
+  _windBubbleSpeed = speed;
+
+  const card = document.getElementById("wind-speed-card");
+  if (!card) return;
+
+  card.style.overflow = "hidden";
+  card.style.position = "relative";
+
+  // Speed-based spawn rate: slow=400ms, fast=40ms
+  const spawnRate = speed >= 3
+  ? Math.max(8, 120 - (speed - 3) * 40)
+  : Math.max(350, 450 - speed * 20);
+
+  const spawn = () => {
+    if (!_windBubbleActive) return;
+    const card = document.getElementById("wind-speed-card");
+    if (!card) return;
+
+    const currentSpeed = _windBubbleSpeed;
+
+    // Size grows slightly with speed
+    const size = 2 + Math.random() * (2 + (currentSpeed / 20) * 4);
+
+    // Travel duration: fast wind = short duration
+    const dur = currentSpeed >= 3
+    ? Math.max(0.1, 0.8 - (currentSpeed - 3) * 0.1) + Math.random() * 0.08
+    : Math.max(1.5, 2.5 - currentSpeed * 0.1) + Math.random() * 0.4;
+
+    const startY = 5 + Math.random() * 88;
+    const alpha  = 0.5 + Math.random() * 0.4;
+    const driftY = (Math.random() - 0.5) * 40;
+
+    const bubble = document.createElement("div");
+
+    Object.assign(bubble.style, {
+      position:      "absolute",
+      width:         `${size}px`,
+      height:        `${size}px`,
+      borderRadius:  "50%",
+      background:    `rgba(200, 225, 255, ${alpha})`,
+      boxShadow:     `0 0 2px rgba(200, 225, 255, 0.5), inset 0 0 1px rgba(255,255,255,0.8)`,
+      left:          "-10px",
+      top:           `${startY}%`,
+      pointerEvents: "none",
+      zIndex:        "10",
+      opacity:       "0",
+    });
+
+    card.appendChild(bubble);
+
+    const cardW  = card.offsetWidth + 20;
+    const start  = performance.now();
+
+    const tick = (now) => {
+      if (!_windBubbleActive) {
+        if (bubble.parentNode) bubble.remove();
+        return;
+      }
+
+      const t = Math.min((now - start) / 1000 / dur, 1);
+
+      // Fade in 0→15%, hold 15→80%, fade out 80→100%
+      let op;
+      if      (t < 0.15) op = (t / 0.15) * alpha;
+      else if (t > 0.80) op = ((1 - t) / 0.20) * alpha;
+      else               op = alpha;
+
+      const x = t * cardW;
+      const y = driftY * Math.sin(t * Math.PI);
+
+      bubble.style.opacity   = op;
+      bubble.style.transform = `translate(${x}px, ${y}px)`;
+
+      if (t < 1) {
+        requestAnimationFrame(tick);
+      } else {
+        if (bubble.parentNode) bubble.remove();
+      }
+    };
+
+    requestAnimationFrame(tick);
+  };
+
+  // Spawn immediately then on interval
+  spawn();
+  _windBubbleInterval = setInterval(spawn, spawnRate);
+}
+
+function _stopWindBubbles() {
+  _windBubbleActive = false;
+  _windBubbleSpeed = 0;
+
+  if (_windBubbleInterval) {
+    clearInterval(_windBubbleInterval);
+    _windBubbleInterval = null;
+  }
+
+  const card = document.getElementById("wind-speed-card");
+  if (card) {
+    // Remove all bubbles that have no class (our dynamically created ones)
+    Array.from(card.children).forEach(child => {
+      if (!child.id && !child.className && child.tagName === "DIV") {
+        child.remove();
+      }
+    });
+  }
+}
 
 const selectedBackend = localStorage.getItem('selectedDevice'); // 'c' or 'python'
 let isPythonBackend = selectedBackend === 'python';
@@ -120,8 +370,9 @@ function updateSensorUI() {
   const uvltrContainer = document.getElementById("uvltr-card");
   const irContainer = document.getElementById("ir-card");
   const rainGaugeCard = document.getElementById("rain-gauge-card");
-  const windDirectionContainer = document.getElementById("wind-direction-card");
+ const windDirectionContainer = document.getElementById("wind-direction-card");
   const windSpeedContainer = document.getElementById("wind-speed-card");
+  const windFlowContainer = document.getElementById("wind-flow-card");
   const windDirectionValue = document.getElementById("wind-direction-value");
   const windDirectionArrow = document.getElementById("wind-direction-arrow");
   const windSpeedValue = document.getElementById("wind-speed-value");
@@ -350,9 +601,11 @@ if (selectedSensor === "Weather Shield") {
     if (irContainer) irContainer.style.display = "flex";
   }
   // Wind Sensor
+// Wind Sensor
   if (selectedSensor === "Wind Sensor" && protocol === "RS232") {
     if (windDirectionContainer) windDirectionContainer.style.display = "block";
-    if (windSpeedContainer) windSpeedContainer.style.display = "block";
+    if (windSpeedContainer) windSpeedContainer.style.display = "flex";
+    if (windFlowContainer) windFlowContainer.style.display = "flex";
   }
   // Rain Gauge
   if (selectedSensor === "Rain Gauge" && protocol === "ADC") {
@@ -1427,7 +1680,7 @@ if (protocol === "I2C" && selectedSensor === "LIS3DH") {
   }
 }
 
-    // Updated Wind Direction rotation code (now centered perfectly with new needle size)
+       // Updated Wind Direction rotation code (now centered perfectly with new needle size)
         if (protocol === "RS232" && selectedSensor === "Wind Sensor" && currentWindDirection !== null) {
           const direction = parseFloat(currentWindDirection);
           const windDirectionArrow = document.getElementById('wind-direction-arrow');
@@ -1443,6 +1696,10 @@ if (protocol === "I2C" && selectedSensor === "LIS3DH") {
             const target = currentRotation + diff;
             windDirectionArrow.style.transition = 'transform 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
             windDirectionArrow.style.transform = `rotate(${target}deg)`;
+
+            // add this:
+            updateWindFlowCard(direction);
+
             // Make value larger when wind is strong (like in your first picture)
             if (windDirectionValue) {
               windDirectionValue.textContent = `${direction.toFixed(0)}°`;
@@ -1450,41 +1707,89 @@ if (protocol === "I2C" && selectedSensor === "LIS3DH") {
             }
           }
         }
-    // Update Wind Speed card (for RS232 Wind Sensor)
-    if (protocol === "RS232" && selectedSensor === "Wind Sensor" && currentWindSpeed !== null) {
-      const speed = parseFloat(currentWindSpeed);
-      if (windSpeedValue) windSpeedValue.textContent = `${speed.toFixed(1)} m/s`;
-     
-      // Animate anemometer rotation based on speed
-      if (windSpeedCups) {
-        const rotationSpeed = Math.min(speed * 10, 100); // Cap rotation speed
-        windSpeedCups.style.transform = `rotate(${rotationSpeed}deg)`;
-        windSpeedCups.style.transition = `transform ${Math.max(0.5, 2/speed)}s linear`;
-      }
-     
-      // Update speed bar (0-20 m/s range)
-      if (windSpeedBar) {
-        const barWidth = Math.min((speed / 20) * 100, 100);
-        windSpeedBar.style.width = `${barWidth}%`;
-       
-        // Change color based on speed
-        if (speed < 5) {
-          windSpeedBar.style.background = "linear-gradient(90deg, #10b981, #34d399)";
-        } else if (speed < 15) {
-          windSpeedBar.style.background = "linear-gradient(90deg, #f59e0b, #fbbf24)";
-        } else {
-          windSpeedBar.style.background = "linear-gradient(90deg, #ef4444, #f87171)";
-        }
-      }
-    } else {
-      if (windSpeedValue) windSpeedValue.textContent = "0.0 m/s";
-      if (windSpeedCups) windSpeedCups.style.transform = "rotate(0deg)";
-      if (windSpeedBar) {
-        windSpeedBar.style.width = "0%";
-        windSpeedBar.style.background = "linear-gradient(90deg, #10b981, #34d399)";
-      }
-    }
 
+if (protocol === "RS232" && selectedSensor === "Wind Sensor" && currentWindSpeed !== null) {
+  const speed = parseFloat(currentWindSpeed);
+  if (windSpeedValue) windSpeedValue.textContent = `${speed.toFixed(1)} m/s`;
+
+  const line1   = document.getElementById("wind-line-1");
+  const line2   = document.getElementById("wind-line-2");
+  const line3   = document.getElementById("wind-line-3");
+  const windCard = document.getElementById("wind-speed-card");
+
+  if (line1 && line2 && line3 && windCard) {
+    if (speed > 0) {
+      const dur = Math.max(0.4, 2.0 - (speed / 20) * 1.4) + Math.random() * 0.5;  // faster wind = faster travel
+      windCard.style.setProperty('--wind-dur', `${dur}s`);
+      windCard.classList.add("wind-blowing");
+
+      [line1, line2, line3].forEach(l => {
+        l.style.animation      = "";
+        l.style.strokeDasharray = "";
+        l.style.strokeDashoffset = "";
+        const intensity  = Math.min(speed / 20, 1);
+        const brightness = Math.round(180 + intensity * 75);
+        l.style.stroke = `rgb(128, 163, 202)`;
+        l.style.opacity  = "1";
+      });
+
+      // ← START BUBBLES (always restart so speed changes take effect)
+      _startWindBubbles(speed);
+
+    } else {
+      windCard.classList.remove("wind-blowing");
+      windCard.style.removeProperty('--wind-dur');
+      [line1, line2, line3].forEach(l => {
+        l.style.animation        = "none";
+        l.style.strokeDasharray  = "none";
+        l.style.strokeDashoffset = "0";
+        l.style.opacity          = "0.25";
+        l.style.stroke           = "var(--text-color)";
+      });
+
+      // ← STOP BUBBLES
+      _stopWindBubbles();
+    }
+  }
+
+  if (windSpeedBar) {
+    const barWidth = Math.min((speed / 20) * 100, 100);
+    windSpeedBar.style.width = `${barWidth}%`;
+    if (speed < 5)       windSpeedBar.style.background = "linear-gradient(90deg, #10b981, #34d399)";
+    else if (speed < 15) windSpeedBar.style.background = "linear-gradient(90deg, #f59e0b, #fbbf24)";
+    else                 windSpeedBar.style.background = "linear-gradient(90deg, #ef4444, #f87171)";
+  }
+
+} else {
+  const line1    = document.getElementById("wind-line-1");
+  const line2    = document.getElementById("wind-line-2");
+  const line3    = document.getElementById("wind-line-3");
+  const windCard = document.getElementById("wind-speed-card");
+
+  if (windCard) {
+    windCard.classList.remove("wind-blowing");
+    windCard.style.removeProperty('--wind-dur');
+  }
+
+  [line1, line2, line3].forEach(l => {
+    if (l) {
+      l.style.animation        = "none";
+      l.style.strokeDasharray  = "none";
+      l.style.strokeDashoffset = "0";
+      l.style.opacity          = "0.25";
+      l.style.stroke           = "var(--text-color)";
+    }
+  });
+
+  // ← STOP BUBBLES
+  _stopWindBubbles();
+
+  if (windSpeedValue) windSpeedValue.textContent = "0.0 m/s";
+  if (windSpeedBar) {
+    windSpeedBar.style.width      = "0%";
+    windSpeedBar.style.background = "linear-gradient(90deg, #10b981, #34d399)";
+  }
+}
 
    // ── SEN66 ──
 if (protocol === "I2C" && selectedSensor === "SEN66") {
