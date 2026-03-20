@@ -488,7 +488,8 @@ const allCards = [
   thermometerContainer, thermometerFContainer, humidityContainer, pressureContainer,
   lightContainer, uvltrContainer, lis3dhContainer, hallContainer,
   tlv493dContainer, tofContainer, irContainer,
-  windDirectionContainer, windSpeedContainer, rainGaugeCard,
+  windDirectionContainer, windSpeedContainer, windFlowContainer,  // ← add windFlowContainer here
+  rainGaugeCard,
   blinkyCard, buzzerCard,
   vcnlLuxCard,  
   relayCard,
@@ -2308,48 +2309,48 @@ function parseSensorData(data) {
       }
 
 
-      // ── SEN66 ──
-    if (protocol === "I2C") {
-      let sen66Matched = false;
-      const pm1Match  = line.match(/PM1\.0\s*:\s*([\d.]+)/i);
-      const pm25Match = line.match(/PM2\.5\s*:\s*([\d.]+)/i);
-      const pm4Match  = line.match(/PM4\s*:\s*([\d.]+)/i);
-      const pm10Match = line.match(/PM10\s*:\s*([\d.]+)/i);
-      const sen66HumMatch  = line.match(/Relative\s*Humidity\s*:\s*([\d.]+)/i);
-      const sen66TempMatch = line.match(/Temperature\s*:\s*([\d.]+)\s*°?C/i);
-      const vocMatch  = line.match(/VOC\s*:\s*([\d.]+)/i);
-      const noxMatch  = line.match(/NOx\s*:\s*([\d.]+)/i);
-      const co2Match  = line.match(/CO2\s*:\s*([\d.]+)/i);
-      const upMatch   = line.match(/UPtime\s*:\s*([\d.]+)/i);
+    //   // ── SEN66 ──
+    // if (protocol === "I2C") {
+    //   let sen66Matched = false;
+    //   const pm1Match  = line.match(/PM1\.0\s*:\s*([\d.]+)/i);
+    //   const pm25Match = line.match(/PM2\.5\s*:\s*([\d.]+)/i);
+    //   const pm4Match  = line.match(/PM4\s*:\s*([\d.]+)/i);
+    //   const pm10Match = line.match(/PM10\s*:\s*([\d.]+)/i);
+    //   const sen66HumMatch  = line.match(/Relative\s*Humidity\s*:\s*([\d.]+)/i);
+    //   const sen66TempMatch = line.match(/Temperature\s*:\s*([\d.]+)\s*°?C/i);
+    //   const vocMatch  = line.match(/VOC\s*:\s*([\d.]+)/i);
+    //   const noxMatch  = line.match(/NOx\s*:\s*([\d.]+)/i);
+    //   const co2Match  = line.match(/CO2\s*:\s*([\d.]+)/i);
+    //   const upMatch   = line.match(/UPtime\s*:\s*([\d.]+)/i);
  
-      if (pm1Match)        { currentSEN66_PM1  = parseFloat(pm1Match[1]);        sensorData[protocol]["SEN66 PM1.0"]       = currentSEN66_PM1.toFixed(1)  + " µg/m³"; sen66Matched = true; }
-      if (pm25Match)       { currentSEN66_PM25 = parseFloat(pm25Match[1]);       sensorData[protocol]["SEN66 PM2.5"]       = currentSEN66_PM25.toFixed(1) + " µg/m³"; sen66Matched = true; }
-      if (pm4Match)        { currentSEN66_PM4  = parseFloat(pm4Match[1]);        sensorData[protocol]["SEN66 PM4"]         = currentSEN66_PM4.toFixed(1)  + " µg/m³"; sen66Matched = true; }
-      if (pm10Match)       { currentSEN66_PM10 = parseFloat(pm10Match[1]);       sensorData[protocol]["SEN66 PM10"]        = currentSEN66_PM10.toFixed(1) + " µg/m³"; sen66Matched = true; }
-      if (sen66HumMatch)   {
-        currentSEN66_Hum  = parseFloat(sen66HumMatch[1]);
-        currentHumidity   = currentSEN66_Hum;   // ← drive shared humidity wave card
-        sensorData[protocol]["SEN66 Humidity"]    = currentSEN66_Hum.toFixed(1)  + " %";
-        sen66Matched = true;
-      }
-      if (sen66TempMatch)  {
-        currentSEN66_Temp = parseFloat(sen66TempMatch[1]);
-        currentTemperature = currentSEN66_Temp;  // ← drive shared thermometer card
-        sensorData[protocol]["SEN66 Temperature"] = currentSEN66_Temp.toFixed(2) + " °C";
-        sen66Matched = true;
-      }
-      if (vocMatch)        { currentSEN66_VOC  = parseFloat(vocMatch[1]);        sensorData[protocol]["SEN66 VOC"]         = currentSEN66_VOC.toString();              sen66Matched = true; }
-      if (noxMatch)        { currentSEN66_NOx  = parseFloat(noxMatch[1]);        sensorData[protocol]["SEN66 NOx"]         = currentSEN66_NOx.toString();              sen66Matched = true; }
-      if (co2Match)        { currentSEN66_CO2  = parseFloat(co2Match[1]);        sensorData[protocol]["SEN66 CO2"]         = currentSEN66_CO2.toFixed(0)  + " ppm";   sen66Matched = true; }
+    //   if (pm1Match)        { currentSEN66_PM1  = parseFloat(pm1Match[1]);        sensorData[protocol]["SEN66 PM1.0"]       = currentSEN66_PM1.toFixed(1)  + " µg/m³"; sen66Matched = true; }
+    //   if (pm25Match)       { currentSEN66_PM25 = parseFloat(pm25Match[1]);       sensorData[protocol]["SEN66 PM2.5"]       = currentSEN66_PM25.toFixed(1) + " µg/m³"; sen66Matched = true; }
+    //   if (pm4Match)        { currentSEN66_PM4  = parseFloat(pm4Match[1]);        sensorData[protocol]["SEN66 PM4"]         = currentSEN66_PM4.toFixed(1)  + " µg/m³"; sen66Matched = true; }
+    //   if (pm10Match)       { currentSEN66_PM10 = parseFloat(pm10Match[1]);       sensorData[protocol]["SEN66 PM10"]        = currentSEN66_PM10.toFixed(1) + " µg/m³"; sen66Matched = true; }
+    //   if (sen66HumMatch)   {
+    //     currentSEN66_Hum  = parseFloat(sen66HumMatch[1]);
+    //     currentHumidity   = currentSEN66_Hum;   // ← drive shared humidity wave card
+    //     sensorData[protocol]["SEN66 Humidity"]    = currentSEN66_Hum.toFixed(1)  + " %";
+    //     sen66Matched = true;
+    //   }
+    //   if (sen66TempMatch)  {
+    //     currentSEN66_Temp = parseFloat(sen66TempMatch[1]);
+    //     currentTemperature = currentSEN66_Temp;  // ← drive shared thermometer card
+    //     sensorData[protocol]["SEN66 Temperature"] = currentSEN66_Temp.toFixed(2) + " °C";
+    //     sen66Matched = true;
+    //   }
+    //   if (vocMatch)        { currentSEN66_VOC  = parseFloat(vocMatch[1]);        sensorData[protocol]["SEN66 VOC"]         = currentSEN66_VOC.toString();              sen66Matched = true; }
+    //   if (noxMatch)        { currentSEN66_NOx  = parseFloat(noxMatch[1]);        sensorData[protocol]["SEN66 NOx"]         = currentSEN66_NOx.toString();              sen66Matched = true; }
+    //   if (co2Match)        { currentSEN66_CO2  = parseFloat(co2Match[1]);        sensorData[protocol]["SEN66 CO2"]         = currentSEN66_CO2.toFixed(0)  + " ppm";   sen66Matched = true; }
     
  
-      if (sen66Matched) {
-        sensorStatus[protocol]["SEN66"] = true;
-        if (!selectedSensor && !autoSelected) { selectedSensor = "SEN66"; autoSelected = true; const dd = document.getElementById("sensor-dropdown"); if (dd) dd.value = "SEN66"; }
-        dataParsed = true;
-        if (selectedSensor === "SEN66") updateSensorUI();
-      }
-    }
+    //   if (sen66Matched) {
+    //     sensorStatus[protocol]["SEN66"] = true;
+    //     if (!selectedSensor && !autoSelected) { selectedSensor = "SEN66"; autoSelected = true; const dd = document.getElementById("sensor-dropdown"); if (dd) dd.value = "SEN66"; }
+    //     dataParsed = true;
+    //     if (selectedSensor === "SEN66") updateSensorUI();
+    //   }
+    // }
     // GPIO Blinky and Buzzer parsing - BULLETPROOF VERSION
     if (protocol === "GPIO") {
       // Match ANY line containing "LED" followed by "ON" or "OFF" anywhere after it
