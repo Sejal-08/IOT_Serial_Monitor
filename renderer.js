@@ -460,29 +460,50 @@ function updateSensorUI() {
       }
       sensorDropdown.appendChild(option);
     });
-    // Display sensor data for selected sensor
-    let dataHtml = "<h4>Sensor Data</h4>";
-    if (selectedSensor && sensorData[protocol]) {
-      if (selectedSensor === "Rain Gauge") {
-        dataHtml += `<div class="sensor-data-item"><strong>Rainfall:</strong> ${sensorData[protocol]["Rainfall"] || "N/A"}</div>`;
-      } else {
-        const sensorKeys = Object.keys(sensorData[protocol]).filter(key => key.startsWith(selectedSensor + " "));
-        if (sensorKeys.length > 0) {
-          sensorKeys.forEach(key => {
-            let value = sensorData[protocol][key];
-            if (!isNaN(parseFloat(value))) {
-              value = parseFloat(value).toFixed(2);
-            }
-            dataHtml += `<div class="sensor-data-item"><strong>${key.replace(selectedSensor + " ", "")}:</strong> ${value}</div>`;
-          });
-        } else {
-          dataHtml += `<p>No data available for ${selectedSensor}.</p>`;
+
+  let dataHtml = `
+  <h4>Sensor Data</h4>
+  <div class="sensor-scroll-container">
+`;
+
+if (selectedSensor && sensorData[protocol]) {
+
+  if (selectedSensor === "Rain Gauge") {
+    dataHtml += `
+      <div class="sensor-data-item">
+        <strong>Rainfall:</strong> ${sensorData[protocol]["Rainfall"] || "N/A"}
+      </div>
+    `;
+  } else {
+    const sensorKeys = Object.keys(sensorData[protocol])
+      .filter(key => key.startsWith(selectedSensor + " "));
+
+    if (sensorKeys.length > 0) {
+      sensorKeys.forEach(key => {
+        let value = sensorData[protocol][key];
+
+        if (!isNaN(parseFloat(value))) {
+          value = parseFloat(value).toFixed(2);
         }
-      }
+
+        dataHtml += `
+          <div class="sensor-data-item">
+            <strong>${key.replace(selectedSensor + " ", "")}:</strong> ${value}
+          </div>
+        `;
+      });
     } else {
-      dataHtml += "<p>Please select a sensor to view data.</p>";
+      dataHtml += `<p>No data available for ${selectedSensor}.</p>`;
     }
-    sensorDataDiv.innerHTML = dataHtml;
+  }
+
+} else {
+  dataHtml += "<p>Please select a sensor to view data.</p>";
+}
+
+dataHtml += `</div>`;
+sensorDataDiv.innerHTML = dataHtml;
+  
 // === HIDE ALL CARDS FIRST ===
 const allCards = [
   thermometerContainer, thermometerFContainer, humidityContainer, pressureContainer,
@@ -1919,36 +1940,41 @@ function updateTOFAnimation(distance) {
     tofWave.style.opacity = '0';
   }
 }
-/* ------------------------------------------------------------------ */
-/* PRESSURE CARD FUNCTION */
-/* ------------------------------------------------------------------ */
 function updatePressureCard(hpa) {
   const card = document.getElementById('pressure-card');
   const topVal = document.getElementById('pressure-value');
   const midVal = document.getElementById('pressure-value-inner');
   const fill = document.getElementById('gauge-fill');
-  // DO NOT HIDE CARD WHEN NO DATA
-  // if (hpa === null || isNaN(hpa)) {
-  // if (card) card.style.display = 'none';
-  // return;
-  // }
-  // Always show card if it should be visible (centralized logic handles this)
+
   if (card) card.style.display = 'flex';
+
   if (hpa === null || isNaN(hpa)) {
-    if (topVal) topVal.textContent = '– hPa';
+    if (topVal) topVal.textContent = '– kPa';
     if (midVal) midVal.textContent = '–';
     if (fill) fill.style.strokeDasharray = '0 565.48';
     return;
   }
-  const txt = Number(hpa).toFixed(2);
-  if (topVal) topVal.textContent = `${txt} hPa`;
+
+  // ✅ Convert to kPa
+  const kpa = hpa / 10;
+
+  const txt = kpa.toFixed(2);
+
+  if (topVal) topVal.textContent = `${txt} kPa`;
   if (midVal) midVal.textContent = txt;
-  const minP = 300, maxP = 1100;
-  const t = Math.min(Math.max((hpa - minP) / (maxP - minP), 0), 1);
+
+  // ✅ Update range also to kPa
+  const minP = 30;   // 300 hPa → 30 kPa
+  const maxP = 110;  // 1100 hPa → 110 kPa
+
+  const t = Math.min(Math.max((kpa - minP) / (maxP - minP), 0), 1);
+
   const circumference = 2 * Math.PI * 90;
+
   if (fill) {
     fill.style.strokeDasharray = `${t * circumference} ${(1 - t) * circumference}`;
   }
+
   if (card) {
     card.classList.remove('update-pulse');
     void card.offsetWidth;
@@ -2234,182 +2260,188 @@ function parseSensorData(data) {
   let autoSelected = false;
   lines.forEach(line => {
 
+  
+    // STS30 format example: Temperature: 23.21 °C   (or similar variations)
+    const sts30Match = line.match(/Temp:\s*([\d.]+)\s*°?C/i);
+    if (sts30Match && protocol === "I2C") {
+      const temp = parseFloat(sts30Match[1]);
     
-
-          // Check for BME680 data format: T:23.74,H:55.11,P:987.74,L:1385.60
-      const bmeMatch = line.match(/T:([\d.]+),H:([\d.]+),P:([\d.]+),L:([\d.]+)/);
-     
-      if (bmeMatch && protocol === "I2C") {
-        const [, temp, humidity, pressure, light] = bmeMatch;
-       
-        // Mark BME680 as present
-        sensorStatus[protocol]["BME680"] = true;
-        // Auto-select BME680 if no sensor is selected
-        if (!selectedSensor && !autoSelected) {
-          selectedSensor = "BME680";
-          autoSelected = true;
-          const sensorDropdown = document.getElementById("sensor-dropdown");
-          if (sensorDropdown) {
-            sensorDropdown.value = "BME680";
-          }
-        }
-        // Store the parsed data
-        sensorData[protocol]["BME680 Temperature"] = parseFloat(temp).toFixed(2);
-        sensorData[protocol]["BME680 Humidity"] = parseFloat(humidity).toFixed(2);
-        sensorData[protocol]["BME680 Pressure"] = parseFloat(pressure).toFixed(2);
-        sensorData[protocol]["BME680 Lux"] = parseFloat(light).toFixed(2);
-        // Update global variables for card display
-        currentTemperature = parseFloat(temp);
-        currentHumidity = parseFloat(humidity);
-        currentPressure = parseFloat(pressure);
-        currentLight = parseFloat(light); // ADD THIS LINE - set light intensity
-        console.log('BME680 Data parsed:', {
-          temp: currentTemperature,
-          humidity: currentHumidity,
-          pressure: currentPressure,
-          light: currentLight // ADD THIS LINE
-        });
-        // Update UI if BME680 is selected
-        if (selectedSensor === "BME680") {
-          updateSensorUI();
-        }
-      }
-      // Also handle the alternative format from your latest image: T:23.79,H:55.00,P:987.76,L:1490.40
-      const altBmeMatch = line.match(/T:([\d.]+),\s*H:([\d.]+),\s*P:([\d.]+),\s*L:([\d.]+)/);
-      if (altBmeMatch && protocol === "I2C") {
-        const [, temp, humidity, pressure, light] = altBmeMatch;
-       
-        sensorStatus[protocol]["BME680"] = true;
-        if (!selectedSensor && !autoSelected) {
-          selectedSensor = "BME680";
-          autoSelected = true;
-          const sensorDropdown = document.getElementById("sensor-dropdown");
-          if (sensorDropdown) {
-            sensorDropdown.value = "BME680";
-          }
-        }
-       
-        sensorData[protocol]["BME680 Temperature"] = parseFloat(temp).toFixed(2);
-        sensorData[protocol]["BME680 Humidity"] = parseFloat(humidity).toFixed(2);
-        sensorData[protocol]["BME680 Pressure"] = parseFloat(pressure).toFixed(2);
-        sensorData[protocol]["BME680 Lux"] = parseFloat(light).toFixed(2);
-        currentTemperature = parseFloat(temp);
-        currentHumidity = parseFloat(humidity);
-        currentPressure = parseFloat(pressure);
-        currentLight = parseFloat(light); // SET LIGHT INTENSITY
-        console.log('BME680 Alt Format Data parsed:', {
-          temp: currentTemperature,
-          humidity: currentHumidity,
-          pressure: currentPressure,
-          light: currentLight
-        });
-        if (selectedSensor === "BME680") {
-          updateSensorUI();
-        }
-      }
-
-
-    //   // ── SEN66 ──
-    // if (protocol === "I2C") {
-    //   let sen66Matched = false;
-    //   const pm1Match  = line.match(/PM1\.0\s*:\s*([\d.]+)/i);
-    //   const pm25Match = line.match(/PM2\.5\s*:\s*([\d.]+)/i);
-    //   const pm4Match  = line.match(/PM4\s*:\s*([\d.]+)/i);
-    //   const pm10Match = line.match(/PM10\s*:\s*([\d.]+)/i);
-    //   const sen66HumMatch  = line.match(/Relative\s*Humidity\s*:\s*([\d.]+)/i);
-    //   const sen66TempMatch = line.match(/Temperature\s*:\s*([\d.]+)\s*°?C/i);
-    //   const vocMatch  = line.match(/VOC\s*:\s*([\d.]+)/i);
-    //   const noxMatch  = line.match(/NOx\s*:\s*([\d.]+)/i);
-    //   const co2Match  = line.match(/CO2\s*:\s*([\d.]+)/i);
-    //   const upMatch   = line.match(/UPtime\s*:\s*([\d.]+)/i);
- 
-    //   if (pm1Match)        { currentSEN66_PM1  = parseFloat(pm1Match[1]);        sensorData[protocol]["SEN66 PM1.0"]       = currentSEN66_PM1.toFixed(1)  + " µg/m³"; sen66Matched = true; }
-    //   if (pm25Match)       { currentSEN66_PM25 = parseFloat(pm25Match[1]);       sensorData[protocol]["SEN66 PM2.5"]       = currentSEN66_PM25.toFixed(1) + " µg/m³"; sen66Matched = true; }
-    //   if (pm4Match)        { currentSEN66_PM4  = parseFloat(pm4Match[1]);        sensorData[protocol]["SEN66 PM4"]         = currentSEN66_PM4.toFixed(1)  + " µg/m³"; sen66Matched = true; }
-    //   if (pm10Match)       { currentSEN66_PM10 = parseFloat(pm10Match[1]);       sensorData[protocol]["SEN66 PM10"]        = currentSEN66_PM10.toFixed(1) + " µg/m³"; sen66Matched = true; }
-    //   if (sen66HumMatch)   {
-    //     currentSEN66_Hum  = parseFloat(sen66HumMatch[1]);
-    //     currentHumidity   = currentSEN66_Hum;   // ← drive shared humidity wave card
-    //     sensorData[protocol]["SEN66 Humidity"]    = currentSEN66_Hum.toFixed(1)  + " %";
-    //     sen66Matched = true;
-    //   }
-    //   if (sen66TempMatch)  {
-    //     currentSEN66_Temp = parseFloat(sen66TempMatch[1]);
-    //     currentTemperature = currentSEN66_Temp;  // ← drive shared thermometer card
-    //     sensorData[protocol]["SEN66 Temperature"] = currentSEN66_Temp.toFixed(2) + " °C";
-    //     sen66Matched = true;
-    //   }
-    //   if (vocMatch)        { currentSEN66_VOC  = parseFloat(vocMatch[1]);        sensorData[protocol]["SEN66 VOC"]         = currentSEN66_VOC.toString();              sen66Matched = true; }
-    //   if (noxMatch)        { currentSEN66_NOx  = parseFloat(noxMatch[1]);        sensorData[protocol]["SEN66 NOx"]         = currentSEN66_NOx.toString();              sen66Matched = true; }
-    //   if (co2Match)        { currentSEN66_CO2  = parseFloat(co2Match[1]);        sensorData[protocol]["SEN66 CO2"]         = currentSEN66_CO2.toFixed(0)  + " ppm";   sen66Matched = true; }
+      // Mark STS30 as present in dropdown
+      sensorStatus[protocol]["STS30"] = true;
     
- 
-    //   if (sen66Matched) {
-    //     sensorStatus[protocol]["SEN66"] = true;
-    //     if (!selectedSensor && !autoSelected) { selectedSensor = "SEN66"; autoSelected = true; const dd = document.getElementById("sensor-dropdown"); if (dd) dd.value = "SEN66"; }
-    //     dataParsed = true;
-    //     if (selectedSensor === "SEN66") updateSensorUI();
-    //   }
-    // }
-    // GPIO Blinky and Buzzer parsing - BULLETPROOF VERSION
-    if (protocol === "GPIO") {
-      // Match ANY line containing "LED" followed by "ON" or "OFF" anywhere after it
-      // Works for: "LED ON (delay = 1000 ms)", "LED OFF", "LED: ON", etc.
-      const blinkyMatch = line.match(/LED\s*(?:[:=]?\s*)?(ON|OFF|1|0)/i);
-      if (blinkyMatch) {
-        sensorStatus[protocol]["Blinky"] = true;
-        const captured = blinkyMatch[1].toUpperCase();
-        const state = (captured === "ON" || captured === "1") ? "ON" : "OFF";
-       
-        console.log("Blinky state updated:", state); // ← Check console!
-        sensorData[protocol]["Blinky State"] = state;
-        // Auto-select Blinky if nothing is selected
-        if (!selectedSensor || selectedSensor === "" || selectedSensor === "default") {
-          selectedSensor = "Blinky";
-          const dropdown = document.getElementById("sensor-dropdown");
-          if (dropdown) dropdown.value = "Blinky";
+      // Auto-select STS30 if no sensor currently selected
+      if (!selectedSensor && !autoSelected) {
+        selectedSensor = "STS30";
+        autoSelected = true;
+        const sensorDropdown = document.getElementById("sensor-dropdown");
+        if (sensorDropdown) {
+          sensorDropdown.value = "STS30";
         }
-        updateSensorUI(); // Immediate visual update
       }
-      // Buzzer parsing remains unchanged (unless you want to rename it too)
-      const buzzerMatch = line.match(/Buzzer[\s:]*\s*(ACTIVE|INACTIVE|1|0)/i);
-      if (buzzerMatch) {
-        sensorStatus[protocol]["Buzzer"] = true;
-        const captured = buzzerMatch[1].toUpperCase();
-        const state = (captured === "ACTIVE" || captured === "1") ? "Active" : "Inactive";
-       
-        sensorData[protocol]["Buzzer State"] = state;
-        if (!selectedSensor || selectedSensor === "" || selectedSensor === "default") {
-          selectedSensor = "Buzzer";
-          const dropdown = document.getElementById("sensor-dropdown");
-          if (dropdown) dropdown.value = "Buzzer";
-        }
+    
+      // Store parsed data for "Sensor Data" box
+      sensorData[protocol]["STS30 Temperature"] = temp.toFixed(2);
+    
+      // Update global temperature for thermometer animation
+      currentTemperature = temp;
+    
+      console.log('STS30 Data parsed:', { temp: currentTemperature });
+    
+      // Force UI update when STS30 is selected
+      if (selectedSensor === "STS30") {
         updateSensorUI();
       }
     }
+    
 
-    // Relay parsing - matches common formats like "Relay ON", "Relay: OFF", "Relay state: 1"
-      const relayMatch = line.match(/Relay[\s:]*\s*(ON|OFF|1|0)/i);
-      if (relayMatch && protocol === "GPIO") {
-        sensorStatus[protocol]["Relay"] = true;
-        const captured = relayMatch[1].toUpperCase();
-        const state = (captured === "ON" || captured === "1") ? "ON" : "OFF";
+    try {
+      // BME680 - matches your current log format
+      const bme680Match = line.match(/Temperature:\s*([+-]?\d+\.?\d*)\s*[°]?C\s*,\s*Humidity:\s*(\d+\.?\d*)\s*%RH\s*,\s*Pressure:\s*(\d+\.?\d*)\s*kPa/i);
       
-        sensorData[protocol]["Relay State"] = state;
-        currentRelayState = state;
+      if (bme680Match && protocol === "I2C") {
+          const temp      = parseFloat(bme680Match[1]);
+          const humidity  = parseFloat(bme680Match[2]);
+          const pressure  = parseFloat(bme680Match[3]);
       
-        // Auto-select if nothing chosen
-        if (!selectedSensor && !autoSelected) {
-          selectedSensor = "Relay";
-          autoSelected = true;
-          const sensorDropdown = document.getElementById("sensor-dropdown");
-          if (sensorDropdown) sensorDropdown.value = "Relay";
-        }
+          // Mark BME680 as detected/present
+          sensorStatus[protocol]["BME680"] = true;
       
-        if (selectedSensor === "Relay") {
-          updateSensorUI();
-        }
+          // Auto-select BME680 if nothing is currently selected
+          if (!selectedSensor && !autoSelected) {
+              selectedSensor = "BME680";
+              autoSelected = true;
+              const dropdown = document.getElementById("sensor-dropdown");
+              if (dropdown) {
+                  dropdown.value = "BME680";
+              }
+          }
+        
+          // Store values for display / history
+          sensorData[protocol]["BME680 Temperature"] = temp.toFixed(2);
+          sensorData[protocol]["BME680 Humidity"]    = humidity.toFixed(2);
+          sensorData[protocol]["BME680 Pressure"]    = pressure.toFixed(2);
+        
+          // Update globals for main sensor card / animations
+          currentTemperature = temp;
+          currentHumidity    = humidity;
+          currentPressure    = pressure * 10;          // ← most important fix: kPa → hPa
+        
+          console.log('BME680 Data parsed:', {
+              temperature: temp,
+              humidity:    humidity,
+              pressure:    pressure
+          });
+        
+          // Force UI refresh if BME680 is the active/selected sensor
+          if (selectedSensor === "BME680") {
+              updateSensorUI();
+          }
       }
+
+      // ── SEN66 ──
+    if (protocol === "I2C") {
+      let sen66Matched = false;
+      const pm1Match  = line.match(/PM1\.0\s*:\s*([\d.]+)/i);
+      const pm25Match = line.match(/PM2\.5\s*:\s*([\d.]+)/i);
+      const pm4Match  = line.match(/PM4\s*:\s*([\d.]+)/i);
+      const pm10Match = line.match(/PM10\s*:\s*([\d.]+)/i);
+      const sen66HumMatch  = line.match(/Relative\s*Humidity\s*:\s*([\d.]+)/i);
+      const sen66TempMatch = line.match(/Temperature\s*:\s*([\d.]+)\s*°?C/i);
+      const vocMatch  = line.match(/VOC\s*:\s*([\d.]+)/i);
+      const noxMatch  = line.match(/NOx\s*:\s*([\d.]+)/i);
+      const co2Match  = line.match(/CO2\s*:\s*([\d.]+)/i);
+      const upMatch   = line.match(/UPtime\s*:\s*([\d.]+)/i);
+ 
+      if (pm1Match)        { currentSEN66_PM1  = parseFloat(pm1Match[1]);        sensorData[protocol]["SEN66 PM1.0"]       = currentSEN66_PM1.toFixed(1)  + " µg/m³"; sen66Matched = true; }
+      if (pm25Match)       { currentSEN66_PM25 = parseFloat(pm25Match[1]);       sensorData[protocol]["SEN66 PM2.5"]       = currentSEN66_PM25.toFixed(1) + " µg/m³"; sen66Matched = true; }
+      if (pm4Match)        { currentSEN66_PM4  = parseFloat(pm4Match[1]);        sensorData[protocol]["SEN66 PM4"]         = currentSEN66_PM4.toFixed(1)  + " µg/m³"; sen66Matched = true; }
+      if (pm10Match)       { currentSEN66_PM10 = parseFloat(pm10Match[1]);       sensorData[protocol]["SEN66 PM10"]        = currentSEN66_PM10.toFixed(1) + " µg/m³"; sen66Matched = true; }
+      if (sen66HumMatch)   {
+        currentSEN66_Hum  = parseFloat(sen66HumMatch[1]);
+        currentHumidity   = currentSEN66_Hum;   // ← drive shared humidity wave card
+        sensorData[protocol]["SEN66 Humidity"]    = currentSEN66_Hum.toFixed(1)  + " %";
+        sen66Matched = true;
+      }
+      if (sen66TempMatch)  {
+        currentSEN66_Temp = parseFloat(sen66TempMatch[1]);
+        currentTemperature = currentSEN66_Temp;  // ← drive shared thermometer card
+        sensorData[protocol]["SEN66 Temperature"] = currentSEN66_Temp.toFixed(2) + " °C";
+        sen66Matched = true;
+      }
+      if (vocMatch)        { currentSEN66_VOC  = parseFloat(vocMatch[1]);        sensorData[protocol]["SEN66 VOC"]         = currentSEN66_VOC.toString();              sen66Matched = true; }
+      if (noxMatch)        { currentSEN66_NOx  = parseFloat(noxMatch[1]);        sensorData[protocol]["SEN66 NOx"]         = currentSEN66_NOx.toString();              sen66Matched = true; }
+      if (co2Match)        { currentSEN66_CO2  = parseFloat(co2Match[1]);        sensorData[protocol]["SEN66 CO2"]         = currentSEN66_CO2.toFixed(0)  + " ppm";   sen66Matched = true; }
+    
+ 
+      if (sen66Matched) {
+        sensorStatus[protocol]["SEN66"] = true;
+        let dataParsed = true;
+        if (!selectedSensor && !autoSelected) { selectedSensor = "SEN66"; autoSelected = true; const dd = document.getElementById("sensor-dropdown"); if (dd) dd.value = "SEN66"; }
+        dataParsed = true;
+        if (selectedSensor === "SEN66") updateSensorUI();
+      }
+    }
+
+
+  // GPIO Blinky and Buzzer parsing - BULLETPROOF VERSION
+  if (protocol === "GPIO") {
+    // Match ANY line containing "LED" followed by "ON" or "OFF" anywhere after it
+    // Works for: "LED ON (delay = 1000 ms)", "LED OFF", "LED: ON", etc.
+    const blinkyMatch = line.match(/LED\s*(?:[:=]?\s*)?(ON|OFF|1|0)/i);
+    if (blinkyMatch) {
+      sensorStatus[protocol]["Blinky"] = true;
+      const captured = blinkyMatch[1].toUpperCase();
+      const state = (captured === "ON" || captured === "1") ? "ON" : "OFF";
+     
+      console.log("Blinky state updated:", state); // ← Check console!
+      sensorData[protocol]["Blinky State"] = state;
+      // Auto-select Blinky if nothing is selected
+      if (!selectedSensor || selectedSensor === "" || selectedSensor === "default") {
+        selectedSensor = "Blinky";
+        const dropdown = document.getElementById("sensor-dropdown");
+        if (dropdown) dropdown.value = "Blinky";
+      }
+      updateSensorUI(); // Immediate visual update
+    }
+    
+    // Buzzer parsing remains unchanged (unless you want to rename it too)
+    const buzzerMatch = line.match(/Buzzer[\s:]*\s*(ACTIVE|INACTIVE|1|0)/i);
+    if (buzzerMatch) {
+      sensorStatus[protocol]["Buzzer"] = true;
+      const captured = buzzerMatch[1].toUpperCase();
+      const state = (captured === "ACTIVE" || captured === "1") ? "Active" : "Inactive";
+     
+      sensorData[protocol]["Buzzer State"] = state;
+      if (!selectedSensor || selectedSensor === "" || selectedSensor === "default") {
+        selectedSensor = "Buzzer";
+        const dropdown = document.getElementById("sensor-dropdown");
+        if (dropdown) dropdown.value = "Buzzer";
+      }
+      updateSensorUI();
+    }
+  }
+  // Relay parsing - matches common formats like "Relay ON", "Relay: OFF", "Relay state: 1"
+    const relayMatch = line.match(/Relay[\s:]*\s*(ON|OFF|1|0)/i);
+    if (relayMatch && protocol === "GPIO") {
+      sensorStatus[protocol]["Relay"] = true;
+      const captured = relayMatch[1].toUpperCase();
+      const state = (captured === "ON" || captured === "1") ? "ON" : "OFF";
+    
+      sensorData[protocol]["Relay State"] = state;
+      currentRelayState = state;
+    
+      // Auto-select if nothing chosen
+      if (!selectedSensor && !autoSelected) {
+        selectedSensor = "Relay";
+        autoSelected = true;
+        const sensorDropdown = document.getElementById("sensor-dropdown");
+        if (sensorDropdown) sensorDropdown.value = "Relay";
+      }
+    
+      if (selectedSensor === "Relay") {
+        updateSensorUI();
+      }
+    }
 
       // IR Sensor parsing - matches "IR Sensor: Infrared = 1" or "IR Sensor: Infrared = 0"
 const irMatch = line.match(/IR Sensor:\s*Infrared\s*=\s*(1|0)/i);
@@ -2716,87 +2748,7 @@ if (stts751Match && protocol === "I2C") {
     }
 }
 
-    // === STS30 PARSING BLOCK (ADD THIS INSIDE parseSensorData function, after other specific parsings like SHT40, BME680, etc.) ===
 
-    // STS30 format example: Temperature: 23.21 °C   (or similar variations)
-    const sts30Match = line.match(/Temp:\s*([\d.]+)\s*°?C/i);
-    if (sts30Match && protocol === "I2C") {
-      const temp = parseFloat(sts30Match[1]);
-    
-      // Mark STS30 as present in dropdown
-      sensorStatus[protocol]["STS30"] = true;
-    
-      // Auto-select STS30 if no sensor currently selected
-      if (!selectedSensor && !autoSelected) {
-        selectedSensor = "STS30";
-        autoSelected = true;
-        const sensorDropdown = document.getElementById("sensor-dropdown");
-        if (sensorDropdown) {
-          sensorDropdown.value = "STS30";
-        }
-      }
-    
-      // Store parsed data for "Sensor Data" box
-      sensorData[protocol]["STS30 Temperature"] = temp.toFixed(2);
-    
-      // Update global temperature for thermometer animation
-      currentTemperature = temp;
-    
-      console.log('STS30 Data parsed:', { temp: currentTemperature });
-    
-      // Force UI update when STS30 is selected
-      if (selectedSensor === "STS30") {
-        updateSensorUI();
-      }
-    }
-    
-
-    try {
-      // BME680 - matches your current log format
-      const bme680Match = line.match(/Temperature:\s*([+-]?\d+\.?\d*)\s*[°]?C\s*,\s*Humidity:\s*(\d+\.?\d*)\s*%RH\s*,\s*Pressure:\s*(\d+\.?\d*)\s*kPa/i);
-      
-      if (bme680Match && protocol === "I2C") {
-          const temp      = parseFloat(bme680Match[1]);
-          const humidity  = parseFloat(bme680Match[2]);
-          const pressure  = parseFloat(bme680Match[3]);
-      
-          // Mark BME680 as detected/present
-          sensorStatus[protocol]["BME680"] = true;
-      
-          // Auto-select BME680 if nothing is currently selected
-          if (!selectedSensor && !autoSelected) {
-              selectedSensor = "BME680";
-              autoSelected = true;
-              const dropdown = document.getElementById("sensor-dropdown");
-              if (dropdown) {
-                  dropdown.value = "BME680";
-              }
-          }
-        
-          // Store values for display / history
-          sensorData[protocol]["BME680 Temperature"] = temp.toFixed(2);
-          sensorData[protocol]["BME680 Humidity"]    = humidity.toFixed(2);
-          sensorData[protocol]["BME680 Pressure"]    = pressure.toFixed(2);
-        
-          // Update globals for main sensor card / animations
-          currentTemperature = temp;
-          currentHumidity    = humidity;
-          currentPressure    = pressure * 10;          // ← most important fix: kPa → hPa
-        
-          console.log('BME680 Data parsed:', {
-              temperature: temp,
-              humidity:    humidity,
-              pressure:    pressure
-          });
-        
-          // Force UI refresh if BME680 is the active/selected sensor
-          if (selectedSensor === "BME680") {
-              updateSensorUI();
-          }
-        
-          // Optional: set flag if you use dataFound pattern in some places
-          // dataFound = true;
-      }
       // === FIXED & IMPROVED WEATHER SHIELD PARSING (MOVED UP) ===
       let wsTemp = null, wsHum = null, wsPress = null, wsLux = null;
       let wsDataFound = false;

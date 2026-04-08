@@ -406,6 +406,18 @@ body:not(.dark-mode) #light-card h4 {
   font-weight: 600;
 }
 
+.sensor-scroll-container {
+  max-height: 180px;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.sensor-data-item {
+  margin-bottom: 6px;
+}
+
 /* Sensor Cards */
 .sensor-cards {
   display: flex;
