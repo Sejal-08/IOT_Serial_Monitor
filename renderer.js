@@ -2301,6 +2301,31 @@ function parseSensorData(data) {
         if (selectedSensor === "BME680") updateSensorUI();
         dataParsed = true;
       }
+      
+      // SHT40
+      const SHTMatch = line.match(/SHT40:\s*Temperature:\s*([\d.]+)°?C\s*,\s*Humidity:\s*([\d.]+)%/i);
+      if (SHTMatch && protocol === "I2C") {
+        const [, tempStr, humStr] = SHTMatch;
+        const temp = parseFloat(tempStr);
+        const humidity = parseFloat(humStr);
+        if (!isNaN(temp) && !isNaN(humidity)) {
+          sensorStatus[protocol]["SHT40"] = true;
+          if (!selectedSensor && !autoSelected) {
+            selectedSensor = "SHT40";
+            autoSelected = true;
+            const dropdown = document.getElementById("sensor-dropdown");
+            if (dropdown) dropdown.value = "SHT40";
+          }
+          sensorData[protocol] = sensorData[protocol] || {};
+          sensorData[protocol]["SHT40 Temperature"] = temp.toFixed(2);
+          sensorData[protocol]["SHT40 Humidity"] = humidity.toFixed(2);
+          currentTemperature = temp;
+          currentHumidity = humidity;
+          console.log('SHT40 parsed:', { temp, humidity });
+          if (selectedSensor === "SHT40") updateSensorUI();
+          dataParsed = true;
+        }
+      }
 
       // SEN66
       if (protocol === "I2C") {
@@ -2511,31 +2536,6 @@ function parseSensorData(data) {
         currentUV = uv;
         if (selectedSensor === "LTR390") updateSensorUI();
         dataParsed = true;
-      }
-
-      // SHT40
-      const SHTMatch = line.match(/SHT40:\s*Temperature:\s*([\d.]+)°?C\s*,\s*Humidity:\s*([\d.]+)%/i);
-      if (SHTMatch && protocol === "I2C") {
-        const [, tempStr, humStr] = SHTMatch;
-        const temp = parseFloat(tempStr);
-        const humidity = parseFloat(humStr);
-        if (!isNaN(temp) && !isNaN(humidity)) {
-          sensorStatus[protocol]["SHT40"] = true;
-          if (!selectedSensor && !autoSelected) {
-            selectedSensor = "SHT40";
-            autoSelected = true;
-            const dropdown = document.getElementById("sensor-dropdown");
-            if (dropdown) dropdown.value = "SHT40";
-          }
-          sensorData[protocol] = sensorData[protocol] || {};
-          sensorData[protocol]["SHT40 Temperature"] = temp.toFixed(2);
-          sensorData[protocol]["SHT40 Humidity"] = humidity.toFixed(2);
-          currentTemperature = temp;
-          currentHumidity = humidity;
-          console.log('SHT40 parsed:', { temp, humidity });
-          if (selectedSensor === "SHT40") updateSensorUI();
-          dataParsed = true;
-        }
       }
 
       // LIS3DH
