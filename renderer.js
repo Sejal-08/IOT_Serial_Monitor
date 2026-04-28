@@ -1024,6 +1024,7 @@ if (protocol === "ADC" && selectedSensor === "Rain Gauge") {
     }
   }
 }
+
 // ================================================
 // VCNL4040 – Final, bullet-proof update block
 // ================================================
@@ -2022,8 +2023,6 @@ function _updateSEN66Card() {
     if (el) el.textContent = text;
   }
 
- 
-  // ── Pulse card on update ──
   function pulseCard(id) {
     // const el = document.getElementById(id);
     // if (!el) return;
@@ -2255,504 +2254,363 @@ function parseSensorData(data) {
   console.log('Raw data:', data);
   console.log('Selected sensor before parsing:', selectedSensor);
 
-
   const lines = data.split("\n").map(line => line.trim()).filter(line => line);
   let autoSelected = false;
-  lines.forEach(line => {
+  let dataParsed = false;  // ✅ CRITICAL FIX: Declared OUTSIDE the forEach loop
 
-  
-    // STS30 format example: Temperature: 23.21 °C   (or similar variations)
+  lines.forEach(line => {
+    // STS30 format
     const sts30Match = line.match(/Temp:\s*([\d.]+)\s*°?C/i);
     if (sts30Match && protocol === "I2C") {
       const temp = parseFloat(sts30Match[1]);
-    
-      // Mark STS30 as present in dropdown
       sensorStatus[protocol]["STS30"] = true;
-    
-      // Auto-select STS30 if no sensor currently selected
       if (!selectedSensor && !autoSelected) {
         selectedSensor = "STS30";
         autoSelected = true;
         const sensorDropdown = document.getElementById("sensor-dropdown");
-        if (sensorDropdown) {
-          sensorDropdown.value = "STS30";
-        }
+        if (sensorDropdown) sensorDropdown.value = "STS30";
       }
-    
-      // Store parsed data for "Sensor Data" box
       sensorData[protocol]["STS30 Temperature"] = temp.toFixed(2);
-    
-      // Update global temperature for thermometer animation
       currentTemperature = temp;
-    
-      console.log('STS30 Data parsed:', { temp: currentTemperature });
-    
-      // Force UI update when STS30 is selected
-      if (selectedSensor === "STS30") {
-        updateSensorUI();
-      }
+      console.log('STS30 Data parsed:', { temp });
+      if (selectedSensor === "STS30") updateSensorUI();
+      dataParsed = true;
     }
-    
 
     try {
-      // BME680 - matches your current log format
+      // BME680
       const bme680Match = line.match(/Temperature:\s*([+-]?\d+\.?\d*)\s*[°]?C\s*,\s*Humidity:\s*(\d+\.?\d*)\s*%RH\s*,\s*Pressure:\s*(\d+\.?\d*)\s*kPa/i);
-      
       if (bme680Match && protocol === "I2C") {
-          const temp      = parseFloat(bme680Match[1]);
-          const humidity  = parseFloat(bme680Match[2]);
-          const pressure  = parseFloat(bme680Match[3]);
-      
-          // Mark BME680 as detected/present
-          sensorStatus[protocol]["BME680"] = true;
-      
-          // Auto-select BME680 if nothing is currently selected
-          if (!selectedSensor && !autoSelected) {
-              selectedSensor = "BME680";
-              autoSelected = true;
-              const dropdown = document.getElementById("sensor-dropdown");
-              if (dropdown) {
-                  dropdown.value = "BME680";
-              }
-          }
-        
-          // Store values for display / history
-          sensorData[protocol]["BME680 Temperature"] = temp.toFixed(2);
-          sensorData[protocol]["BME680 Humidity"]    = humidity.toFixed(2);
-          sensorData[protocol]["BME680 Pressure"]    = pressure.toFixed(2);
-        
-          // Update globals for main sensor card / animations
-          currentTemperature = temp;
-          currentHumidity    = humidity;
-          currentPressure    = pressure * 10;          // ← most important fix: kPa → hPa
-        
-          console.log('BME680 Data parsed:', {
-              temperature: temp,
-              humidity:    humidity,
-              pressure:    pressure
-          });
-        
-          // Force UI refresh if BME680 is the active/selected sensor
-          if (selectedSensor === "BME680") {
-              updateSensorUI();
-          }
-      }
-
-      // ── SEN66 ──
-    if (protocol === "I2C") {
-      let sen66Matched = false;
-      const pm1Match  = line.match(/PM1\.0\s*:\s*([\d.]+)/i);
-      const pm25Match = line.match(/PM2\.5\s*:\s*([\d.]+)/i);
-      const pm4Match  = line.match(/PM4\s*:\s*([\d.]+)/i);
-      const pm10Match = line.match(/PM10\s*:\s*([\d.]+)/i);
-      const sen66HumMatch  = line.match(/Relative\s*Humidity\s*:\s*([\d.]+)/i);
-      const sen66TempMatch = line.match(/Temperature\s*:\s*([\d.]+)\s*°?C/i);
-      const vocMatch  = line.match(/VOC\s*:\s*([\d.]+)/i);
-      const noxMatch  = line.match(/NOx\s*:\s*([\d.]+)/i);
-      const co2Match  = line.match(/CO2\s*:\s*([\d.]+)/i);
-      const upMatch   = line.match(/UPtime\s*:\s*([\d.]+)/i);
- 
-      if (pm1Match)        { currentSEN66_PM1  = parseFloat(pm1Match[1]);        sensorData[protocol]["SEN66 PM1.0"]       = currentSEN66_PM1.toFixed(1)  + " µg/m³"; sen66Matched = true; }
-      if (pm25Match)       { currentSEN66_PM25 = parseFloat(pm25Match[1]);       sensorData[protocol]["SEN66 PM2.5"]       = currentSEN66_PM25.toFixed(1) + " µg/m³"; sen66Matched = true; }
-      if (pm4Match)        { currentSEN66_PM4  = parseFloat(pm4Match[1]);        sensorData[protocol]["SEN66 PM4"]         = currentSEN66_PM4.toFixed(1)  + " µg/m³"; sen66Matched = true; }
-      if (pm10Match)       { currentSEN66_PM10 = parseFloat(pm10Match[1]);       sensorData[protocol]["SEN66 PM10"]        = currentSEN66_PM10.toFixed(1) + " µg/m³"; sen66Matched = true; }
-      if (sen66HumMatch)   {
-        currentSEN66_Hum  = parseFloat(sen66HumMatch[1]);
-        currentHumidity   = currentSEN66_Hum;   // ← drive shared humidity wave card
-        sensorData[protocol]["SEN66 Humidity"]    = currentSEN66_Hum.toFixed(1)  + " %";
-        sen66Matched = true;
-      }
-      if (sen66TempMatch)  {
-        currentSEN66_Temp = parseFloat(sen66TempMatch[1]);
-        currentTemperature = currentSEN66_Temp;  // ← drive shared thermometer card
-        sensorData[protocol]["SEN66 Temperature"] = currentSEN66_Temp.toFixed(2) + " °C";
-        sen66Matched = true;
-      }
-      if (vocMatch)        { currentSEN66_VOC  = parseFloat(vocMatch[1]);        sensorData[protocol]["SEN66 VOC"]         = currentSEN66_VOC.toString();              sen66Matched = true; }
-      if (noxMatch)        { currentSEN66_NOx  = parseFloat(noxMatch[1]);        sensorData[protocol]["SEN66 NOx"]         = currentSEN66_NOx.toString();              sen66Matched = true; }
-      if (co2Match)        { currentSEN66_CO2  = parseFloat(co2Match[1]);        sensorData[protocol]["SEN66 CO2"]         = currentSEN66_CO2.toFixed(0)  + " ppm";   sen66Matched = true; }
-    
- 
-      if (sen66Matched) {
-        sensorStatus[protocol]["SEN66"] = true;
-        let dataParsed = true;
-        if (!selectedSensor && !autoSelected) { selectedSensor = "SEN66"; autoSelected = true; const dd = document.getElementById("sensor-dropdown"); if (dd) dd.value = "SEN66"; }
+        const temp = parseFloat(bme680Match[1]);
+        const humidity = parseFloat(bme680Match[2]);
+        const pressure = parseFloat(bme680Match[3]);
+        sensorStatus[protocol]["BME680"] = true;
+        if (!selectedSensor && !autoSelected) {
+          selectedSensor = "BME680";
+          autoSelected = true;
+          const dropdown = document.getElementById("sensor-dropdown");
+          if (dropdown) dropdown.value = "BME680";
+        }
+        sensorData[protocol]["BME680 Temperature"] = temp.toFixed(2);
+        sensorData[protocol]["BME680 Humidity"] = humidity.toFixed(2);
+        sensorData[protocol]["BME680 Pressure"] = pressure.toFixed(2);
+        currentTemperature = temp;
+        currentHumidity = humidity;
+        currentPressure = pressure * 10;
+        console.log('BME680 parsed:', { temp, humidity, pressure });
+        if (selectedSensor === "BME680") updateSensorUI();
         dataParsed = true;
-        if (selectedSensor === "SEN66") updateSensorUI();
       }
-    }
 
+      // SEN66
+      if (protocol === "I2C") {
+        let sen66Matched = false;
+        const pm1Match = line.match(/PM1\.0\s*:\s*([\d.]+)/i);
+        const pm25Match = line.match(/PM2\.5\s*:\s*([\d.]+)/i);
+        const pm4Match = line.match(/PM4\s*:\s*([\d.]+)/i);
+        const pm10Match = line.match(/PM10\s*:\s*([\d.]+)/i);
+        const sen66HumMatch = line.match(/Relative\s*Humidity\s*:\s*([\d.]+)/i);
+        const sen66TempMatch = line.match(/Temperature\s*:\s*([\d.]+)\s*°?C/i);
+        const vocMatch = line.match(/VOC\s*:\s*([\d.]+)/i);
+        const noxMatch = line.match(/NOx\s*:\s*([\d.]+)/i);
+        const co2Match = line.match(/CO2\s*:\s*([\d.]+)/i);
+        const upMatch = line.match(/UPtime\s*:\s*([\d.]+)/i);
 
-  // GPIO Blinky and Buzzer parsing - BULLETPROOF VERSION
-  if (protocol === "GPIO") {
-    // Match ANY line containing "LED" followed by "ON" or "OFF" anywhere after it
-    // Works for: "LED ON (delay = 1000 ms)", "LED OFF", "LED: ON", etc.
-    const blinkyMatch = line.match(/LED\s*(?:[:=]?\s*)?(ON|OFF|1|0)/i);
-    if (blinkyMatch) {
-      sensorStatus[protocol]["Blinky"] = true;
-      const captured = blinkyMatch[1].toUpperCase();
-      const state = (captured === "ON" || captured === "1") ? "ON" : "OFF";
-     
-      console.log("Blinky state updated:", state); // ← Check console!
-      sensorData[protocol]["Blinky State"] = state;
-      // Auto-select Blinky if nothing is selected
-      if (!selectedSensor || selectedSensor === "" || selectedSensor === "default") {
-        selectedSensor = "Blinky";
-        const dropdown = document.getElementById("sensor-dropdown");
-        if (dropdown) dropdown.value = "Blinky";
+        if (pm1Match) { currentSEN66_PM1 = parseFloat(pm1Match[1]); sensorData[protocol]["SEN66 PM1.0"] = currentSEN66_PM1.toFixed(1) + " µg/m³"; sen66Matched = true; }
+        if (pm25Match) { currentSEN66_PM25 = parseFloat(pm25Match[1]); sensorData[protocol]["SEN66 PM2.5"] = currentSEN66_PM25.toFixed(1) + " µg/m³"; sen66Matched = true; }
+        if (pm4Match) { currentSEN66_PM4 = parseFloat(pm4Match[1]); sensorData[protocol]["SEN66 PM4"] = currentSEN66_PM4.toFixed(1) + " µg/m³"; sen66Matched = true; }
+        if (pm10Match) { currentSEN66_PM10 = parseFloat(pm10Match[1]); sensorData[protocol]["SEN66 PM10"] = currentSEN66_PM10.toFixed(1) + " µg/m³"; sen66Matched = true; }
+        if (sen66HumMatch) {
+          currentSEN66_Hum = parseFloat(sen66HumMatch[1]);
+          currentHumidity = currentSEN66_Hum;
+          sensorData[protocol]["SEN66 Humidity"] = currentSEN66_Hum.toFixed(1) + " %";
+          sen66Matched = true;
+        }
+        if (sen66TempMatch) {
+          currentSEN66_Temp = parseFloat(sen66TempMatch[1]);
+          currentTemperature = currentSEN66_Temp;
+          sensorData[protocol]["SEN66 Temperature"] = currentSEN66_Temp.toFixed(2) + " °C";
+          sen66Matched = true;
+        }
+        if (vocMatch) { currentSEN66_VOC = parseFloat(vocMatch[1]); sensorData[protocol]["SEN66 VOC"] = currentSEN66_VOC.toString(); sen66Matched = true; }
+        if (noxMatch) { currentSEN66_NOx = parseFloat(noxMatch[1]); sensorData[protocol]["SEN66 NOx"] = currentSEN66_NOx.toString(); sen66Matched = true; }
+        if (co2Match) { currentSEN66_CO2 = parseFloat(co2Match[1]); sensorData[protocol]["SEN66 CO2"] = currentSEN66_CO2.toFixed(0) + " ppm"; sen66Matched = true; }
+
+        if (sen66Matched) {
+          sensorStatus[protocol]["SEN66"] = true;
+          if (!selectedSensor && !autoSelected) {
+            selectedSensor = "SEN66";
+            autoSelected = true;
+            const dd = document.getElementById("sensor-dropdown");
+            if (dd) dd.value = "SEN66";
+          }
+          if (selectedSensor === "SEN66") updateSensorUI();
+          dataParsed = true;
+        }
       }
-      updateSensorUI(); // Immediate visual update
-    }
-    
-    // Buzzer parsing remains unchanged (unless you want to rename it too)
-    const buzzerMatch = line.match(/Buzzer[\s:]*\s*(ACTIVE|INACTIVE|1|0)/i);
-    if (buzzerMatch) {
-      sensorStatus[protocol]["Buzzer"] = true;
-      const captured = buzzerMatch[1].toUpperCase();
-      const state = (captured === "ACTIVE" || captured === "1") ? "Active" : "Inactive";
-     
-      sensorData[protocol]["Buzzer State"] = state;
-      if (!selectedSensor || selectedSensor === "" || selectedSensor === "default") {
-        selectedSensor = "Buzzer";
-        const dropdown = document.getElementById("sensor-dropdown");
-        if (dropdown) dropdown.value = "Buzzer";
+
+      // GPIO Blinky
+      if (protocol === "GPIO") {
+        const blinkyMatch = line.match(/LED\s*(?:[:=]?\s*)?(ON|OFF|1|0)/i);
+        if (blinkyMatch) {
+          sensorStatus[protocol]["Blinky"] = true;
+          const captured = blinkyMatch[1].toUpperCase();
+          const state = (captured === "ON" || captured === "1") ? "ON" : "OFF";
+          console.log("Blinky state updated:", state);
+          sensorData[protocol]["Blinky State"] = state;
+          if (!selectedSensor || selectedSensor === "" || selectedSensor === "default") {
+            selectedSensor = "Blinky";
+            const dropdown = document.getElementById("sensor-dropdown");
+            if (dropdown) dropdown.value = "Blinky";
+          }
+          updateSensorUI();
+          dataParsed = true;
+        }
+        
+        const buzzerMatch = line.match(/Buzzer[\s:]*\s*(ACTIVE|INACTIVE|1|0)/i);
+        if (buzzerMatch) {
+          sensorStatus[protocol]["Buzzer"] = true;
+          const captured = buzzerMatch[1].toUpperCase();
+          const state = (captured === "ACTIVE" || captured === "1") ? "Active" : "Inactive";
+          sensorData[protocol]["Buzzer State"] = state;
+          if (!selectedSensor || selectedSensor === "" || selectedSensor === "default") {
+            selectedSensor = "Buzzer";
+            const dropdown = document.getElementById("sensor-dropdown");
+            if (dropdown) dropdown.value = "Buzzer";
+          }
+          updateSensorUI();
+          dataParsed = true;
+        }
       }
-      updateSensorUI();
-    }
-  }
-  // Relay parsing - matches common formats like "Relay ON", "Relay: OFF", "Relay state: 1"
-    const relayMatch = line.match(/Relay[\s:]*\s*(ON|OFF|1|0)/i);
-    if (relayMatch && protocol === "GPIO") {
-      sensorStatus[protocol]["Relay"] = true;
-      const captured = relayMatch[1].toUpperCase();
-      const state = (captured === "ON" || captured === "1") ? "ON" : "OFF";
-    
-      sensorData[protocol]["Relay State"] = state;
-      currentRelayState = state;
-    
-      // Auto-select if nothing chosen
-      if (!selectedSensor && !autoSelected) {
-        selectedSensor = "Relay";
-        autoSelected = true;
-        const sensorDropdown = document.getElementById("sensor-dropdown");
-        if (sensorDropdown) sensorDropdown.value = "Relay";
+
+      // Relay
+      const relayMatch = line.match(/Relay[\s:]*\s*(ON|OFF|1|0)/i);
+      if (relayMatch && protocol === "GPIO") {
+        sensorStatus[protocol]["Relay"] = true;
+        const captured = relayMatch[1].toUpperCase();
+        const state = (captured === "ON" || captured === "1") ? "ON" : "OFF";
+        sensorData[protocol]["Relay State"] = state;
+        currentRelayState = state;
+        if (!selectedSensor && !autoSelected) {
+          selectedSensor = "Relay";
+          autoSelected = true;
+          const sensorDropdown = document.getElementById("sensor-dropdown");
+          if (sensorDropdown) sensorDropdown.value = "Relay";
+        }
+        if (selectedSensor === "Relay") updateSensorUI();
+        dataParsed = true;
       }
-    
-      if (selectedSensor === "Relay") {
+
+      // IR Sensor
+      const irMatch = line.match(/IR Sensor:\s*Infrared\s*=\s*(1|0)/i);
+      if (irMatch && protocol === "Analog") {
+        const value = parseInt(irMatch[1]);
+        currentIR = value;
+        sensorStatus[protocol]["IR Sensor"] = true;
+        sensorData[protocol]["IR Sensor State"] = value === 1 ? "Detected" : "Not Detected";
+        if (!selectedSensor || selectedSensor === "" || selectedSensor === "default") {
+          selectedSensor = "IR Sensor";
+          const dropdown = document.getElementById("sensor-dropdown");
+          if (dropdown) dropdown.value = "IR Sensor";
+        }
         updateSensorUI();
-      }
-    }
-
-      // IR Sensor parsing - matches "IR Sensor: Infrared = 1" or "IR Sensor: Infrared = 0"
-const irMatch = line.match(/IR Sensor:\s*Infrared\s*=\s*(1|0)/i);
-if (irMatch && protocol === "Analog") {
-  const value = parseInt(irMatch[1]);
-  currentIR = value; // 1 = detected, 0 = not detected
-
-  // Mark sensor as present for dropdown
-  sensorStatus[protocol]["IR Sensor"] = true;
-
-  // Store readable state
-  sensorData[protocol]["IR Sensor State"] = value === 1 ? "Detected" : "Not Detected";
-
-  // Auto-select if nothing chosen
-  if (!selectedSensor || selectedSensor === "" || selectedSensor === "default") {
-    selectedSensor = "IR Sensor";
-    const dropdown = document.getElementById("sensor-dropdown");
-    if (dropdown) dropdown.value = "IR Sensor";
-  }
-
-  // Trigger immediate UI update (fires the animation logic you already have)
-  updateSensorUI();
-
-  console.log("IR Sensor parsed:", { value, state: value === 1 ? "Detected" : "Not Detected" });
-  return;
-}
-
-    // Add this block for your current Hall Sensor format
-    const hallOutputMatch = line.match(/Hall Sensor Output:\s*(\d+)/);
-    if (hallOutputMatch) {
-      const value = parseInt(hallOutputMatch[1]);
-      currentMagneticField = value; // This will be 1 or 0
-
-      // Mark as present for dropdown
-      sensorStatus["Analog"]["Hall_Sensor"] = true;
-
-      // Auto-select if nothing chosen
-      if (!selectedSensor) {
-        selectedSensor = "Hall Sensor";
-        document.getElementById("sensor-dropdown").value = "Hall Sensor";
+        console.log("IR Sensor parsed:", { value });
+        dataParsed = true;
       }
 
-      updateSensorUI(); // Trigger animation immediately
-      return;
-    }
+      // Hall Sensor
+      const hallOutputMatch = line.match(/Hall Sensor Output:\s*(\d+)/);
+      if (hallOutputMatch) {
+        const value = parseInt(hallOutputMatch[1]);
+        currentMagneticField = value;
+        sensorStatus["Analog"]["Hall_Sensor"] = true;
+        if (!selectedSensor) {
+          selectedSensor = "Hall Sensor";
+          document.getElementById("sensor-dropdown").value = "Hall Sensor";
+        }
+        updateSensorUI();
+        dataParsed = true;
+      }
 
-      // Check for Wind Sensor data format: Wind Sensor: Direction:45.0,Speed:3.2
+      // Wind Sensor
       const windMatch = line.match(/Wind speed:\s*([\d.]+),\s*Wind direction:\s*([\d.]+)/);
       if (windMatch && protocol === "RS232") {
         const [, speed, direction] = windMatch;
-       
         sensorStatus[protocol]["WindSensor"] = true;
         if (!selectedSensor && !autoSelected) {
           selectedSensor = "Wind Sensor";
           autoSelected = true;
           const sensorDropdown = document.getElementById("sensor-dropdown");
-          if (sensorDropdown) {
-            sensorDropdown.value = "Wind Sensor";
-          }
+          if (sensorDropdown) sensorDropdown.value = "Wind Sensor";
         }
         sensorData[protocol]["Wind Sensor Direction"] = parseFloat(direction).toFixed(1);
         sensorData[protocol]["Wind Sensor Speed"] = parseFloat(speed).toFixed(1);
         currentWindDirection = parseFloat(direction);
         currentWindSpeed = parseFloat(speed);
-        console.log('Wind Sensor Data parsed:', {
-          direction: currentWindDirection,
-          speed: currentWindSpeed
-        });
-        if (selectedSensor === "Wind Sensor") {
-          updateSensorUI();
-        }
+        console.log('Wind Sensor parsed:', { direction, speed });
+        if (selectedSensor === "Wind Sensor") updateSensorUI();
+        dataParsed = true;
       }
-            
-      // VCNL4040 parsing - fixed for "VCNL4040 : Lux=66" format
-      const vcnlMatch = line.match(/VCNL4040\s*:\s*Lux\s*=\s*([\d.]+)/i);
 
+      // VCNL4040
+      const vcnlMatch = line.match(/VCNL4040\s*:\s*Lux\s*=\s*([\d.]+)/i);
       if (vcnlMatch && protocol === "I2C") {
         const luxValue = parseFloat(vcnlMatch[1]);
-
         if (!isNaN(luxValue)) {
-          // Mark sensor as present
           sensorStatus[protocol]["VCNL4040"] = true;
-
-          // Store value for later use
           currentVCNLLux = luxValue;
           sensorData[protocol]["VCNL4040 Lux"] = luxValue.toFixed(1);
-
-          // Auto-select VCNL4040 if nothing is selected yet
           if (!selectedSensor) {
             selectedSensor = "VCNL4040";
             const dropdown = document.getElementById("sensor-dropdown");
-            if (dropdown) {
-              dropdown.value = "VCNL4040";
-            }
+            if (dropdown) dropdown.value = "VCNL4040";
           }
-
-          // Very important: trigger immediate UI update
           updateSensorUI();
-
           console.log(`VCNL4040 parsed: Lux = ${luxValue}`);
+          dataParsed = true;
         }
       }
 
-// ====================================
-// VL53L0X DISTANCE SENSOR - FIXED
-// ====================================
-const tofMatch = line.match(/distance is\s*([\d.]+)\s*(m|cm)/i);
-if (tofMatch && protocol === "I2C") {
-  const [, valueStr, unit] = tofMatch;
-  let distanceCm = parseFloat(valueStr);
-  
-  if (!isNaN(distanceCm)) {
-    // Convert meters to cm if needed
-    if (unit.toLowerCase() === "m") distanceCm *= 100;
-    
-    // Sanity check (0-1200cm range)
-    if (distanceCm >= 0 && distanceCm <= 1200) {
-      // Mark sensor as present
-      sensorStatus.I2C.VL53L0X = true;
-      
-      // Auto-select if nothing selected
-      if (!selectedSensor && !autoSelected) {
-        selectedSensor = "VL53L0X";
-        autoSelected = true;
-        const dd = document.getElementById("sensor-dropdown");
-        if (dd) {
-          dd.value = "VL53L0X";
-          dd.dispatchEvent(new Event("change"));
+      // VL53L0X TOF
+      const tofMatch = line.match(/distance is\s*([\d.]+)\s*(m|cm)/i);
+      if (tofMatch && protocol === "I2C") {
+        const [, valueStr, unit] = tofMatch;
+        let distanceCm = parseFloat(valueStr);
+        if (!isNaN(distanceCm)) {
+          if (unit.toLowerCase() === "m") distanceCm *= 100;
+          if (distanceCm >= 0 && distanceCm <= 1200) {
+            sensorStatus.I2C.VL53L0X = true;
+            if (!selectedSensor && !autoSelected) {
+              selectedSensor = "VL53L0X";
+              autoSelected = true;
+              const dd = document.getElementById("sensor-dropdown");
+              if (dd) dd.value = "VL53L0X";
+            }
+            currentDistance = distanceCm;
+            sensorData.I2C["VL53L0X Distance"] = distanceCm.toFixed(1) + " cm";
+            if (selectedSensor === "VL53L0X") updateTOFAnimation(distanceCm);
+            console.log(`[TOF] Parsed: ${distanceCm.toFixed(1)} cm`);
+            updateSensorConnectionStatus();
+            dataParsed = true;
+          }
         }
       }
-      
-      // Store data
-      currentDistance = distanceCm;
-      sensorData.I2C["VL53L0X Distance"] = distanceCm.toFixed(1) + " cm";
-      
-      // ⚠️ CRITICAL: Animate IMMEDIATELY if this sensor is selected
-      if (selectedSensor === "VL53L0X") {
-        updateTOFAnimation(distanceCm);
-      }
-      
-      dataParsed = true; // Mark that we parsed something
-      
-      console.log(`[TOF] Parsed: ${distanceCm.toFixed(1)} cm`);
 
-       // ⚠️ ADD THIS LINE - Force connection status update
-      updateSensorConnectionStatus();
-    }
-  }
-}
-
-// LTR-390 UV Parsing (fixed variable name)
-const ltr390UVMatch = line.match(/UV\s*(?:Index)?:?\s*([\d.]+)/i);
-if (ltr390UVMatch && protocol === "I2C") {
-    const uv = parseFloat(ltr390UVMatch[1]);
-    
-    sensorStatus[protocol]["LTR390"] = true;
-    
-    if (!selectedSensor && !autoSelected) {
-        selectedSensor = "LTR390";
-        autoSelected = true;
-        const sensorDropdown = document.getElementById("sensor-dropdown");
-        if (sensorDropdown) {
-            sensorDropdown.value = "LTR390";
+      // LTR390 UV
+      const ltr390UVMatch = line.match(/UV\s*(?:Index)?:?\s*([\d.]+)/i);
+      if (ltr390UVMatch && protocol === "I2C") {
+        const uv = parseFloat(ltr390UVMatch[1]);
+        sensorStatus[protocol]["LTR390"] = true;
+        if (!selectedSensor && !autoSelected) {
+          selectedSensor = "LTR390";
+          autoSelected = true;
+          const sensorDropdown = document.getElementById("sensor-dropdown");
+          if (sensorDropdown) sensorDropdown.value = "LTR390";
         }
-    }
-    
-    sensorData[protocol]["LTR390 UV Index"] = uv.toFixed(1);
-    currentUV = uv;  // ← Fixed: set currentUV (matches updateSensorUI check)
-    
-    if (selectedSensor === "LTR390") {
-        updateSensorUI();
-        updateUVCard(uv);
-    }
-    
-    if (uv >= 0) showUVCard();
-}
-
-// ────────────────────────────────────────────────
-// 1. SHT40 / SHT4x parsing  (most specific – has Humidity)
-// ────────────────────────────────────────────────
-const SHTMatch = line.match(/SHT40:\s*Temperature:\s*([\d.]+)°?C\s*,\s*Humidity:\s*([\d.]+)%/i);
-// Also try without the "SHT40:" prefix in case format varies
-// const SHTMatch = line.match(/Temperature:\s*([\d.]+)°?C\s+Humidity:\s*([\d.]+)\s*%RH?/i);
-
-if (SHTMatch && protocol === "I2C") {
-  const [, tempStr, humStr] = SHTMatch;
-  const temp = parseFloat(tempStr);
-  const humidity = parseFloat(humStr);
-
-  if (!isNaN(temp) && !isNaN(humidity)) {
-    sensorStatus[protocol]["SHT40"] = true;
-
-    // Auto-select only if nothing selected yet (or force SHT40 priority)
-    if (!selectedSensor && !autoSelected) {
-      selectedSensor = "SHT40";
-      autoSelected = true;
-      const dropdown = document.getElementById("sensor-dropdown");
-      if (dropdown) dropdown.value = "SHT40";
-      // Optional: trigger UI refresh here if needed
-    }
-
-    // Always store values
-    sensorData[protocol] = sensorData[protocol] || {};
-    sensorData[protocol]["SHT40 Temperature"] = temp.toFixed(2);
-    sensorData[protocol]["SHT40 Humidity"]   = humidity.toFixed(2);
-
-    currentTemperature = temp;
-    currentHumidity    = humidity;
-
-    console.log('SHT40 parsed:', { temp, humidity });
-
-    // Update UI if this is the active sensor
-    if (selectedSensor === "SHT40") {
-      updateSensorUI();
-    }
-  }
-  // Optional: return;  // if you want to skip other parsers once SHT40 matched
-}
-      
-// ────────────────────────────────────────────────
-// LIS3DH parsing – matches format: x 8.73 , y 3.52 , z 2.76  (already in m/s² or g-like)
-// Also handles optional "#123 @ 170 ms: " prefix
-// ────────────────────────────────────────────────
-const lis3dhMatch = line.match(/(?:#?\d+\s*@\s*\d+\s*ms:\s*)?x\s*([\d.-]+)\s*,\s*y\s*([\d.-]+)\s*,\s*z\s*([\d.-]+)/i);
-
-if (lis3dhMatch && protocol === "I2C") {
-  const [, xStr, yStr, zStr] = lis3dhMatch;
-
-  const accelX = parseFloat(xStr);
-  const accelY = parseFloat(yStr);
-  const accelZ = parseFloat(zStr);
-
-  if (!isNaN(accelX) && !isNaN(accelY) && !isNaN(accelZ)) {
-    // Mark sensor as detected
-    sensorStatus[protocol] = sensorStatus[protocol] || {};
-    sensorStatus[protocol]["LIS3DH"] = true;
-
-    // Store values (for display in "Sensor Data" panel)
-    sensorData[protocol] = sensorData[protocol] || {};
-    sensorData[protocol]["LIS3DH X"] = accelX.toFixed(2);
-    sensorData[protocol]["LIS3DH Y"] = accelY.toFixed(2);
-    sensorData[protocol]["LIS3DH Z"] = accelZ.toFixed(2);
-
-    // Update globals used by the ball visualization
-    currentAccelX = accelX;
-    currentAccelY = accelY;
-    currentAccelZ = accelZ;
-
-    console.log('LIS3DH parsed:', { x: accelX, y: accelY, z: accelZ });
-
-    // Auto-select LIS3DH if nothing is selected yet (or give it high priority)
-    if (!selectedSensor && !autoSelected) {
-      selectedSensor = "LIS3DH";
-      autoSelected = true;  // prevent multiple auto-selections in one burst
-      const dropdown = document.getElementById("sensor-dropdown");
-      if (dropdown) {
-        dropdown.value = "LIS3DH";
+        sensorData[protocol]["LTR390 UV Index"] = uv.toFixed(1);
+        currentUV = uv;
+        if (selectedSensor === "LTR390") updateSensorUI();
+        dataParsed = true;
       }
-    }
 
-    // If LIS3DH is the currently selected sensor → refresh UI + ball immediately
-    if (selectedSensor === "LIS3DH") {
-      updateSensorUI();           // updates text values + other UI
-      // If you have a separate ball update function, call it too:
-      // updateAccelBall();       // ← define this if not already inside updateSensorUI
-    }
-  }
-}
-
-// STTS751 Temperature Sensor parsing - EXACT format from your logs
-// Format: "STTS751: Temperature: 21.56 °C | 70.81 °F"
-const stts751Match = line.match(/STTS751\s*:\s*Temperature\s*:\s*([\d.-]+)\s*°?C\s*\|\s*([\d.-]+)\s*°?F/i);
-if (stts751Match && protocol === "I2C") {
-    const tempC = parseFloat(stts751Match[1]);
-    const tempF = parseFloat(stts751Match[2]);
-    
-    // Mark sensor as detected
-    sensorStatus[protocol]["STTS751"] = true;
-    
-    // Auto-select if no sensor chosen yet
-    if (!selectedSensor && !autoSelected) {
-        selectedSensor = "STTS751";
-        autoSelected = true;
-        const dropdown = document.getElementById("sensor-dropdown");
-        if (dropdown) {
-            dropdown.value = "STTS751";
-            dropdown.dispatchEvent(new Event('change'));
+      // SHT40
+      const SHTMatch = line.match(/SHT40:\s*Temperature:\s*([\d.]+)°?C\s*,\s*Humidity:\s*([\d.]+)%/i);
+      if (SHTMatch && protocol === "I2C") {
+        const [, tempStr, humStr] = SHTMatch;
+        const temp = parseFloat(tempStr);
+        const humidity = parseFloat(humStr);
+        if (!isNaN(temp) && !isNaN(humidity)) {
+          sensorStatus[protocol]["SHT40"] = true;
+          if (!selectedSensor && !autoSelected) {
+            selectedSensor = "SHT40";
+            autoSelected = true;
+            const dropdown = document.getElementById("sensor-dropdown");
+            if (dropdown) dropdown.value = "SHT40";
+          }
+          sensorData[protocol] = sensorData[protocol] || {};
+          sensorData[protocol]["SHT40 Temperature"] = temp.toFixed(2);
+          sensorData[protocol]["SHT40 Humidity"] = humidity.toFixed(2);
+          currentTemperature = temp;
+          currentHumidity = humidity;
+          console.log('SHT40 parsed:', { temp, humidity });
+          if (selectedSensor === "SHT40") updateSensorUI();
+          dataParsed = true;
         }
-    }
-    
-    // Store parsed values
-    currentTemperature = tempC;  // For thermometer animation
-    sensorData[protocol]["STTS751 Temperature"] = tempC.toFixed(2) + " °C";
-    sensorData[protocol]["STTS751 Temperature (Fahrenheit)"] = tempF.toFixed(2) + " °F";
-    
-    console.log("STTS751 parsed successfully:", {
-        celsius: tempC + " °C",
-        fahrenheit: tempF + " °F"
-    });
-    
-    // Update UI if this sensor is selected
-    if (selectedSensor === "STTS751") {
-        updateSensorUI();
-    }
-}
+      }
 
+      // LIS3DH
+      const lis3dhMatch = line.match(/(?:#?\d+\s*@\s*\d+\s*ms:\s*)?x\s*([\d.-]+)\s*,\s*y\s*([\d.-]+)\s*,\s*z\s*([\d.-]+)/i);
+      if (lis3dhMatch && protocol === "I2C") {
+        const [, xStr, yStr, zStr] = lis3dhMatch;
+        const accelX = parseFloat(xStr);
+        const accelY = parseFloat(yStr);
+        const accelZ = parseFloat(zStr);
+        if (!isNaN(accelX) && !isNaN(accelY) && !isNaN(accelZ)) {
+          sensorStatus[protocol] = sensorStatus[protocol] || {};
+          sensorStatus[protocol]["LIS3DH"] = true;
+          sensorData[protocol] = sensorData[protocol] || {};
+          sensorData[protocol]["LIS3DH X"] = accelX.toFixed(2);
+          sensorData[protocol]["LIS3DH Y"] = accelY.toFixed(2);
+          sensorData[protocol]["LIS3DH Z"] = accelZ.toFixed(2);
+          currentAccelX = accelX;
+          currentAccelY = accelY;
+          currentAccelZ = accelZ;
+          console.log('LIS3DH parsed:', { x: accelX, y: accelY, z: accelZ });
+          if (!selectedSensor && !autoSelected) {
+            selectedSensor = "LIS3DH";
+            autoSelected = true;
+            const dropdown = document.getElementById("sensor-dropdown");
+            if (dropdown) dropdown.value = "LIS3DH";
+          }
+          if (selectedSensor === "LIS3DH") updateSensorUI();
+          dataParsed = true;
+        }
+      }
 
-      // === FIXED & IMPROVED WEATHER SHIELD PARSING (MOVED UP) ===
+      // STTS751
+      const stts751Match = line.match(/STTS751\s*:\s*Temperature\s*:\s*([\d.-]+)\s*°?C\s*\|\s*([\d.-]+)\s*°?F/i);
+      if (stts751Match && protocol === "I2C") {
+        const tempC = parseFloat(stts751Match[1]);
+        const tempF = parseFloat(stts751Match[2]);
+        sensorStatus[protocol]["STTS751"] = true;
+        if (!selectedSensor && !autoSelected) {
+          selectedSensor = "STTS751";
+          autoSelected = true;
+          const dropdown = document.getElementById("sensor-dropdown");
+          if (dropdown) dropdown.value = "STTS751";
+        }
+        currentTemperature = tempC;
+        sensorData[protocol]["STTS751 Temperature"] = tempC.toFixed(2) + " °C";
+        sensorData[protocol]["STTS751 Temperature (Fahrenheit)"] = tempF.toFixed(2) + " °F";
+        console.log("STTS751 parsed:", { celsius: tempC, fahrenheit: tempF });
+        if (selectedSensor === "STTS751") updateSensorUI();
+        dataParsed = true;
+      }
+
+      // === STANDALONE VEML7700 PARSER ===
+      const vemlMatch = line.match(/VEML7700\s*(?:->|-&gt;)\s*Light:\s*([\d.]+)\s*lux/i);
+      if (vemlMatch && protocol === "I2C") {
+        const lux = parseFloat(vemlMatch[1]);
+        currentLight = lux;
+        if (!sensorStatus[protocol]) sensorStatus[protocol] = {};
+        if (!sensorData[protocol]) sensorData[protocol] = {};
+        sensorStatus[protocol]["VEML7700"] = true;
+        sensorData[protocol]["VEML7700 Lux"] = lux.toFixed(1);
+        if (!selectedSensor && !autoSelected) {
+          selectedSensor = "VEML7700";
+          autoSelected = true;
+          const dropdown = document.getElementById("sensor-dropdown");
+          if (dropdown) dropdown.value = "VEML7700";
+        }
+        if (selectedSensor === "VEML7700") updateSensorUI();
+        console.log('✅ VEML7700 parsed:', { lux });
+        dataParsed = true;
+      }
+
+      // === WEATHER SHIELD PARSING ===
       let wsTemp = null, wsHum = null, wsPress = null, wsLux = null;
       let wsDataFound = false;
-      // Format 1: direct T:.. ,H:.. etc
+      
       const weatherShieldMatch = line.match(/T:([\d.]+),H:([\d.]+),P:([\d.]+),L:([\d.]+)/);
       if (weatherShieldMatch && protocol === "I2C") {
         wsTemp = parseFloat(weatherShieldMatch[1]);
@@ -2761,20 +2619,15 @@ if (stts751Match && protocol === "I2C") {
         wsLux = parseFloat(weatherShieldMatch[4]);
         wsDataFound = true;
       }
-      // Format 2: separate BME and VEML (existing)
-      const bmeSeparateMatch = line.match(/BME680\s*->\s*Temp:\s*([\d.]+)\s*C\s*\|\s*Hum:\s*([\d.]+)\s*%RH\s*\|\s*Pressure:\s*([\d.]+)\s*hPa/i);
+      
+      const bmeSeparateMatch = line.match(/BME680\s*(?:->|-&gt;)\s*Temp:\s*([\d.]+)\s*C\s*\|\s*Hum:\s*([\d.]+)\s*%RH\s*\|\s*Pressure:\s*([\d.]+)\s*hPa/i);
       if (bmeSeparateMatch && protocol === "I2C") {
         wsTemp = parseFloat(bmeSeparateMatch[1]);
         wsHum = parseFloat(bmeSeparateMatch[2]);
         wsPress = parseFloat(bmeSeparateMatch[3]);
         wsDataFound = true;
       }
-      const vemlSeparateMatch = line.match(/VEML7700\s*->\s*Light:\s*([\d.]+)\s*lux/i);
-      if (vemlSeparateMatch && protocol === "I2C") {
-        wsLux = parseFloat(vemlSeparateMatch[1]);
-        wsDataFound = true;
-      }
-      // NEW: Combined format from your screenshot/logs
+      
       const combinedMatch = line.match(/(?:BME680\s*\+\s*VEML7700|BME680.*VEML7700).*Temp:\s*([\d.]+)\s*C\s*\|\s*Hum:\s*([\d.]+)\s*%RH\s*\|\s*Pressure:\s*([\d.]+)\s*hPa\s*\|\s*Light:\s*([\d.]+)\s*lux/i);
       if (combinedMatch && protocol === "I2C") {
         wsTemp = parseFloat(combinedMatch[1]);
@@ -2783,7 +2636,9 @@ if (stts751Match && protocol === "I2C") {
         wsLux = parseFloat(combinedMatch[4]);
         wsDataFound = true;
       }
+      
       if (wsDataFound) {
+        if (!sensorStatus["I2C"]) sensorStatus["I2C"] = {};
         sensorStatus["I2C"]["WeatherShield"] = true;
         if (wsTemp !== null) currentTemperature = wsTemp;
         if (wsHum !== null) currentHumidity = wsHum;
@@ -2793,7 +2648,7 @@ if (stts751Match && protocol === "I2C") {
         if (wsHum !== null) sensorData["I2C"]["Weather Shield Humidity"] = wsHum.toFixed(2);
         if (wsPress !== null) sensorData["I2C"]["Weather Shield Pressure"] = wsPress.toFixed(2);
         if (wsLux !== null) sensorData["I2C"]["Weather Shield Lux"] = wsLux.toFixed(1);
-        console.log('Weather Shield Data parsed:', { temp: currentTemperature, humidity: currentHumidity, pressure: currentPressure, light: currentLight });
+        console.log('Weather Shield parsed:', { temp: wsTemp, hum: wsHum, press: wsPress, lux: wsLux });
         if (!selectedSensor || selectedSensor !== "Weather Shield") {
           selectedSensor = "Weather Shield";
           const dropdown = document.getElementById("sensor-dropdown");
@@ -2801,54 +2656,42 @@ if (stts751Match && protocol === "I2C") {
           autoSelected = true;
         }
         updateSensorUI();
-        // NO return; here - allow other parsing to continue
+        dataParsed = true;
       }
-      // === END FIXED WEATHER SHIELD ===
-      // ... (rest of parsing: VCNL, relay, SHT40, wind, general sensorMatch, rain, GPIO, hall, etc. - unchanged from your code)
+
+      // Rain Gauge
+      const rainMatch = line.match(/^Rain Tip Detected!\s*Rainfall:\s*(\d+)/);
+      if (rainMatch && protocol === "ADC") {
+        if (!sensorStatus[protocol]) sensorStatus[protocol] = {};
+        if (!sensorData[protocol]) sensorData[protocol] = {};
+        sensorStatus[protocol]["Rain Gauge"] = true;
+        const Tips = parseInt(rainMatch[1]);
+        sensorData[protocol]["Rainfall"] = `${(Tips * 0.5).toFixed(2)} mm`;
+        if (!selectedSensor && !autoSelected) {
+          selectedSensor = "Rain Gauge";
+          autoSelected = true;
+          const sensorDropdown = document.getElementById("sensor-dropdown");
+          if (sensorDropdown) sensorDropdown.value = "Rain Gauge";
+        }
+        if (selectedSensor === "Rain Gauge") updateSensorUI();
+        dataParsed = true;
+      }
+
     } catch (error) {
       console.error('Parsing error:', error);
       document.getElementById("output").innerHTML += `<span class="log-error">Parsing error: ${error.message}</span><br>`;
     }
-
-    const rainMatch = line.match(/^Rain Tip Detected!\s*Rainfall:\s*(\d+)/);
-    if (rainMatch && protocol === "ADC") {
-      sensorStatus[protocol]["Rain Gauge"] = true;
-      const Tips = parseInt(rainMatch[1]);
-      sensorData[protocol]["Rainfall"] = `${(Tips * 0.5).toFixed(2)} mm`;
-      
-      if (!selectedSensor && !autoSelected) {
-        selectedSensor = "Rain Gauge";
-        autoSelected = true;
-        const sensorDropdown = document.getElementById("sensor-dropdown");
-        if (sensorDropdown) {
-          sensorDropdown.value = "Rain Gauge";
-        }
-      }
-      if (selectedSensor === "Rain Gauge") {
-        updateSensorUI();
-      }
-    }    
   });
-// Add this flag at the TOP of parseSensorData (after const lines = ...):
-let dataParsed = false;
 
-// In each parsing if-block (including the TOF if (tofMatch) {...}), add this line after setting sensorData or current* variables:
-dataParsed = true;
-
-// Example for TOF block (add inside if (tofMatch) { ... } after sensorData.I2C["VL53L0X Distance"] = ... ):
-dataParsed = true;
-
-// Do the same for EVERY other sensor parsing block (e.g., if (bmeMatch) {... dataParsed = true; }, if (windMatch) {... dataParsed = true; }, etc.). There are ~20 such blocks—add to all to cover everything.
-
-// Then, at the END, replace the if with:
-if (autoSelected || dataParsed) {
-  updateSensorUI();
-}
-if (protocol === "GPIO") {
-  updateSensorUI();
-}
-updateSensorConnectionStatus();
-return data;
+  // Final updates - after all lines are processed
+  if (autoSelected || dataParsed) {
+    updateSensorUI();
+  }
+  if (protocol === "GPIO") {
+    updateSensorUI();
+  }
+  updateSensorConnectionStatus();
+  return data;
 }
 
 function resetSensorData() {
@@ -2878,7 +2721,6 @@ _resetSEN66();
     "RS485": {},
     "SPI": {},
     "Analog": {},
-    
   };
   sensorStatus = {
     "I2C": { SHT40: false, BME680: false, STS30: false, STTS751: false, SEN66: false, LIS3DH: false, VEML7700: false, TLV493D: false, VL53L0X: false, LTR390: false },
@@ -2887,7 +2729,6 @@ _resetSEN66();
     "SPI": {},
     "Analog": { Hall_Sensor: false, IR_Sensor: false },
     "ADC": { "Rain Gauge": false },
-   
   };
   selectedSensor = null;
   updateSensorUI();
