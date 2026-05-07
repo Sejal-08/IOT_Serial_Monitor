@@ -536,7 +536,10 @@ allCards.forEach(card => {
       // nothing to stop
     }
 const sensorCards = document.querySelector('.sensor-cards');
-if (sensorCards) sensorCards.classList.remove('weather-shield-grid');
+if (sensorCards) {
+  sensorCards.classList.remove('weather-shield-grid');
+  sensorCards.classList.remove('sen66-layout');
+}
 // === NOW SHOW CARDS BASED ONLY ON PROTOCOL + SELECTED SENSOR (DATA NOT REQUIRED) ===
 if (protocol && selectedSensor) {
   // Weather Shield special case - show multiple cards
@@ -648,6 +651,9 @@ if (selectedSensor === "Weather Shield") {
 
  // ── SEN66 – show all 7 individual param cards + temp + humidity ──
       if (selectedSensor === "SEN66" && protocol === "I2C") {
+        // Add SEN66 layout class to reorder cards
+        if (sensorCards) sensorCards.classList.add('sen66-layout');
+        
         // Thermometer (same as SHT40)
         if (thermometerContainer) {
           thermometerContainer.style.display = "flex";

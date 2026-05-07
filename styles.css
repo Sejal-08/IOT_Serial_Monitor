@@ -520,20 +520,22 @@ body:not(.dark-mode) #thermometer-container h4,
 /* FIX THE CONTAINER BASE STYLING - UPDATE THIS */
 .thermometer-container {
   flex: 1;
-  max-width: 280px; /* Increased to accommodate larger thermometer */
-  min-width: 250px; /* Increased minimum width */
-  min-height: 500px; /* Increased to fit the taller thermometer */
+  min-width: 160px;
+  max-width: 220px;
+  min-height: 300px;
   padding: 20px;
   border-radius: 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: flex-start;
   background: var(--sensor-bg);
-  border: 1px solid var(--sensor-border);
+  border: 1.5px solid var(--sensor-border);
   box-shadow: var(--sensor-shadow);
-  transition: all 0.4s ease;
+  transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  text-align: center;
 }
 
 /* Thermometer SVG styling - applies to BOTH */
@@ -1227,6 +1229,27 @@ body:not(.dark-mode) .sen66-param-card h4 {
 }
 
 /* ============================================================
+   SEN66 LAYOUT – REORDER TEMP & HUMIDITY TO LAST
+   Temperature and Humidity cards appear after all SEN66 param cards
+   ============================================================ */
+
+.sen66-layout #thermometer-container,
+.sen66-layout #thermometer-f-container,
+.sen66-layout #humidity-card {
+  order: 100;
+}
+
+.sen66-layout #sen66-pm1-card,
+.sen66-layout #sen66-pm25-card,
+.sen66-layout #sen66-pm4-card,
+.sen66-layout #sen66-pm10-card,
+.sen66-layout #sen66-voc-card,
+.sen66-layout #sen66-nox-card,
+.sen66-layout #sen66-co2-card {
+  order: 1;
+}
+
+/* ============================================================
    SEN66 – UNIFORM CARD SIZING
    ONLY activates when SEN66 param cards are visible
    Does NOT affect BME680 / SHT40 / Weather Shield layouts
@@ -1271,7 +1294,7 @@ body:not(.dark-mode) .sen66-param-card h4 {
 .sensor-cards:has(.sen66-param-card[style*="display: flex"]) #thermometer-container svg,
 .sensor-cards:has(.sen66-param-card[style*="display: flex"]) #thermometer-f-container svg {
   width: 100px !important;
-  height: 200px !important;
+  height: 300px !important;
 }
 
 /* Scale down titles - only in SEN66 context */

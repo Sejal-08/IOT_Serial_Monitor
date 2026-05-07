@@ -858,6 +858,58 @@
      Replace ALL existing sen66-pm1-card … sen66-co2-card blocks
      in index.html with the content below.
      ============================================================ -->
+<!-- ── CO2 ── -->
+<div id="sen66-co2-card" class="card-container sen66-param-card" style="display:none;">
+  <h4>CO₂</h4>
+  <div class="sen66-param-value" id="sen66-co2-val">— ppm</div>
+  <div class="sen66-gauge-wrap">
+    <svg class="sen66-gauge-svg" viewBox="0 0 120 120" width="160" height="160">
+      <defs>
+        <linearGradient id="co2CardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#a78bfa"/>
+          <stop offset="100%" stop-color="#6d28d9"/>
+        </linearGradient>
+        <radialGradient id="co2BubbleGrad" cx="40%" cy="35%" r="60%">
+          <stop offset="0%" stop-color="#c4b5fd" stop-opacity="0.8"/>
+          <stop offset="100%" stop-color="#7c3aed" stop-opacity="0.3"/>
+        </radialGradient>
+      </defs>
+      <circle class="sen66-gauge-bg" cx="60" cy="60" r="50"/>
+      <circle class="sen66-gauge-arc" id="sen66-co2-arc" cx="60" cy="60" r="50"
+              stroke="url(#co2CardGrad)" stroke-dasharray="0 314.16"/>
+      <!-- Rising CO2 bubbles -->
+      <g id="sen66-co2-bubbles">
+        <circle cx="35" cy="90" r="4" fill="url(#co2BubbleGrad)" stroke="#a78bfa" stroke-width="1">
+          <animate attributeName="cy" values="90;15;90" dur="3.5s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.9;0.1;0.9" dur="3.5s" repeatCount="indefinite"/>
+          <animate attributeName="r" values="4;2;4" dur="3.5s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="55" cy="95" r="3" fill="url(#co2BubbleGrad)" stroke="#c4b5fd" stroke-width="1">
+          <animate attributeName="cy" values="95;20;95" dur="4.2s" begin="0.8s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.8;0.1;0.8" dur="4.2s" begin="0.8s" repeatCount="indefinite"/>
+          <animate attributeName="r" values="3;1.5;3" dur="4.2s" begin="0.8s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="75" cy="88" r="5" fill="url(#co2BubbleGrad)" stroke="#a78bfa" stroke-width="1">
+          <animate attributeName="cy" values="88;12;88" dur="3s" begin="1.5s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.9;0.1;0.9" dur="3s" begin="1.5s" repeatCount="indefinite"/>
+          <animate attributeName="r" values="5;2;5" dur="3s" begin="1.5s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="45" cy="92" r="2.5" fill="url(#co2BubbleGrad)" stroke="#c4b5fd" stroke-width="0.8">
+          <animate attributeName="cy" values="92;18;92" dur="4.8s" begin="2.3s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.7;0.1;0.7" dur="4.8s" begin="2.3s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="85" cy="93" r="3.5" fill="url(#co2BubbleGrad)" stroke="#a78bfa" stroke-width="1">
+          <animate attributeName="cy" values="93;10;93" dur="3.8s" begin="0.4s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.8;0.1;0.8" dur="3.8s" begin="0.4s" repeatCount="indefinite"/>
+          <animate attributeName="r" values="3.5;1;3.5" dur="3.8s" begin="0.4s" repeatCount="indefinite"/>
+        </circle>
+      </g>
+      <text class="sen66-gauge-center-text" id="sen66-co2-big" x="60" y="54">—</text>
+      <text class="sen66-gauge-unit-text" x="60" y="70">ppm</text>
+    </svg>
+  </div>
+  <div class="sen66-aqi-pill" id="sen66-co2-status">—</div>
+</div>
 
 <!-- ── PM1.0 ── -->
 <div id="sen66-pm1-card" class="card-container sen66-param-card" style="display:none;">
@@ -1096,58 +1148,6 @@
   <div class="sen66-aqi-pill" id="sen66-nox-status">—</div>
 </div>
 
-<!-- ── CO2 ── -->
-<div id="sen66-co2-card" class="card-container sen66-param-card" style="display:none;">
-  <h4>CO₂</h4>
-  <div class="sen66-param-value" id="sen66-co2-val">— ppm</div>
-  <div class="sen66-gauge-wrap">
-    <svg class="sen66-gauge-svg" viewBox="0 0 120 120" width="160" height="160">
-      <defs>
-        <linearGradient id="co2CardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#a78bfa"/>
-          <stop offset="100%" stop-color="#6d28d9"/>
-        </linearGradient>
-        <radialGradient id="co2BubbleGrad" cx="40%" cy="35%" r="60%">
-          <stop offset="0%" stop-color="#c4b5fd" stop-opacity="0.8"/>
-          <stop offset="100%" stop-color="#7c3aed" stop-opacity="0.3"/>
-        </radialGradient>
-      </defs>
-      <circle class="sen66-gauge-bg" cx="60" cy="60" r="50"/>
-      <circle class="sen66-gauge-arc" id="sen66-co2-arc" cx="60" cy="60" r="50"
-              stroke="url(#co2CardGrad)" stroke-dasharray="0 314.16"/>
-      <!-- Rising CO2 bubbles -->
-      <g id="sen66-co2-bubbles">
-        <circle cx="35" cy="90" r="4" fill="url(#co2BubbleGrad)" stroke="#a78bfa" stroke-width="1">
-          <animate attributeName="cy" values="90;15;90" dur="3.5s" repeatCount="indefinite"/>
-          <animate attributeName="opacity" values="0.9;0.1;0.9" dur="3.5s" repeatCount="indefinite"/>
-          <animate attributeName="r" values="4;2;4" dur="3.5s" repeatCount="indefinite"/>
-        </circle>
-        <circle cx="55" cy="95" r="3" fill="url(#co2BubbleGrad)" stroke="#c4b5fd" stroke-width="1">
-          <animate attributeName="cy" values="95;20;95" dur="4.2s" begin="0.8s" repeatCount="indefinite"/>
-          <animate attributeName="opacity" values="0.8;0.1;0.8" dur="4.2s" begin="0.8s" repeatCount="indefinite"/>
-          <animate attributeName="r" values="3;1.5;3" dur="4.2s" begin="0.8s" repeatCount="indefinite"/>
-        </circle>
-        <circle cx="75" cy="88" r="5" fill="url(#co2BubbleGrad)" stroke="#a78bfa" stroke-width="1">
-          <animate attributeName="cy" values="88;12;88" dur="3s" begin="1.5s" repeatCount="indefinite"/>
-          <animate attributeName="opacity" values="0.9;0.1;0.9" dur="3s" begin="1.5s" repeatCount="indefinite"/>
-          <animate attributeName="r" values="5;2;5" dur="3s" begin="1.5s" repeatCount="indefinite"/>
-        </circle>
-        <circle cx="45" cy="92" r="2.5" fill="url(#co2BubbleGrad)" stroke="#c4b5fd" stroke-width="0.8">
-          <animate attributeName="cy" values="92;18;92" dur="4.8s" begin="2.3s" repeatCount="indefinite"/>
-          <animate attributeName="opacity" values="0.7;0.1;0.7" dur="4.8s" begin="2.3s" repeatCount="indefinite"/>
-        </circle>
-        <circle cx="85" cy="93" r="3.5" fill="url(#co2BubbleGrad)" stroke="#a78bfa" stroke-width="1">
-          <animate attributeName="cy" values="93;10;93" dur="3.8s" begin="0.4s" repeatCount="indefinite"/>
-          <animate attributeName="opacity" values="0.8;0.1;0.8" dur="3.8s" begin="0.4s" repeatCount="indefinite"/>
-          <animate attributeName="r" values="3.5;1;3.5" dur="3.8s" begin="0.4s" repeatCount="indefinite"/>
-        </circle>
-      </g>
-      <text class="sen66-gauge-center-text" id="sen66-co2-big" x="60" y="54">—</text>
-      <text class="sen66-gauge-unit-text" x="60" y="70">ppm</text>
-    </svg>
-  </div>
-  <div class="sen66-aqi-pill" id="sen66-co2-status">—</div>
-</div>
 
         <!-- Hall Sensor Card -->
 <div id="hall-card" class="card-container">
