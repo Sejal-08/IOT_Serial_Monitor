@@ -3,6 +3,7 @@
 <head>
   <title>Serial Monitor</title>
   <link rel="stylesheet" href="styles.css">
+  
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body class="light-mode">
@@ -37,6 +38,9 @@
   });
 </script>
   <nav>
+    <button class="back-button" onclick="window.location.href='login.html'" title="Back to Selection">
+      <i class="fas fa-arrow-left"></i>
+    </button>
     <ul class="nav-links">
       <li>
   <button class="refresh-button" onclick="location.reload()" title="Refresh Page">
@@ -48,7 +52,7 @@
 </li>
 <li>
   <button class="action-button" onclick="logoutDevice()" title="Change Device">
-    <i class="fas fa-sign-out-alt"></i> Change Device
+    <i class="fas fa-sign-out-alt"></i> <span>Change Device</span>
   </button>
 </li>
     </ul>
@@ -147,6 +151,7 @@
       <option value="RS232">RS232</option>
       <option value="Analog">Analog</option>
       <option value="GPIO">GPIO</option>
+      <option value="WEATHER">Weather Parameter</option>
     </select>
   </div>
   

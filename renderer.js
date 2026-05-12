@@ -261,7 +261,8 @@ const sensorProtocolMap = {
   "SPI": [],
   "Analog": ["Hall Sensor", "IR Sensor"],
   "ADC": ["Rain Gauge"],
-  "GPIO": ["Blinky", "Buzzer", "Relay"]
+  "GPIO": ["Blinky", "Buzzer", "Relay"],
+  "WEATHER": ["Weather Parameters"]
 };
 // Track sensor presence and data
 let sensorStatus = {
@@ -271,12 +272,14 @@ let sensorStatus = {
   "SPI": {},
   "Analog": { Hall_Sensor: false, IR_Sensor: false },
   "ADC": { "Rain Gauge": false },
-  "GPIO": { "Blinky": false, "Buzzer": false }
+  "GPIO": { "Blinky": false, "Buzzer": false },
+  "WEATHER": { "WeatherParameters": true }
 };
 let sensorData = {
   "I2C": {},
   "ADC": {},
   "RS232": {},
+  "WEATHER": {},
   "RS485": {},
   "SPI": {},
   "Analog": {},
@@ -355,6 +358,7 @@ function updateSensorUI() {
   console.log('Current data - Temp:', currentTemperature, 'Humidity:', currentHumidity, 'Pressure:', currentPressure);
  
   const protocol = document.getElementById("sensor-select").value;
+  const isWeatherMode = protocol === "WEATHER";
   const sensorDropdown = document.getElementById("sensor-dropdown");
   const sensorDataDiv = document.getElementById("sensor-data");
  
@@ -467,13 +471,27 @@ function updateSensorUI() {
 `;
 
 if (selectedSensor && sensorData[protocol]) {
-
   if (selectedSensor === "Rain Gauge") {
     dataHtml += `
       <div class="sensor-data-item">
         <strong>Rainfall:</strong> ${sensorData[protocol]["Rainfall"] || "N/A"}
       </div>
     `;
+  } else if (protocol === "WEATHER") {
+    // Show ALL data in the WEATHER object
+    const allKeys = Object.keys(sensorData[protocol]);
+    if (allKeys.length > 0) {
+      allKeys.forEach(key => {
+        let value = sensorData[protocol][key];
+        dataHtml += `
+          <div class="sensor-data-item">
+            <strong>${key}:</strong> ${value}
+          </div>
+        `;
+      });
+    } else {
+      dataHtml += `<p>Waiting for weather data...</p>`;
+    }
   } else {
     const sensorKeys = Object.keys(sensorData[protocol])
       .filter(key => key.startsWith(selectedSensor + " "));
@@ -496,7 +514,6 @@ if (selectedSensor && sensorData[protocol]) {
       dataHtml += `<p>No data available for ${selectedSensor}.</p>`;
     }
   }
-
 } else {
   dataHtml += "<p>Please select a sensor to view data.</p>";
 }
@@ -539,11 +556,35 @@ const sensorCards = document.querySelector('.sensor-cards');
 if (sensorCards) {
   sensorCards.classList.remove('weather-shield-grid');
   sensorCards.classList.remove('sen66-layout');
+  sensorCards.classList.remove('weather-combined-grid');
 }
 // === NOW SHOW CARDS BASED ONLY ON PROTOCOL + SELECTED SENSOR (DATA NOT REQUIRED) ===
 if (protocol && selectedSensor) {
+  if (protocol === "WEATHER") {
+    if (sensorCards) sensorCards.classList.add('weather-combined-grid');
+    // Show ALL 8 Weather Cards
+    const weatherCards = [
+      thermometerContainer, humidityContainer, pressureContainer, lightContainer,
+      rainGaugeCard, windDirectionContainer, windSpeedContainer, windFlowContainer
+    ];
+    weatherCards.forEach(card => {
+      if (card) {
+        card.style.display = "flex";
+        card.classList.add('sensor-card');
+      }
+    });
+    
+    // Auto-select the first sub-sensor if none selected
+    if (!selectedSensor) selectedSensor = "Weather Parameters";
+    
+    // Trigger gauge updates if we have data
+    if (currentPressure !== null) updatePressureCard(currentPressure / 10);
+    if (currentUV !== null) updateUVCard(currentUV);
+    if (currentWindDirection !== null) updateWindFlowCard(currentWindDirection);
+  }
+
   // Weather Shield special case - show multiple cards
-if (selectedSensor === "Weather Shield") {
+  if (selectedSensor === "Weather Shield") {
   if (sensorCards) sensorCards.classList.add('weather-shield-grid');
   [thermometerContainer, humidityContainer, pressureContainer, lightContainer].forEach(card => {
     if (card) {
@@ -685,7 +726,7 @@ if (selectedSensor === "Weather Shield") {
       showLight: lightContainer ? lightContainer.style.display : 'N/A'
     });
 // === THERMOMETER UPDATE ===
-if (protocol === "I2C" && (selectedSensor === "BME680" || selectedSensor === "SEN66"|| selectedSensor === "STTS751" || selectedSensor === "SHT40" || selectedSensor === "STS30" || selectedSensor === "Weather Shield") && currentTemperature !== null) {
+if ((protocol === "I2C" || isWeatherMode) && (isWeatherMode || selectedSensor === "BME680" || selectedSensor === "SEN66"|| selectedSensor === "STTS751" || selectedSensor === "SHT40" || selectedSensor === "STS30" || selectedSensor === "Weather Shield") && currentTemperature !== null) {
   const temp = parseFloat(currentTemperature);
   let fillColor;
   if (temp < 25) {
@@ -762,7 +803,7 @@ if (protocol === "I2C" && (selectedSensor === "BME680" || selectedSensor === "SE
   }
 }
 // === HUMIDITY WAVE UPDATE ===
-if (protocol === "I2C" && (selectedSensor === "BME680" || selectedSensor === "SHT40" || selectedSensor === "Weather Shield" || selectedSensor === "SEN66")) {
+if ((protocol === "I2C" || isWeatherMode) && (isWeatherMode || selectedSensor === "BME680" || selectedSensor === "SHT40" || selectedSensor === "Weather Shield" || selectedSensor === "SEN66")) {
   if (currentHumidity !== null) {
     const humidity = parseFloat(currentHumidity);
     humidityValue.textContent = `${humidity.toFixed(2)}%`;
@@ -795,7 +836,7 @@ if (protocol === "I2C" && (selectedSensor === "BME680" || selectedSensor === "SH
   wavePath.setAttribute("d", "M 0 80 Q 25 85 50 80 T 100 80 V 100 H 0 Z");
 }
 // === PRESSURE CARD UPDATE ===
-if (protocol === "I2C" && (selectedSensor === "BME680" || selectedSensor === "Weather Shield") && currentPressure !== null) {
+if ((protocol === "I2C" || isWeatherMode) && (isWeatherMode || selectedSensor === "BME680" || selectedSensor === "Weather Shield") && currentPressure !== null) {
   updatePressureCard(parseFloat(currentPressure));
 } else {
   const pressureValue = document.getElementById('pressure-value');
@@ -809,7 +850,7 @@ if (protocol === "I2C" && (selectedSensor === "BME680" || selectedSensor === "We
 }
 
 // === LIGHT INTENSITY ANIMATION WITH SUN/MOON TOGGLE + BETTER LOW-LIGHT GLOW ===
-if (protocol === "I2C" && (selectedSensor === "VEML7700" || selectedSensor === "Weather Shield") && currentLight !== null) {
+if ((protocol === "I2C" || isWeatherMode) && (isWeatherMode || selectedSensor === "VEML7700" || selectedSensor === "Weather Shield") && currentLight !== null) {
   const lux = parseFloat(currentLight);
   if (lightValue) lightValue.textContent = `${lux.toFixed(1)} lux`;
 
@@ -863,7 +904,7 @@ if (protocol === "I2C" && (selectedSensor === "VEML7700" || selectedSensor === "
 }
 
 // === RAIN GAUGE — FIXED VERSION WITH INSTANT RESTART ===
-if (protocol === "ADC" && selectedSensor === "Rain Gauge") {
+if ((protocol === "ADC" || isWeatherMode) && (isWeatherMode || selectedSensor === "Rain Gauge")) {
   const rainValEl = document.getElementById("rain-value");
   const roof = document.getElementById("roof");
   const overlay = document.getElementById("rain-overlay");
@@ -1710,7 +1751,7 @@ if (protocol === "I2C" && selectedSensor === "LIS3DH") {
 }
 
        // Updated Wind Direction rotation code (now centered perfectly with new needle size)
-        if (protocol === "RS232" && selectedSensor === "Wind Sensor" && currentWindDirection !== null) {
+        if ((protocol === "RS232" || isWeatherMode) && (isWeatherMode || selectedSensor === "Wind Sensor") && currentWindDirection !== null) {
           const direction = parseFloat(currentWindDirection);
           const windDirectionArrow = document.getElementById('wind-direction-arrow');
           const windDirectionValue = document.getElementById('wind-direction-value');
@@ -1737,7 +1778,7 @@ if (protocol === "I2C" && selectedSensor === "LIS3DH") {
           }
         }
 
-if (protocol === "RS232" && selectedSensor === "Wind Sensor" && currentWindSpeed !== null) {
+if ((protocol === "RS232" || isWeatherMode) && (isWeatherMode || selectedSensor === "Wind Sensor") && currentWindSpeed !== null) {
   const speed = parseFloat(currentWindSpeed);
   if (windSpeedValue) windSpeedValue.textContent = `${speed.toFixed(1)} m/s`;
 
@@ -2252,6 +2293,7 @@ function updateSensorVisualizationVisibility() {
 }
 function parseSensorData(data) {
   const protocol = document.getElementById("sensor-select").value;
+  const isWeatherMode = protocol === "WEATHER";
   if (!protocol) {
     return data;
   }
@@ -2465,21 +2507,22 @@ function parseSensorData(data) {
 
       // Wind Sensor
       const windMatch = line.match(/Wind speed:\s*([\d.]+),\s*Wind direction:\s*([\d.]+)/);
-      if (windMatch && protocol === "RS232") {
+      if (windMatch && (protocol === "RS232" || isWeatherMode)) {
         const [, speed, direction] = windMatch;
-        sensorStatus[protocol]["WindSensor"] = true;
-        if (!selectedSensor && !autoSelected) {
+        const targetProtocol = isWeatherMode ? "WEATHER" : protocol;
+        sensorStatus[targetProtocol]["WindSensor"] = true;
+        if (!selectedSensor && !autoSelected && !isWeatherMode) {
           selectedSensor = "Wind Sensor";
           autoSelected = true;
           const sensorDropdown = document.getElementById("sensor-dropdown");
           if (sensorDropdown) sensorDropdown.value = "Wind Sensor";
         }
-        sensorData[protocol]["Wind Sensor Direction"] = parseFloat(direction).toFixed(1);
-        sensorData[protocol]["Wind Sensor Speed"] = parseFloat(speed).toFixed(1);
+        sensorData[targetProtocol]["Wind Sensor Direction"] = parseFloat(direction).toFixed(1);
+        sensorData[targetProtocol]["Wind Sensor Speed"] = parseFloat(speed).toFixed(1);
         currentWindDirection = parseFloat(direction);
         currentWindSpeed = parseFloat(speed);
         console.log('Wind Sensor parsed:', { direction, speed });
-        if (selectedSensor === "Wind Sensor") updateSensorUI();
+        if (selectedSensor === "Wind Sensor" || isWeatherMode) updateSensorUI();
         dataParsed = true;
       }
 
@@ -2618,7 +2661,7 @@ function parseSensorData(data) {
       let wsDataFound = false;
       
       const weatherShieldMatch = line.match(/T:([\d.]+),H:([\d.]+),P:([\d.]+),L:([\d.]+)/);
-      if (weatherShieldMatch && protocol === "I2C") {
+      if (weatherShieldMatch && (protocol === "I2C" || isWeatherMode)) {
         wsTemp = parseFloat(weatherShieldMatch[1]);
         wsHum = parseFloat(weatherShieldMatch[2]);
         wsPress = parseFloat(weatherShieldMatch[3]);
@@ -2644,18 +2687,19 @@ function parseSensorData(data) {
       }
       
       if (wsDataFound) {
-        if (!sensorStatus["I2C"]) sensorStatus["I2C"] = {};
-        sensorStatus["I2C"]["WeatherShield"] = true;
+        const targetProtocol = isWeatherMode ? "WEATHER" : "I2C";
+        if (!sensorStatus[targetProtocol]) sensorStatus[targetProtocol] = {};
+        sensorStatus[targetProtocol]["WeatherShield"] = true;
         if (wsTemp !== null) currentTemperature = wsTemp;
         if (wsHum !== null) currentHumidity = wsHum;
         if (wsPress !== null) currentPressure = wsPress;
         if (wsLux !== null) currentLight = wsLux;
-        if (wsTemp !== null) sensorData["I2C"]["Weather Shield Temperature"] = wsTemp.toFixed(2);
-        if (wsHum !== null) sensorData["I2C"]["Weather Shield Humidity"] = wsHum.toFixed(2);
-        if (wsPress !== null) sensorData["I2C"]["Weather Shield Pressure"] = wsPress.toFixed(2);
-        if (wsLux !== null) sensorData["I2C"]["Weather Shield Lux"] = wsLux.toFixed(1);
+        if (wsTemp !== null) sensorData[targetProtocol]["Weather Shield Temperature"] = wsTemp.toFixed(2);
+        if (wsHum !== null) sensorData[targetProtocol]["Weather Shield Humidity"] = wsHum.toFixed(2);
+        if (wsPress !== null) sensorData[targetProtocol]["Weather Shield Pressure"] = wsPress.toFixed(2);
+        if (wsLux !== null) sensorData[targetProtocol]["Weather Shield Lux"] = wsLux.toFixed(1);
         console.log('Weather Shield parsed:', { temp: wsTemp, hum: wsHum, press: wsPress, lux: wsLux });
-        if (!selectedSensor || selectedSensor !== "Weather Shield") {
+        if ((!selectedSensor || selectedSensor !== "Weather Shield") && !isWeatherMode) {
           selectedSensor = "Weather Shield";
           const dropdown = document.getElementById("sensor-dropdown");
           if (dropdown) dropdown.value = "Weather Shield";
@@ -2667,12 +2711,13 @@ function parseSensorData(data) {
 
       // Rain Gauge
       const rainMatch = line.match(/^Rain Tip Detected!\s*Rainfall:\s*(\d+)/);
-      if (rainMatch && protocol === "ADC") {
-        if (!sensorStatus[protocol]) sensorStatus[protocol] = {};
-        if (!sensorData[protocol]) sensorData[protocol] = {};
-        sensorStatus[protocol]["Rain Gauge"] = true;
+      if (rainMatch && (protocol === "ADC" || isWeatherMode)) {
+        const targetProtocol = isWeatherMode ? "WEATHER" : protocol;
+        if (!sensorStatus[targetProtocol]) sensorStatus[targetProtocol] = {};
+        if (!sensorData[targetProtocol]) sensorData[targetProtocol] = {};
+        sensorStatus[targetProtocol]["Rain Gauge"] = true;
         const Tips = parseInt(rainMatch[1]);
-        sensorData[protocol]["Rainfall"] = `${(Tips * 0.5).toFixed(2)} mm`;
+        sensorData[targetProtocol]["Rainfall"] = `${(Tips * 0.5).toFixed(2)} mm`;
         if (!selectedSensor && !autoSelected) {
           selectedSensor = "Rain Gauge";
           autoSelected = true;
@@ -2724,6 +2769,7 @@ _resetSEN66();
     "I2C": {},
     "ADC": {},
     "RS232": {},
+    "WEATHER": {},
     "RS485": {},
     "SPI": {},
     "Analog": {},
@@ -2731,7 +2777,8 @@ _resetSEN66();
   sensorStatus = {
     "I2C": { SHT40: false, BME680: false, STS30: false, STTS751: false, SEN66: false, LIS3DH: false, VEML7700: false, TLV493D: false, VL53L0X: false, LTR390: false },
     "RS485": { MD02: false },
-    "RS232": { WindSensor: false }, // ADD THIS
+    "RS232": { WindSensor: false },
+    "WEATHER": { "WeatherParameters": true },
     "SPI": {},
     "Analog": { Hall_Sensor: false, IR_Sensor: false },
     "ADC": { "Rain Gauge": false },

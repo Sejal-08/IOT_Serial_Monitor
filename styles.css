@@ -85,7 +85,7 @@ body {
 /* Navbar */
 nav {
   display: flex;
-  justify-content: flex-end; /* Aligns content (nav-links) to the right */
+  justify-content: space-between; /* Pushes content to both ends */
   align-items: center;
   background: var(--nav-bg);
   position: fixed;
@@ -2545,6 +2545,27 @@ body.dark-mode .raindrop {
   transform: rotate(360deg) scale(0.95);
 }
 
+.back-button {
+  background: none;
+  border: none;
+  color: #f5f7ff;
+  font-size: 1.4rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, color 0.3s;
+  padding: 8px;
+  border-radius: 50%;
+}
+
+.back-button:hover {
+  transform: translateX(-5px) scale(1.1);
+  color: #a3bffa;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.back-button:active {
+  transform: scale(0.95);
+}
+
 /* Optional: spinning animation when clicked (pure CSS) */
 .refresh-button.spin i {
   animation: spin 1s linear;
@@ -4424,4 +4445,323 @@ body:not(.dark-mode) #vcnl-lux-card h4 {
 /* Bonus: ensure cards don't force weird wrapping on small height */
 .sensor-cards {
   min-height: fit-content;              /* prevent collapse */
+}
+/* Unified Weather Dashboard Grid - BASE PC VIEW (Flexbox to match SEN66 wrapping) */
+.weather-combined-grid {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: center !important;
+  gap: 20px !important;
+  width: 100% !important;
+  max-width: 1400px !important;
+  margin: 0 auto !important;
+  padding: 20px !important;
+  align-items: stretch !important;
+}
+
+/* Base sizing for PC cards */
+.weather-combined-grid .sensor-card,
+.weather-combined-grid #thermometer-container,
+.weather-combined-grid #humidity-card,
+.weather-combined-grid #pressure-card,
+.weather-combined-grid #light-card,
+.weather-combined-grid #rain-gauge-card,
+.weather-combined-grid #wind-direction-card,
+.weather-combined-grid #wind-speed-card,
+.weather-combined-grid #wind-flow-card {
+  width: 260px !important;
+  min-width: 260px !important;
+  max-width: 260px !important;
+  flex: 0 0 260px !important;
+  min-height: 380px !important;
+  height: 380px !important;
+  margin: 0 !important;
+}
+
+/* Base SVG scaling for thermometer on PC */
+.weather-combined-grid #thermometer-container svg {
+  width: 100px !important;
+  height: 280px !important;
+}
+
+@media (max-width: 1440px) {
+  .main-container {
+    gap: 15px;
+    padding: 15px;
+  }
+  
+  .left-panel {
+    padding: 15px;
+  }
+  
+  .right-panel {
+    padding: 15px;
+  }
+
+  .weather-combined-grid {
+    gap: 15px !important;
+  }
+
+  .weather-combined-grid .sensor-card,
+  .weather-combined-grid #thermometer-container,
+  .weather-combined-grid #humidity-card,
+  .weather-combined-grid #pressure-card,
+  .weather-combined-grid #light-card,
+  .weather-combined-grid #rain-gauge-card,
+  .weather-combined-grid #wind-direction-card,
+  .weather-combined-grid #wind-speed-card,
+  .weather-combined-grid #wind-flow-card {
+    /* Let flex-wrap handle the sizing, keep fixed 260px like SEN66 to force natural 3-card wrapping */
+    width: 260px !important;
+    min-width: 260px !important;
+    max-width: 260px !important;
+    flex: 0 0 260px !important;
+  }
+
+  .weather-combined-grid h4 {
+    font-size: 1.1rem !important;
+    margin-bottom: 8px !important;
+  }
+
+  .weather-combined-grid .sensor-value {
+    font-size: 1.4rem !important;
+  }
+
+  .weather-combined-grid #thermometer-container svg {
+    height: 180px !important;
+    width: 70px !important;
+  }
+
+  /* Scale down gauges and compass */
+  .weather-combined-grid .gauge-container {
+    width: 150px !important;
+    height: 150px !important;
+  }
+
+  .weather-combined-grid .wind-compass {
+    width: 140px !important;
+    height: 140px !important;
+  }
+
+  .weather-combined-grid .rose {
+    width: 110px !important;
+    height: 110px !important;
+    margin: -35px 0 0 -55px !important;
+  }
+  
+/* ==========================================================================
+   GLOBAL UNIFIED SENSOR CARD HEADINGS & RESPONSIVENESS
+   Ensures all card titles (Temperature, Humidity, PM2.5, etc.) match perfectly.
+   ========================================================================== */
+
+.sensor-card h4, 
+[id*="-card"] h4, 
+#thermometer-container h4, 
+#thermometer-f-container h4,
+#humidity-card h4,
+#pressure-card h4,
+#light-card h4,
+#rain-gauge-card h4,
+#wind-direction-card h4,
+#wind-speed-card h4,
+#wind-flow-card h4,
+#tof-card h4,
+#uvltr-card h4,
+#tlv493d-card h4,
+#buzzer-card h4,
+#blinky-card h4,
+#relay-card h4,
+#vcnl-lux-card h4,
+.sen66-param-card h4,
+.weather-shield-grid h4 {
+  font-size: 1.4rem !important; 
+  font-weight: 700 !important;
+  margin-bottom: 12px !important;
+  text-align: center !important;
+  width: 100% !important;
+}
+
+/* Base Responsive Adjustments for Laptops */
+@media (max-width: 1440px) {
+  .sensor-card h4, 
+  [id*="-card"] h4, 
+  #thermometer-container h4, 
+  #thermometer-f-container h4,
+  #humidity-card h4,
+  #pressure-card h4,
+  #light-card h4,
+  #rain-gauge-card h4,
+  #wind-direction-card h4,
+  #wind-speed-card h4,
+  #wind-flow-card h4,
+  #tof-card h4,
+  #uvltr-card h4,
+  #tlv493d-card h4,
+  #buzzer-card h4,
+  #blinky-card h4,
+  #relay-card h4,
+  #vcnl-lux-card h4,
+  .sen66-param-card h4 {
+    font-size: 1.1rem !important;
+    margin-bottom: 8px !important;
+  }
+  
+  .action-button {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+  
+  .sensor-value {
+    font-size: 1.4rem !important;
+  }
+}
+
+/* Tablet & Smaller PC Adjustments */
+@media (max-width: 1100px) {
+  .main-container {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    background: var(--panel-bg);
+    border-radius: 16px;
+    box-shadow: var(--panel-shadow);
+    border: 1px solid var(--panel-border);
+    gap: 20px;
+  }
+
+  .left-panel, .right-panel, .right-panel .container {
+    display: contents;
+  }
+
+  /* Reorder sections to put Visualization below Sensor Data */
+  .left-panel > section:nth-of-type(1) { order: 1; } /* Serial Port */
+  .left-panel > section:nth-of-type(2) { order: 2; } /* Interval */
+  .left-panel > section:nth-of-type(3) { order: 3; } /* Restart */
+  #sensors-section { order: 4; }                     /* Protocols */
+  #sensor-data { order: 5; width: 100%; }            /* Sensor Data Text */
+  #sensor-visualization-section { order: 6; }        /* Visualization (Graphs/Cards) */
+  #uart-logs-section { order: 7; }                   /* UART Logs */
+
+  .weather-combined-grid {
+    /* Removed max-width to allow 3 cards to fit naturally */
+  }
+  
+  .weather-combined-grid .sensor-card,
+  .weather-combined-grid #thermometer-container,
+  .weather-combined-grid #humidity-card,
+  .weather-combined-grid #pressure-card,
+  .weather-combined-grid #light-card,
+  .weather-combined-grid #rain-gauge-card,
+  .weather-combined-grid #wind-direction-card,
+  .weather-combined-grid #wind-speed-card,
+  .weather-combined-grid #wind-flow-card {
+    /* Keep 260px to force natural wrap */
+    width: 260px !important;
+    min-width: 260px !important;
+    max-width: 260px !important;
+    flex: 0 0 260px !important;
+  }
+}
+
+/* Tablet Portrait & Large Mobile */
+@media (max-width: 768px) {
+  .sensor-card h4, 
+  [id*="-card"] h4, 
+  #thermometer-container h4, 
+  #thermometer-f-container h4,
+  #humidity-card h4,
+  #pressure-card h4,
+  #light-card h4,
+  #rain-gauge-card h4,
+  #wind-direction-card h4,
+  #wind-speed-card h4,
+  #wind-flow-card h4,
+  #tof-card h4,
+  #uvltr-card h4,
+  #tlv493d-card h4,
+  #buzzer-card h4,
+  #blinky-card h4,
+  #relay-card h4,
+  #vcnl-lux-card h4,
+  .sen66-param-card h4 {
+    font-size: 0.9rem !important;
+    margin-bottom: 6px !important;
+  }
+
+  .weather-combined-grid {
+    gap: 10px !important;
+  }
+  
+  .weather-combined-grid .sensor-card,
+  .weather-combined-grid #thermometer-container,
+  .weather-combined-grid #humidity-card,
+  .weather-combined-grid #pressure-card,
+  .weather-combined-grid #light-card,
+  .weather-combined-grid #rain-gauge-card,
+  .weather-combined-grid #wind-direction-card,
+  .weather-combined-grid #wind-speed-card,
+  .weather-combined-grid #wind-flow-card {
+    width: 200px !important;
+    min-width: 200px !important;
+    max-width: 200px !important;
+    flex: 0 0 200px !important;
+    height: 280px !important;
+    min-height: 280px !important;
+    padding: 10px !important;
+  }
+
+  .sensor-value {
+    font-size: 1.1rem !important;
+  }
+
+  .gauge-container {
+    width: 120px !important;
+    height: 120px !important;
+  }
+
+  .wind-compass {
+    width: 120px !important;
+    height: 120px !important;
+  }
+}
+
+/* Mobile Screens */
+@media (max-width: 600px) {
+  /* Flex wraps naturally, no need for grid-template-columns: 1fr */
+  
+  .weather-combined-grid .sensor-card,
+  .weather-combined-grid #thermometer-container,
+  .weather-combined-grid #humidity-card,
+  .weather-combined-grid #pressure-card,
+  .weather-combined-grid #light-card,
+  .weather-combined-grid #rain-gauge-card,
+  .weather-combined-grid #wind-direction-card,
+  .weather-combined-grid #wind-speed-card,
+  .weather-combined-grid #wind-flow-card {
+    width: 200px !important;
+    min-width: 200px !important;
+    max-width: 200px !important;
+    flex: 0 0 200px !important;
+  }
+}
+
+/* Very Small Devices */
+@media (max-width: 480px) {
+  .nav-links {
+    gap: 8px;
+  }
+  
+  .back-button, .refresh-button, .theme-toggle {
+    font-size: 1rem;
+    padding: 6px;
+  }
+  
+  .action-button span {
+    display: none;
+  }
+  
+  h3 {
+    font-size: 1rem;
+  }
+}
 }
