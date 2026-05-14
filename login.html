@@ -3,474 +3,857 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Device Selection - Serial Monitor</title>
+  <title>Choose Runtime - Serial Monitor</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
+  /* ── Reset ── */
   * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
   }
 
+  /* ── Body ── */
   body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #6269f0 0%, #4b6cb7 50%, #6b8af7 100%);
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    background: #060b18;
     min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 20px;
-  }
-
-  .login-container {
-    background: linear-gradient(135deg, #e6ebf7 20%, #e0e7ff 50%, #89a1f0 50%);
-    border: 2px solid #e0e7ff;
-    border-radius: 20px;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
-    max-width: 900px;
-    width: 100%;
-    padding: 50px;
-    text-align: center;
-    animation: slideIn 0.5s ease-out;
-  }
-
-  @keyframes slideIn {
-    from {
-      opacity: 0;
-      transform: translateY(-30px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  .logo {
-    font-size: 4rem;
-    color: #4b6cb7;
-    margin-bottom: 20px;
-    animation: pulse 2s infinite;
-  }
-
-  @keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-  }
-
-  h1 {
-    color: #2d4060;
-    font-size: 2.5rem;
-    margin-bottom: 10px;
-    font-weight: 700;
-  }
-
-  .subtitle {
-    color: #1e293b;
-    font-size: 1.1rem;
-    margin-bottom: 50px;
-  }
-
-  .device-selection {
-    display: flex;
-    gap: 30px;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin-bottom: 40px;
-  }
-
-  .device-card {
-    background: linear-gradient(135deg, #7690e5, #b0bde3);
-    border: 3px solid #e0e7ff;
-    border-radius: 15px;
-    padding: 40px 30px;
-    width: 280px;
-    cursor: pointer;
-    transition: all 0.3s ease;
+    padding: 64px 20px 40px;
+    overflow-x: hidden;
+    overflow-y: auto;
     position: relative;
-    overflow: hidden;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    transition: background 0.4s ease;
   }
 
-  .device-card::before {
+  /* ── Subtle radial glow behind the content ── */
+  body::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-    transition: left 0.5s;
-  }
-
-  .device-card:hover::before {
-    left: 100%;
-  }
-
-  .device-card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 8px 20px rgba(75, 108, 183, 0.3);
-    border-color: #6b8af7;
-  }
-
-  .device-card.selected {
-    border-color: #6b8af7;
-    background: linear-gradient(135deg, #43379e 0%, #4b6cb7 50%, #6b8af7 100%);
-    color: white;
-    transform: scale(1.05);
-  }
-
-  .device-card.selected .device-icon {
-    color: white;
-  }
-
-  .device-card.selected .device-name,
-  .device-card.selected .device-description {
-    color: white;
-  }
-
-  .device-icon {
-    font-size: 5rem;
-    margin-bottom: 20px;
-    transition: all 0.3s ease;
-  }
-
-  .device-card:nth-child(1) .device-icon {
-    color: #598ce6;
-  }
-
-  .device-card:nth-child(2) .device-icon {
-    color: #4CAF50;
-  }
-
-  .device-card:hover .device-icon {
-    transform: rotateY(360deg);
-  }
-
-  .device-name {
-    font-size: 1.8rem;
-    font-weight: 700;
-    margin-bottom: 10px;
-    color: #2d4060;
-  }
-
-  .device-description {
-    font-size: 0.95rem;
-    color: #1e293b;
-    line-height: 1.6;
-  }
-
-  .check-icon {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    font-size: 1.5rem;
-    color: white;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-
-  .device-card.selected .check-icon {
-    opacity: 1;
-  }
-
-  .connect-btn {
-    background: linear-gradient(135deg, #43379e 0%, #4b6cb7 50%, #6b8af7 100%);
-    color: white;
-    border: none;
-    padding: 18px 60px;
-    font-size: 1.2rem;
-    border-radius: 50px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-weight: 600;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
-    opacity: 0.5;
+    top: 50%;
+    left: 50%;
+    width: 900px;
+    height: 600px;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(ellipse at center, rgba(45,90,247,0.08) 0%, transparent 70%);
     pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── Main wrapper ── */
+  .login-wrapper {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
+    max-width: 720px;
+    width: 100%;
+    animation: fadeInUp 0.6s ease-out;
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Top pill badge ── */
+  .top-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 20px;
+    border: 1px solid rgba(45,90,247,0.35);
+    border-radius: 999px;
+    background: rgba(45,90,247,0.08);
+    color: #5b8af7;
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+
+  .top-badge i {
+    font-size: 0.75rem;
+    color: #3ecf8e;
+  }
+
+  /* ── Heading area ── */
+  .heading-area {
+    text-align: center;
+  }
+
+  .heading-area h1 {
+    font-size: 2.4rem;
+    font-weight: 800;
+    color: #f0f4ff;
+    margin-bottom: 12px;
+    letter-spacing: -0.02em;
+  }
+
+  .heading-area p {
+    color: #6b7a99;
+    font-size: 1rem;
+    line-height: 1.6;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  /* ── Card grid ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    width: 100%;
+  }
+
+  /* ── Runtime card ── */
+  .runtime-card {
+    position: relative;
+    background: #0c1425;
+    border: 1.5px solid #1a2540;
+    border-radius: 16px;
+    padding: 36px 28px 32px;
+    cursor: pointer;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 16px;
+    user-select: none;
+  }
+
+  .runtime-card:hover {
+    border-color: #2a3d66;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+  }
+
+  .runtime-card.selected {
+    border-color: #2d5af7;
+    box-shadow: 0 0 0 1px #2d5af7, 0 8px 30px rgba(45,90,247,0.15);
+  }
+
+  /* ── Radio indicator (top-right) ── */
+  .radio-indicator {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid #2a3550;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s ease;
+  }
+
+  .runtime-card.selected .radio-indicator {
+    border-color: #2d5af7;
+    background: #2d5af7;
+  }
+
+  .radio-indicator i {
+    font-size: 0.7rem;
+    color: #fff;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.25s ease;
+  }
+
+  .runtime-card.selected .radio-indicator i {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  /* ── Card icon ── */
+  .card-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.7rem;
+    background: rgba(45,90,247,0.08);
+    border: 1px solid rgba(45,90,247,0.15);
+    transition: background 0.3s ease;
+  }
+
+  .runtime-card:nth-child(1) .card-icon {
+    color: #3ecf8e;
+    background: rgba(62,207,142,0.08);
+    border-color: rgba(62,207,142,0.15);
+  }
+
+  .runtime-card:nth-child(2) .card-icon {
+    color: #5b8af7;
+    background: rgba(91,138,247,0.08);
+    border-color: rgba(91,138,247,0.15);
+  }
+
+  .runtime-card.selected .card-icon {
+    background: rgba(45,90,247,0.12);
+  }
+
+  /* ── Card text ── */
+  .card-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #e8ecf4;
+  }
+
+  .card-desc {
+    font-size: 0.82rem;
+    color: #5a6a88;
+    line-height: 1.5;
+  }
+
+  /* ── "Selected" badge ── */
+  .selected-badge {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    background: rgba(45,90,247,0.12);
+    color: #5b8af7;
+    border: 1px solid rgba(45,90,247,0.25);
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+
+  .runtime-card.selected .selected-badge {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ── Connect button ── */
+  .connect-btn {
+    width: 100%;
+    padding: 18px 32px;
+    border-radius: 12px;
+    border: 1.5px solid #1e2d4a;
+    background: transparent;
+    color: #6b7a99;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: not-allowed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.35s ease;
+    opacity: 0.5;
   }
 
   .connect-btn.active {
+    border-color: #2d5af7;
+    color: #e0e7ff;
+    cursor: pointer;
     opacity: 1;
-    pointer-events: all;
   }
 
   .connect-btn.active:hover {
-    background: #6b8af7;
-    transform: translateY(-3px);
-    box-shadow: 0 4px 12px rgba(107, 138, 247, 0.7);
+    background: rgba(45,90,247,0.08);
+    box-shadow: 0 0 20px rgba(45,90,247,0.15);
+    transform: translateY(-2px);
   }
 
-  .connect-btn:active {
-    transform: translateY(-1px);
+  .connect-btn.active:active {
+    transform: translateY(0);
   }
 
-  .footer {
-    margin-top: 40px;
-    color: #2d4060;
-    font-size: 0.9rem;
+  .connect-btn i {
+    font-size: 0.95rem;
   }
 
-  /* Loading spinner */
-  .spinner {
+  /* ── Footer note ── */
+  .footer-note {
+    color: #3a4a68;
+    font-size: 0.8rem;
+    text-align: center;
+  }
+
+  /* ── Loading spinner ── */
+  .spinner-overlay {
     display: none;
-    margin: 0 auto 20px;
-    width: 50px;
-    height: 50px;
-    border: 5px solid #d9dff3;
-    border-top: 5px solid #6b8af7;
+    position: fixed;
+    inset: 0;
+    background: rgba(6,11,24,0.85);
+    backdrop-filter: blur(6px);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .spinner-overlay.show {
+    display: flex;
+  }
+
+  .spinner-ring {
+    width: 48px;
+    height: 48px;
+    border: 3px solid #1a2540;
+    border-top-color: #2d5af7;
     border-radius: 50%;
-    animation: spin 1s linear infinite;
+    animation: spin 0.8s linear infinite;
   }
 
   @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    to { transform: rotate(360deg); }
   }
 
-  .spinner.show {
-    display: block;
+  .spinner-text {
+    color: #6b7a99;
+    font-size: 0.9rem;
+    font-weight: 500;
   }
 
-  /* Responsive design */
-  @media (max-width: 768px) {
-    .login-container {
-      padding: 30px 20px;
+  /* ── Navbar ── */
+  .login-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: rgba(6,11,24,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid #1a2540;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    z-index: 50;
+    transition: background 0.4s ease, border-color 0.4s ease;
+  }
+
+  .nav-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .nav-left img {
+    height: 34px;
+    width: auto;
+    border-radius: 6px;
+  }
+
+  .nav-brand {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #e0e7ff;
+    letter-spacing: -0.01em;
+  }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .nav-btn {
+    background: transparent;
+    border: 1px solid #1e2d4a;
+    color: #8899bb;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.25s ease;
+  }
+
+  .nav-btn:hover {
+    border-color: #2d5af7;
+    color: #c0ccee;
+    background: rgba(45,90,247,0.06);
+  }
+
+  .nav-btn i {
+    font-size: 0.85rem;
+  }
+
+  /* ── Docs Modal ── */
+  .docs-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(4,8,18,0.9);
+    backdrop-filter: blur(8px);
+    z-index: 200;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 80px 20px 40px;
+    overflow-y: auto;
+  }
+
+  .docs-overlay.show {
+    display: flex;
+  }
+
+  .docs-container {
+    background: #0c1425;
+    border: 1px solid #1a2540;
+    border-radius: 16px;
+    max-width: 780px;
+    width: 100%;
+    padding: 40px;
+    animation: fadeInUp 0.4s ease-out;
+  }
+
+  .docs-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #1a2540;
+  }
+
+  .docs-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #e8ecf4;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: none;
+    -webkit-text-fill-color: #e8ecf4;
+  }
+
+  .docs-header h2 i {
+    color: #2d5af7;
+  }
+
+  .docs-close {
+    background: transparent;
+    border: 1px solid #1e2d4a;
+    color: #6b7a99;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+  }
+
+  .docs-close:hover {
+    border-color: #f87171;
+    color: #f87171;
+    background: rgba(248,113,113,0.08);
+  }
+
+  .docs-section {
+    margin-bottom: 28px;
+  }
+
+  .docs-section h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #5b8af7;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .docs-section h3 i {
+    font-size: 0.9rem;
+    opacity: 0.8;
+  }
+
+  .docs-section p {
+    color: #7a8aa8;
+    font-size: 0.88rem;
+    line-height: 1.7;
+    margin-bottom: 10px;
+  }
+
+  .docs-section ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .docs-section li {
+    color: #7a8aa8;
+    font-size: 0.86rem;
+    line-height: 1.7;
+    padding: 4px 0 4px 20px;
+    position: relative;
+  }
+
+  .docs-section li::before {
+    content: '›';
+    position: absolute;
+    left: 4px;
+    color: #2d5af7;
+    font-weight: 700;
+  }
+
+  .docs-section li strong {
+    color: #c0ccee;
+  }
+
+  .docs-section code {
+    background: rgba(45,90,247,0.1);
+    color: #5b8af7;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 0.82rem;
+    font-family: 'Courier New', monospace;
+  }
+
+  .docs-footer {
+    text-align: center;
+    color: #3a4a68;
+    font-size: 0.78rem;
+    padding-top: 20px;
+    border-top: 1px solid #1a2540;
+  }
+
+  /* ── Light Mode ── */
+  body.light-mode {
+    background: #f0f2f8;
+  }
+
+  body.light-mode::before {
+    background: radial-gradient(ellipse at center, rgba(75,108,183,0.08) 0%, transparent 70%);
+  }
+
+  body.light-mode .login-nav {
+    background: rgba(240,242,248,0.9);
+    border-bottom-color: #dde2ef;
+  }
+
+  body.light-mode .nav-left img { filter: brightness(0); }
+  body.light-mode .nav-brand { color: #1e293b; }
+  body.light-mode .nav-btn { border-color: #ccd3e4; color: #111; }
+  body.light-mode .nav-btn i { color: #111; }
+  body.light-mode .nav-btn:hover { border-color: #4b6cb7; color: #000; background: rgba(75,108,183,0.06); }
+
+  body.light-mode .top-badge { background: rgba(75,108,183,0.08); border-color: rgba(75,108,183,0.3); color: #4b6cb7; }
+  body.light-mode .heading-area h1 { color: #1e293b; }
+  body.light-mode .heading-area p { color: #64748b; }
+
+  body.light-mode .runtime-card { background: #fff; border-color: #dde2ef; }
+  body.light-mode .runtime-card:hover { border-color: #a0b4e8; box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+  body.light-mode .runtime-card.selected { border-color: #4b6cb7; box-shadow: 0 0 0 1px #4b6cb7, 0 8px 24px rgba(75,108,183,0.12); }
+  body.light-mode .radio-indicator { border-color: #ccd3e4; }
+  body.light-mode .runtime-card.selected .radio-indicator { border-color: #4b6cb7; background: #4b6cb7; }
+  body.light-mode .card-title { color: #1e293b; }
+  body.light-mode .card-desc { color: #64748b; }
+  body.light-mode .card-icon { background: rgba(75,108,183,0.06); border-color: rgba(75,108,183,0.15); }
+  body.light-mode .selected-badge { background: rgba(75,108,183,0.08); color: #4b6cb7; border-color: rgba(75,108,183,0.2); }
+
+  body.light-mode .connect-btn { border-color: #ccd3e4; color: #64748b; }
+  body.light-mode .connect-btn.active { border-color: #4b6cb7; color: #1e293b; }
+  body.light-mode .connect-btn.active:hover { background: rgba(75,108,183,0.06); box-shadow: 0 0 16px rgba(75,108,183,0.1); }
+  body.light-mode .footer-note { color: #94a3b8; }
+
+  body.light-mode .docs-overlay { background: rgba(240,242,248,0.95); }
+  body.light-mode .docs-container { background: #fff; border-color: #dde2ef; }
+  body.light-mode .docs-header { border-bottom-color: #e8ecf4; }
+  body.light-mode .docs-header h2 { color: #1e293b; -webkit-text-fill-color: #1e293b; }
+  body.light-mode .docs-close { border-color: #ccd3e4; color: #94a3b8; }
+  body.light-mode .docs-section h3 { color: #4b6cb7; }
+  body.light-mode .docs-section p, body.light-mode .docs-section li { color: #475569; }
+  body.light-mode .docs-section li strong { color: #1e293b; }
+  body.light-mode .docs-section code { background: rgba(75,108,183,0.08); color: #4b6cb7; }
+  body.light-mode .docs-footer { color: #94a3b8; border-top-color: #e8ecf4; }
+
+  body.light-mode .spinner-overlay { background: rgba(240,242,248,0.85); }
+  body.light-mode .spinner-ring { border-color: #dde2ef; border-top-color: #4b6cb7; }
+  body.light-mode .spinner-text { color: #64748b; }
+
+  /* ── Responsive ── */
+  @media (max-width: 600px) {
+    .card-grid {
+      grid-template-columns: 1fr;
     }
 
-    h1 {
-      font-size: 2rem;
+    .heading-area h1 {
+      font-size: 1.8rem;
     }
 
-    .device-card {
-      width: 100%;
-      max-width: 300px;
+    .login-wrapper {
+      gap: 28px;
     }
 
-    .device-selection {
-      gap: 20px;
+    .runtime-card {
+      padding: 28px 20px 24px;
+    }
+
+    .login-nav {
+      padding: 0 16px;
+    }
+
+    .nav-brand {
+      display: none;
+    }
+
+    .docs-container {
+      padding: 24px;
     }
   }
-  /* Theme Toggle Button */
-.theme-toggle-login {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  border: none;
-  background: linear-gradient(135deg, #6269f0, #4b6cb7);
-  color: white;
-  font-size: 1.2rem;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(75, 108, 183, 0.3);
-  transition: all 0.3s ease;
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.theme-toggle-login:hover {
-  transform: scale(1.1) rotate(15deg);
-  box-shadow: 0 6px 20px rgba(75, 108, 183, 0.5);
-}
-
-.theme-toggle-login:active {
-  transform: scale(0.95);
-}
-
-/* Dark Mode Styles for Login Page */
-body.dark-mode {
-  background: linear-gradient(135deg, #0a0e1a 0%, #1a2a4d 50%, #2a4370 100%);
-}
-
-body.dark-mode .login-container {
-  background: linear-gradient(135deg, #1a2a4d, #2d4060 50%, #152342 50%);
-  border-color: rgba(45, 65, 90, 0.5);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
-}
-
-body.dark-mode .logo {
-  color: #6b8af7;
-}
-
-body.dark-mode h1 {
-  color: #a3bffa;
-}
-
-body.dark-mode .subtitle {
-  color: #e0e7ff;
-}
-
-body.dark-mode .device-card {
-  background: linear-gradient(135deg, #1a2a4d, #2d4060);
-  border-color: rgba(45, 65, 90, 0.5);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
-}
-
-body.dark-mode .device-card:hover {
-  border-color: #6b8af7;
-  box-shadow: 0 8px 20px rgba(107, 138, 247, 0.3);
-}
-
-body.dark-mode .device-card.selected {
-  background: linear-gradient(135deg, #2a4370, #4b6cb7, #6b8af7);
-}
-
-body.dark-mode .device-name {
-  color: #a3bffa;
-}
-
-body.dark-mode .device-description {
-  color: #e0e7ff;
-}
-
-body.dark-mode .footer {
-  color: #a3bffa;
-}
-
-body.dark-mode .spinner {
-  border-color: #1a2a4d;
-  border-top-color: #6b8af7;
-}
-</style>
+  </style>
 </head>
 <body>
 
-    <button class="theme-toggle-login" onclick="toggleLoginTheme()">
-    <i class="fas fa-moon"></i>
-  </button>
-
-  <div class="login-container">
-    <div class="logo">
-      <i class="fas fa-microchip"></i>
+  <!-- Navbar -->
+  <nav class="login-nav">
+    <div class="nav-left">
+      <img src="logo.png" alt="Logo">
     </div>
-    
-    <h1>Serial Monitor</h1>
-    <p class="subtitle">Select your device to continue</p>
-    
-    <div class="device-selection">
-      <div class="device-card" onclick="selectDevice('c')">
-      <i class="fas fa-check-circle check-icon"></i>
-      <div class="device-icon">
-        <i class="fab fa-bluetooth-b"></i>
+    <div class="nav-right">
+      <button class="nav-btn" id="themeToggleBtn" onclick="toggleTheme()">
+        <i class="fas fa-moon"></i>
+        <span>Theme</span>
+      </button>
+      <button class="nav-btn" onclick="openDocs()">
+        <i class="fas fa-book"></i>
+        <span>Docs</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Loading overlay -->
+  <div class="spinner-overlay" id="spinnerOverlay">
+    <div class="spinner-ring"></div>
+    <div class="spinner-text">Connecting to device…</div>
+  </div>
+
+  <!-- Docs Modal -->
+  <div class="docs-overlay" id="docsOverlay">
+    <div class="docs-container">
+      <div class="docs-header">
+        <h2><i class="fas fa-book-open"></i> Documentation</h2>
+        <button class="docs-close" onclick="closeDocs()"><i class="fas fa-times"></i></button>
       </div>
-      <div class="device-name">C Language</div>
-  </div>
-  
-  <div class="device-card" onclick="selectDevice('python')">
-    <i class="fas fa-check-circle check-icon"></i>
-    <div class="device-icon">
-      <i class="fas fa-signal"></i>
-    </div>
-    <div class="device-name">Python</div>
-  </div>
-</div>
 
-    <div class="spinner" id="spinner"></div>
-    
-    <button class="connect-btn" id="connectBtn"onclick="connectDevice()">
-      <i class="fas fa-plug"></i> Connect to Device
-    </button>
-    
-    <div class="footer">
+      <div class="docs-section">
+        <h3><i class="fas fa-info-circle"></i> Overview</h3>
+        <p>Serial Monitor is a desktop application built with Electron for embedded developers. It provides real-time visualization and analysis of sensor data streamed over USB-UART serial connections.</p>
+      </div>
+
+      <div class="docs-section">
+        <h3><i class="fas fa-microchip"></i> Supported Runtimes</h3>
+        <ul>
+          <li><strong>Python</strong> — MicroPython and CircuitPython devices. Best for rapid sensor scripting and prototyping.</li>
+          <li><strong>C / C++</strong> — Arduino, ESP-IDF, and bare-metal UART firmware. Ideal for production and low-level control.</li>
+        </ul>
+      </div>
+
+      <div class="docs-section">
+        <h3><i class="fas fa-network-wired"></i> Supported Protocols</h3>
+        <ul>
+          <li><strong>I2C</strong> — SHT40, BME680, STS30, STTS751, LIS3DH, VEML7700, TLV493D, VL53L0X, LTR390, VCNL4040, SEN66, Weather Shield</li>
+          <li><strong>RS232</strong> — Wind Sensor (direction and speed)</li>
+          <li><strong>RS485</strong> — MD02 (temperature and humidity)</li>
+          <li><strong>ADC</strong> — Rain Gauge (analog-to-digital rainfall measurement)</li>
+          <li><strong>Analog</strong> — Hall Sensor (magnetic field), IR Sensor (infrared)</li>
+          <li><strong>GPIO</strong> — Blinky (LED), Buzzer, Relay control</li>
+          <li><strong>Weather</strong> — Unified dashboard combining wind, rain, temperature, humidity, pressure, and light</li>
+        </ul>
+      </div>
+
+      <div class="docs-section">
+        <h3><i class="fas fa-chart-line"></i> Visualization Features</h3>
+        <ul>
+          <li><strong>Thermometer</strong> — Animated liquid-fill gauge for temperature (°C and °F for STTS751)</li>
+          <li><strong>Humidity Wave</strong> — Dynamic SVG wave animation that rises with humidity level</li>
+          <li><strong>Pressure Gauge</strong> — Arc-based pressure bar (hPa)</li>
+          <li><strong>Light Meter</strong> — Sun/moon SVG animation based on ambient lux</li>
+          <li><strong>3D Accelerometer</strong> — Rotating cube for LIS3DH X/Y/Z data</li>
+          <li><strong>Magnetic Vector</strong> — TLV493D 3-axis vector visualization</li>
+          <li><strong>Wind Flow</strong> — Animated particle system showing wind direction and speed</li>
+          <li><strong>SEN66 Air Quality</strong> — PM1.0, PM2.5, PM4, PM10, VOC, NOx, CO2 cards</li>
+          <li><strong>UV Index</strong> — Sun glow with color-coded UV bar</li>
+          <li><strong>ToF Distance</strong> — Person-to-sensor distance animation (VL53L0X)</li>
+        </ul>
+      </div>
+
+      <div class="docs-section">
+        <h3><i class="fas fa-terminal"></i> Serial Communication</h3>
+        <ul>
+          <li>Configurable baud rate (default: <code>115200</code>)</li>
+          <li>Auto-detection of USB-UART bridge on connect</li>
+          <li>Live UART log output with color-coded messages</li>
+          <li>Send custom commands: <code>SET_DEVICE_ID</code>, <code>SET_INTERVAL</code>, <code>GET_INTERVAL</code></li>
+          <li>Automatic cable-unplug detection and reconnection handling</li>
+        </ul>
+      </div>
+
+      <div class="docs-section">
+        <h3><i class="fas fa-keyboard"></i> Keyboard Shortcuts</h3>
+        <ul>
+          <li><code>Enter</code> — Quick-connect to the selected runtime</li>
+          <li><code>Esc</code> — Close this documentation panel</li>
+        </ul>
+      </div>
+
+      <div class="docs-footer">
+        &copy; 2026 Bharat Innovates. All rights reserved.
+      </div>
     </div>
+  </div>
+
+  <div class="login-wrapper">
+
+    <!-- Top badge -->
+    <div class="top-badge">
+      <i class="fas fa-microchip"></i>
+      Serial Monitor
+    </div>
+
+    <!-- Heading -->
+    <div class="heading-area">
+      <h1>Choose your runtime</h1>
+      <p>Select the firmware language your device is running to enable the right protocol commands</p>
+    </div>
+
+    <!-- Runtime cards -->
+    <div class="card-grid">
+
+      <!-- Python card -->
+      <div class="runtime-card" id="card-python" onclick="selectDevice('python')">
+        <div class="radio-indicator"><i class="fas fa-check"></i></div>
+        <div class="card-icon">
+          <i class="fab fa-python"></i>
+        </div>
+        <div class="card-title">Python</div>
+        <div class="card-desc">MicroPython · CircuitPython<br>sensor scripting</div>
+        <div class="selected-badge">Selected</div>
+      </div>
+
+      <!-- C / C++ card -->
+      <div class="runtime-card" id="card-c" onclick="selectDevice('c')">
+        <div class="radio-indicator"><i class="fas fa-check"></i></div>
+        <div class="card-icon">
+          <i class="fas fa-code"></i>
+        </div>
+        <div class="card-title">C / C++</div>
+        <div class="card-desc">Arduino · ESP-IDF<br>bare-metal UART</div>
+        <div class="selected-badge">Selected</div>
+      </div>
+
+    </div>
+
+    <!-- Connect button -->
+    <button class="connect-btn" id="connectBtn" onclick="connectDevice()">
+      <i class="fas fa-plug"></i>
+      Connect to device
+    </button>
+
+    <!-- Footer -->
+    <div class="footer-note">USB–UART bridge detected automatically on connect</div>
+
   </div>
 
   <script>
     let selectedDevice = null;
 
     function selectDevice(device) {
-      // Remove selection from all cards
-      document.querySelectorAll('.device-card').forEach(card => {
+      // Clear all selections
+      document.querySelectorAll('.runtime-card').forEach(card => {
         card.classList.remove('selected');
       });
-      
-      // Add selection to clicked card
-      event.currentTarget.classList.add('selected');
-      
-      // Store selected device
+
+      // Select clicked card
+      const cardId = device === 'python' ? 'card-python' : 'card-c';
+      document.getElementById(cardId).classList.add('selected');
+
       selectedDevice = device;
-      
-      // Enable connect button
-      const connectBtn = document.getElementById('connectBtn');
-      connectBtn.classList.add('active');
-      
-      // Store selection in localStorage
+
+      // Activate connect button
+      document.getElementById('connectBtn').classList.add('active');
+
+      // Persist selection
       localStorage.setItem('selectedDevice', device);
-      
-      console.log(`Selected device: ${device}`);
     }
 
     function connectDevice() {
-      if (!selectedDevice) {
-        alert('Please select a device first!');
-        return;
-      }
+      if (!selectedDevice) return;
 
-      // Show loading spinner
-      const spinner = document.getElementById('spinner');
-      const connectBtn = document.getElementById('connectBtn');
-      
-      spinner.classList.add('show');
-      connectBtn.style.opacity = '0.5';
-      connectBtn.style.pointerEvents = 'none';
+      // Show spinner overlay
+      document.getElementById('spinnerOverlay').classList.add('show');
 
-        // Simulate connection delay
-        setTimeout(() => {
-        // Store device selection
+      setTimeout(() => {
         localStorage.setItem('selectedDevice', selectedDevice);
         localStorage.setItem('deviceConnected', 'true');
         localStorage.setItem('connectionTime', new Date().toISOString());
-        
-        // Redirect to main application
         window.location.href = 'index.html';
-      }, 1500);
+      }, 1200);
     }
 
-    // Check if device was previously selected
+    // Restore previous selection on load
     window.addEventListener('DOMContentLoaded', () => {
-      const savedDevice = localStorage.getItem('selectedDevice');
-      if (savedDevice) {
-        const deviceCard = document.querySelector(`.device-card[onclick*="${savedDevice}"]`);
-        if (deviceCard) {
-          deviceCard.classList.add('selected');
-          selectedDevice = savedDevice;
-          document.getElementById('connectBtn').classList.add('active');
-        }
+      const saved = localStorage.getItem('selectedDevice');
+      if (saved) {
+        selectDevice(saved);
       }
     });
 
-    // Add keyboard navigation
+    // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && selectedDevice) {
         connectDevice();
       }
+      if (e.key === 'Escape') {
+        closeDocs();
+      }
     });
 
-    // Theme toggle function
-  function toggleLoginTheme() {
-    document.body.classList.toggle('dark-mode');
-    
-    // Save theme preference
-    const isDark = document.body.classList.contains('dark-mode');
-    localStorage.setItem('loginTheme', isDark ? 'dark' : 'light');
-    
-    // Update icon
-    const icon = document.querySelector('.theme-toggle-login i');
-    icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
-  }
-
-  // Apply saved theme on page load
-  window.addEventListener('DOMContentLoaded', () => {
-    const savedTheme = localStorage.getItem('loginTheme');
-    
-    if (savedTheme === 'dark') {
-      document.body.classList.add('dark-mode');
-      document.querySelector('.theme-toggle-login i').className = 'fas fa-sun';
+    // Theme toggle
+    function toggleTheme() {
+      document.body.classList.toggle('light-mode');
+      const isLight = document.body.classList.contains('light-mode');
+      localStorage.setItem('loginTheme', isLight ? 'light' : 'dark');
+      const icon = document.querySelector('#themeToggleBtn i');
+      icon.className = isLight ? 'fas fa-sun' : 'fas fa-moon';
     }
-  });
-  
+
+    // Docs modal
+    function openDocs() {
+      document.getElementById('docsOverlay').classList.add('show');
+    }
+
+    function closeDocs() {
+      document.getElementById('docsOverlay').classList.remove('show');
+    }
+
+    // Close docs on overlay background click
+    document.getElementById('docsOverlay').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) closeDocs();
+    });
+
+    // Apply saved theme on load
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedTheme = localStorage.getItem('loginTheme');
+      if (savedTheme === 'light') {
+        document.body.classList.add('light-mode');
+        document.querySelector('#themeToggleBtn i').className = 'fas fa-sun';
+      }
+    });
   </script>
 </body>
 </html>

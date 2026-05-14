@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation - Serial Monitor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --card-border: rgba(0, 0, 0, 0.1);
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --primary-blue: #2563eb;
+            --primary-green: #059669;
+            --accent-color: #4f46e5;
+            --header-bg: #ffffff;
+        }
+
+        body.dark-mode {
+            --bg-color: #030712;
+            --card-bg: #0f172a;
+            --card-border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary-blue: #3b82f6;
+            --primary-green: #10b981;
+            --accent-color: #6366f1;
+            --header-bg: #030712;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            transition: all 0.3s ease;
+        }
+
+        header {
+            padding: 20px 40px;
+            background: var(--header-bg);
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: var(--text-main);
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--primary-blue);
+            display: inline-block;
+            padding-bottom: 10px;
+        }
+
+        section {
+            margin-bottom: 40px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 16px;
+            border: 1px solid var(--card-border);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--primary-blue);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        p {
+            margin-bottom: 15px;
+            color: var(--text-muted);
+        }
+
+        ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+            color: var(--text-muted);
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        code {
+            background: rgba(59, 130, 246, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            color: var(--primary-blue);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand" onclick="window.location.href='login.html'">
+            <button class="back-btn"><i class="fas fa-arrow-left"></i></button>
+            <h2 style="margin: 0; color: var(--text-main);">Serial Monitor Docs</h2>
+        </div>
+    </header>
+
+    <div class="container">
+        <h1>Application Documentation</h1>
+
+        <section>
+            <h2><i class="fas fa-info-circle"></i> Overview</h2>
+            <p>The Serial Monitor is a powerful tool designed for embedded developers to visualize and analyze real-time data from various sensors and protocols.</p>
+        </section>
+
+        <section>
+            <h2><i class="fas fa-microchip"></i> Supported Runtimes</h2>
+            <ul>
+                <li><strong>Python:</strong> Optimized for MicroPython and CircuitPython devices. Ideal for rapid sensor scripting.</li>
+                <li><strong>C / C++:</strong> Perfect for Arduino, ESP-IDF, and bare-metal UART applications.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2><i class="fas fa-project-diagram"></i> Supported Protocols</h2>
+            <p>The application supports a wide range of protocols including:</p>
+            <ul>
+                <li><strong>I2C:</strong> SHT40, BME680, STS30, LIS3DH, TLV493D, and more.</li>
+                <li><strong>ADC:</strong> Rain Gauge and other analog-to-digital sensors.</li>
+                <li><strong>RS232:</strong> Professional wind sensors and serial devices.</li>
+                <li><strong>GPIO:</strong> Control for Blinky, Buzzers, and Relays.</li>
+                <li><strong>Weather:</strong> Unified dashboard for combined weather parameters.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2><i class="fas fa-chart-line"></i> Features</h2>
+            <ul>
+                <li><strong>Real-time Visualization:</strong> Dynamic gauges, thermometers, and wave animations for sensor data.</li>
+                <li><strong>UART Logs:</strong> Live logging of serial communication with filtering capabilities.</li>
+                <li><strong>Theme Support:</strong> Seamless switching between Light and Dark modes.</li>
+                <li><strong>Auto-Detection:</strong> Automatic USB-UART bridge detection on connection.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2><i class="fas fa-keyboard"></i> Quick Tips</h2>
+            <p>Press <code>Enter</code> on the login page to quickly connect to your selected runtime.</p>
+            <p>Use the <code>Refresh</code> button in the dashboard to reset the current session without disconnecting.</p>
+        </section>
+
+        <div class="footer">
+            &copy; 2026 Bharat Innovates. All rights reserved.
+        </div>
+    </div>
+
+    <script>
+        // Apply saved theme on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('loginTheme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+            }
+        });
+    </script>
+</body>
+</html>
