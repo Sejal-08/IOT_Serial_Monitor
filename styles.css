@@ -5,60 +5,74 @@
 /* CSS Variables for Shared Styles */
 :root {
   --text-color: #1e293b;
-  --bg-color: linear-gradient(135deg, #f3f4f6 0%, #e4e8f2 50%, #d3d4d5 100%);
-  --panel-bg:linear-gradient(135deg,  #e6ebf7 20%, #e0e7ff 50%,  #89a1f0 50%);
-  --panel-border: #e0e7ff;
-  --panel-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
-  --nav-bg: linear-gradient(135deg, #6269f0, #4b6cb7, #6b8af7);
-  --nav-shadow: 0 4px 12px rgba(75, 108, 183, 0.3);
-  --nav-border: rgba(75, 108, 183, 0.3);
-  --input-bg:#d9dff3;
-  --input-border: #ccc;
-  --input-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
-  --action-bg:linear-gradient(135deg, #43379e, #4b6cb7, #6b8af7);
-  --action-hover-bg: #6b8af7;
-  --action-shadow: 0 2px 6px rgba(6, 0, 0, 0.5);
-  --focus-border: #6b8af7;
-  --focus-shadow: 0 0 5px rgba(107, 138, 247, 0.6);
-  --output-bg:linear-gradient(135deg, #e0e7ff,#d9dff3);
-  --output-border: #ccc;
-  --footer-bg: linear-gradient(135deg, #6269f0, #4b6cb7, #6b8af7);
-  --footer-color: #1e293b;
-  --footer-shadow: 0 -2px 6px rgba(75, 108, 183, 0.2);
-  --sensor-bg: linear-gradient(135deg, #7690e5 , #b0bde3);
-  --sensor-border: #e0e7ff;
-  --sensor-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  --h3-color: #2d4060;
-  --h2-gradient: linear-gradient(90deg, #4b6cb7, #6b8af7, #a3bffa);
-   --person-color: #000000; /* Black for light mode */
+  --bg-color: #f0f2f8;
+  --panel-bg: #fff;
+  --panel-border: #dde2ef;
+  --panel-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  --nav-bg: rgba(240, 242, 248, 0.9);
+  --nav-shadow: none;
+  --nav-border: #dde2ef;
+  --input-bg: #fff;
+  --input-border: #ccd3e4;
+  --input-shadow: none;
+  --action-bg: transparent;
+  --action-border: #ccd3e4;
+  --action-color: #64748b;
+  --action-hover-bg: rgba(75, 108, 183, 0.06);
+  --action-hover-border: #4b6cb7;
+  --action-hover-color: #1e293b;
+  --action-shadow: none;
+  --focus-border: #4b6cb7;
+  --focus-shadow: 0 0 0 1px #4b6cb7;
+  --output-bg: #fff;
+  --output-border: #dde2ef;
+  --footer-bg: transparent;
+  --footer-color: #94a3b8;
+  --footer-shadow: none;
+  --sensor-bg: #fff;
+  --sensor-border: #dde2ef;
+  --sensor-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  --h3-color: #4b6cb7;
+  --h2-gradient: #1e293b;
+  --person-color: #000000;
+  --nav-icon-color: #111;
+  --nav-icon-hover: #000;
 }
 
 body.dark-mode {
-  --text-color: #e0e7ff;
-  --bg-color: linear-gradient(135deg, #0a0e1a 0%, #1a2a4d 50%, #2a4370 100%);
-  --panel-bg: linear-gradient(135deg, #1a2a4d, #2d4060 50%, #152342 50%);
-  --panel-border: rgba(45, 65, 90, 0.5);
-  --panel-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
-  --nav-bg: linear-gradient(90deg, #1d2849, #2a4370, #2b3d67);
-  --nav-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-  --nav-border: rgba(45, 65, 90, 0.3);
-  --input-bg: #1a2a4d;
-  --input-border: #2d4060;
-  --input-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
-  --action-bg: linear-gradient(135deg, #2a4370, #4b6cb7, #6b8af7);
-  --action-hover-bg: #6b8af7;
-  --action-shadow: 0 4px 12px rgba(107, 138, 247, 0.7);
-  --output-bg: linear-gradient(135deg, #0a0e1a, #1a2a4d);
-  --output-border: #2d4060;
-  --footer-bg: linear-gradient(90deg, #1d2849, #2a4370, #2b3d67);
-  --footer-color: #a3bffa;
-  --footer-shadow: 0 -2px 6px rgba(0, 0, 0, 0.4);
-  --sensor-bg: linear-gradient(135deg, #1a2a4d, #2d4060);
-  --sensor-border: rgba(45, 65, 90, 0.5);
-  --sensor-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
-  --h3-color: #a3bffa;
-  --h2-gradient: linear-gradient(90deg, #2a4370, #6b8af7, #a3bffa);
-     --person-color: #ffffff; /* White for dark mode */
+  --text-color: #6b7a99;
+  --bg-color: #060b18;
+  --panel-bg: #0c1425;
+  --panel-border: #1a2540;
+  --panel-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --nav-bg: rgba(6, 11, 24, 0.85);
+  --nav-shadow: none;
+  --nav-border: #1a2540;
+  --input-bg: #0c1425;
+  --input-border: #1e2d4a;
+  --input-shadow: none;
+  --action-bg: transparent;
+  --action-border: #1e2d4a;
+  --action-color: #8899bb;
+  --action-hover-bg: rgba(45, 90, 247, 0.06);
+  --action-hover-border: #2d5af7;
+  --action-hover-color: #c0ccee;
+  --action-shadow: none;
+  --focus-border: #2d5af7;
+  --focus-shadow: 0 0 0 1px #2d5af7;
+  --output-bg: #0c1425;
+  --output-border: #1a2540;
+  --footer-bg: transparent;
+  --footer-color: #3a4a68;
+  --footer-shadow: none;
+  --sensor-bg: #0c1425;
+  --sensor-border: #1a2540;
+  --sensor-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --h3-color: #5b8af7;
+  --h2-gradient: #e8ecf4;
+  --person-color: #ffffff;
+  --nav-icon-color: #8899bb;
+  --nav-icon-hover: #c0ccee;
 }
 .control-section:has(h3 > i.fa-file-alt) .controls {
   margin-bottom: 30px; /* Adds 20px of space below the Clear Logs button */
@@ -99,6 +113,10 @@ nav {
   border-bottom: 1px solid var(--nav-border);
 }
 
+body:not(.dark-mode) nav img {
+  filter: brightness(0);
+}
+
 ul.nav-links {
   list-style: none;
   display: flex;
@@ -107,19 +125,32 @@ ul.nav-links {
   margin: 0; /* Ensure no extra margin pushes it away */
 }
 
-/* Theme Toggle */
-.theme-toggle {
-  background: none;
-  border: none;
-  color: #f5f7ff;
-  font-size: 1.4rem;
+/* Nav Buttons (matches login page) */
+.nav-btn {
+  background: transparent;
+  border: 1px solid var(--action-border);
+  color: var(--action-color);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
   cursor: pointer;
-  transition: transform 0.2s ease, color 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.25s ease;
 }
 
-.theme-toggle:hover {
-  transform: scale(1.1);
-  color:  #1e2334;
+.nav-btn:hover {
+  border-color: var(--action-hover-border);
+  color: var(--action-hover-color);
+  background: var(--action-hover-bg);
+}
+
+.nav-btn i {
+  font-size: 0.85rem;
+  color: inherit;
 }
 
  .interval-wrapper {
@@ -269,14 +300,14 @@ h3 {
   border-radius: 12px;
   font-size: 0.9em;
   font-weight: 600;
-  border: none;
+  border: 1px solid var(--action-border);
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 6px;
   justify-content: center;
   background: var(--action-bg);
-  color:  #e0e7ff;
+  color: var(--action-color);
   box-shadow: var(--action-shadow);
   transition: all 0.4s ease;
 }
@@ -284,6 +315,8 @@ h3 {
 .action-button:hover {
   transform: translateY(-2px);
   background: var(--action-hover-bg);
+  border-color: var(--action-hover-border);
+  color: var(--action-hover-color);
   box-shadow: var(--action-shadow);
 }
 
@@ -2548,7 +2581,7 @@ body.dark-mode .raindrop {
 .back-button {
   background: none;
   border: none;
-  color: #f5f7ff;
+  color: var(--nav-icon-color);
   font-size: 1.4rem;
   cursor: pointer;
   transition: transform 0.2s ease, color 0.3s;
@@ -2558,8 +2591,8 @@ body.dark-mode .raindrop {
 
 .back-button:hover {
   transform: translateX(-5px) scale(1.1);
-  color: #a3bffa;
-  background: rgba(255, 255, 255, 0.1);
+  color: var(--nav-icon-hover);
+  background: rgba(128, 128, 128, 0.1);
 }
 
 .back-button:active {
