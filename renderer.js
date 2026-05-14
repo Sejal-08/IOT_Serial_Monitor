@@ -558,6 +558,20 @@ if (sensorCards) {
   sensorCards.classList.remove('sen66-layout');
   sensorCards.classList.remove('weather-combined-grid');
 }
+
+// Toggle empty state vs sensor cards container
+const emptyState = document.getElementById('empty-state-container');
+const sensorCardsContainer = document.getElementById('sensor-cards-container');
+if (protocol && selectedSensor) {
+  // A sensor is selected — show the cards, hide the empty state
+  if (emptyState) emptyState.style.display = 'none';
+  if (sensorCardsContainer) sensorCardsContainer.style.display = 'flex';
+} else {
+  // No sensor selected — show empty state, hide cards
+  if (emptyState) emptyState.style.display = 'flex';
+  if (sensorCardsContainer) sensorCardsContainer.style.display = 'none';
+}
+
 // === NOW SHOW CARDS BASED ONLY ON PROTOCOL + SELECTED SENSOR (DATA NOT REQUIRED) ===
 if (protocol && selectedSensor) {
   if (protocol === "WEATHER") {

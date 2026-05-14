@@ -12,14 +12,14 @@
   window.addEventListener('DOMContentLoaded', () => {
     // Apply saved theme on load (default to dark)
     const savedTheme = localStorage.getItem('appTheme') || 'dark';
-    if (savedTheme === 'dark') {
-      document.body.classList.add('dark-mode');
-      const icon = document.querySelector('#indexThemeBtn i');
-      if (icon) icon.className = 'fas fa-sun';
-    } else {
-      document.body.classList.remove('dark-mode');
+    if (savedTheme === 'light') {
+      document.body.classList.add('light-mode');
       const icon = document.querySelector('#indexThemeBtn i');
       if (icon) icon.className = 'fas fa-moon';
+    } else {
+      document.body.classList.remove('light-mode');
+      const icon = document.querySelector('#indexThemeBtn i');
+      if (icon) icon.className = 'fas fa-sun';
     }
 
     const deviceConnected = localStorage.getItem('deviceConnected');
@@ -43,21 +43,18 @@
     </div>
     <ul class="nav-links">
       <li>
-        <button class="nav-btn" onclick="location.reload()" title="Refresh Page">
-          <i class="fas fa-sync-alt"></i>
-          <span>Refresh</span>
+        <button class="cyber-btn" onclick="location.reload()" title="Refresh Page">
+          <i class="fas fa-sync-alt"></i> REFRESH
         </button>
       </li>
       <li>
-        <button class="nav-btn" id="indexThemeBtn" onclick="toggleTheme()" title="Toggle Theme">
-          <i class="fas fa-sun"></i>
-          <span>Theme</span>
+        <button class="cyber-btn" id="indexThemeBtn" onclick="toggleTheme()" title="Toggle Theme">
+          <i class="fas fa-sun"></i> THEME
         </button>
       </li>
       <li>
-        <button class="nav-btn" onclick="logoutDevice()" title="Change Device">
-          <i class="fas fa-sign-out-alt"></i> 
-          <span>Disconnect</span>
+        <button class="cyber-btn btn-disconnect" onclick="logoutDevice()" title="Change Device">
+          <i class="fas fa-sign-out-alt"></i> DISCONNECT
         </button>
       </li>
     </ul>
@@ -103,12 +100,21 @@
 
   <div class="main-container">
     <div class="left-panel">
-      <section class="control-section">
-        <h3><i class="fas fa-plug"></i> Serial Port</h3>
-        <div class="controls">
-          <button class="action-button" onclick="listPorts()"><i class="fas fa-list"></i> List Ports</button>
-          <select id="ports" class="input-field"></select>
-          <select id="baud-rate" class="input-field">
+      <!-- SERIAL PORT -->
+      <section class="control-section cyber-section">
+        <h3><i class="fas fa-desktop"></i> SERIAL PORT</h3>
+        
+        <div class="cyber-form-group">
+          <label class="cyber-label">PORT</label>
+          <div class="cyber-input-group">
+            <select id="ports" class="input-field cyber-input"></select>
+            <button class="action-button cyber-btn" onclick="listPorts()"><i class="fas fa-list"></i> LIST PORTS</button>
+          </div>
+        </div>
+
+        <div class="cyber-form-group">
+          <label class="cyber-label">BAUD RATE</label>
+          <select id="baud-rate" class="input-field cyber-input">
             <option value="9600">9600</option>
             <option value="19200">19200</option>
             <option value="38400">38400</option>
@@ -116,89 +122,103 @@
             <option value="115200" selected>115200</option>
             <option value="230400">230400</option>
           </select>
-          <button class="action-button" onclick="connectPort()"><i class="fas fa-play"></i> Connect</button>
-          <button class="action-button" onclick="disconnectPort()"><i class="fas fa-stop"></i> Disconnect</button>
+        </div>
+
+        <div class="cyber-button-group">
+          <button class="action-button cyber-btn btn-connect" onclick="connectPort()"><i class="fas fa-play"></i> CONNECT</button>
+          <button class="action-button cyber-btn btn-disconnect" onclick="disconnectPort()"><i class="fas fa-stop"></i> DISCONNECT</button>
         </div>
       </section>
 
-        <section class="control-section">
-        <h3><i class="fas fa-clock"></i> Interval Configuration</h3>
-       <div class="controls">
-          <div class="interval-wrapper">
-            <input type="number" id="interval" class="input-field" placeholder="Interval" min="1" oninput="updateIntervalDisplay()">
-            <span class="interval-suffix">(seconds)</span>
+      <!-- INTERVAL CONFIG -->
+      <section class="control-section cyber-section">
+        <h3><i class="fas fa-clock"></i> INTERVAL CONFIG</h3>
+        
+        <div class="cyber-form-group">
+          <label class="cyber-label">INTERVAL (SECONDS)</label>
+          <div class="cyber-input-group">
+            <input type="number" id="interval" class="input-field cyber-input" placeholder="e.g. 5" min="1" oninput="updateIntervalDisplay()">
+            <button class="action-button cyber-btn" onclick="setDeviceInterval()"><i class="fas fa-caret-down"></i> SET</button>
           </div>
-         <button class="action-button" onclick="setDeviceInterval()"><i class="fas fa-save"></i> Set Interval</button>
+        </div>
+        
+        <button id="restart-button" class="action-button cyber-btn btn-full" onclick="restartDevice()">
+          <i class="fas fa-sync-alt"></i> RESTART DEVICE
+        </button>
+      </section>
+
+      <!-- SENSOR PROTOCOLS -->
+      <section class="control-section cyber-section" id="sensors-section">
+        <h3><i class="fas fa-microchip"></i> SENSOR PROTOCOLS</h3>
+        
+        <div class="cyber-form-group">
+          <label class="cyber-label">PROTOCOL</label>
+          <select id="sensor-select" class="input-field cyber-input" onchange="updateSensorUI()">
+            <option value="" disabled selected>Select a Sensor Protocol</option>
+            <option value="I2C">I2C</option>
+            <option value="ADC">ADC</option>
+            <option value="RS232">RS232</option>
+            <option value="Analog">Analog</option>
+            <option value="GPIO">GPIO</option>
+            <option value="WEATHER">Weather Parameter</option>
+          </select>
+        </div>
+        
+        <div class="cyber-form-group">
+          <label class="cyber-label">SUB-PROTOCOL</label>
+          <select id="sensor-dropdown" class="input-field cyber-input" onchange="selectSensor(this.value)">
+            <option value="" disabled selected>No protocol selected</option>
+          </select>
+        </div>
+        
+        <div id="sensor-data" class="sensor-data-container cyber-placeholder-box">
+          <span style="font-style: italic; color: #4d5b76;">No sensor data available.</span>
         </div>
       </section>
 
-      <section class="control-section">
-        <div class="controls">
-          <button id="restart-button" class="action-button" onclick="restartDevice()">
-            <i class="fas fa-redo"></i> Restart Device
-          </button>
+      <!-- UART LOGS IN LEFT PANEL -->
+      <section class="control-section cyber-section" id="uart-logs-section" style="flex: 1; display: flex; flex-direction: column; min-height: 250px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(0, 229, 255, 0.1); padding-bottom: 8px;">
+          <h3 style="margin: 0; border: none; padding: 0;"><i class="fas fa-align-left"></i> UART LOGS</h3>
+          <button class="cyber-btn btn-disconnect" style="padding: 4px 8px; font-size: 0.7rem;" onclick="clearOutput()"><i class="fas fa-trash"></i> CLEAR</button>
+        </div>
+        <div id="output" class="cyber-uart-output" style="border: 1px solid var(--panel-border); border-radius: 4px;">
+          // Waiting for data stream...
         </div>
       </section>
-
-      <section class="control-section" id="sensors-section">
-  <h3><i class="fas fa-microchip"></i> Sensor Protocols</h3>
-  
-  <div class="controls">
-    <select 
-      id="sensor-select" 
-      class="input-field" 
-      onchange="updateSensorUI()"
-      style="border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"
-    >
-      <option value="" disabled selected>Select a Sensor Protocol</option>
-      <option value="I2C">I2C</option>
-      <option value="ADC">ADC</option>
-      <option value="RS232">RS232</option>
-      <option value="Analog">Analog</option>
-      <option value="GPIO">GPIO</option>
-      <option value="WEATHER">Weather Parameter</option>
-    </select>
-  </div>
-  
-  <div class="controls">
-    <select 
-      id="sensor-dropdown" 
-      class="input-field" 
-      onchange="selectSensor(this.value)"
-      style="border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"
-    >
-      <option value="" disabled selected>Select a Sensor</option>
-    </select>
-  </div>
-</section>
-
-        <div id="sensor-data" class="sensor-data-container">
-          <!-- Selected sensor data will be dynamically inserted here -->
-        </div>
-      </section>
-      <!-- MOVED UART LOGS TO LEFT PANEL -->
-        <section class="control-section" id="uart-logs-section">
-          <h3><i class="fas fa-file-alt"></i> UART Logs</h3>
-          <div class="controls">
-            <button class="action-button small" onclick="clearOutput()"><i class="fas fa-trash"></i> Clear</button>
-          </div>
-          <div id="output" class="uart-output-compact"></div>
-        </section>
-     </div>
+    </div>
 
     <div class="right-panel">
-      <div class="container">
-        <section class="control-section" id="sensor-visualization-section">
-          <!-- Sensor Connection Status & Header on same line with divider -->
-          <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 16px; margin-bottom: 24px; border-bottom: 1px solid var(--panel-border);">
-            <h3 style="margin: 0;"><i class="fas fa-chart-line"></i> Sensor Data Visualization</h3>
-            <div class="status-box" id="status-box" style="margin: 0; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; border: 1px solid rgba(248, 113, 113, 0.3); background: rgba(248, 113, 113, 0.08); color: #f87171;">
-              <i class="fas fa-circle status-icon" id="status-dot" style="font-size: 0.6rem;"></i>
-              <span id="status-text" style="font-weight: 500;">Not connected</span>
+      <div class="container" style="display: flex; flex-direction: column; gap: 16px; height: 100%;">
+        
+        <div class="cyber-grid-container" style="flex: 1;">
+          <div class="cyber-grid-header">
+            <h3><i class="fas fa-chart-line"></i> SENSOR DATA VISUALIZATION</h3>
+            <div class="cyber-grid-actions">
+              <div class="status-box" id="status-box" style="margin: 0; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-family: var(--font-mono); display: flex; align-items: center; gap: 6px; border: 1px solid rgba(255, 42, 85, 0.4); background: rgba(255, 42, 85, 0.05); color: var(--accent-red); text-transform: uppercase;">
+                <i class="fas fa-circle status-icon" id="status-dot" style="font-size: 0.5rem;"></i>
+                <span id="status-text" style="font-weight: 500;">NOT CONNECTED</span>
+              </div>
             </div>
           </div>
+          
+          <div class="cyber-grid-main">
+            <!-- Empty State (Shown when no sensors are active) -->
+            <div class="cyber-empty-state" id="empty-state-container">
+              <div class="cyber-empty-icon">
+                <i class="fas fa-chart-area"></i>
+              </div>
+              <div class="cyber-empty-text">
+                <h4>Awaiting Signal</h4>
+                <p>Connect a serial device to begin streaming sensor data in real-time.</p>
+              </div>
+              <button class="cyber-btn" style="border-color: var(--accent-cyan); color: var(--accent-cyan);" onclick="connectPort()">
+                <i class="fas fa-play"></i> CONNECT DEVICE
+              </button>
+            </div>
 
-          <div class="sensor-cards">
+            <!-- Existing Sensor Cards (Hidden initially or overlaid) -->
+            <div class="sensor-cards" id="sensor-cards-container" style="display: none; width: 100%; height: 100%; padding: 20px; overflow-y: auto; z-index: 20;">
 <!-- TEMPERATURE (CELSIUS) – FINAL FIXED: NO CUT-OFF, PERFECT °C -->
 <div id="thermometer-container" class="thermometer-container">
   <h4>Temperature</h4>
@@ -359,7 +379,7 @@
   <div class="gauge-container">
     <svg class="gauge-svg" viewBox="0 0 200 200">
       <defs>
-        <!-- gradient that follows .light-mode / .dark-mode -->
+        <!-- gradient that follows .light-mode -->
         <linearGradient id="gaugeGradientLight" x1="0" y1="0" x2="200" y2="200">
           <stop offset="0%"  stop-color="#06b6d4"/>
           <stop offset="25%" stop-color="#10b981"/>
@@ -1822,14 +1842,17 @@
 </div>
         
           </div>
-        </section>
-      </div>
-    </div>
-  </div>
+        </div> <!-- End of cyber-grid-main -->
+        </div> <!-- End of cyber-grid-container -->
 
-  <footer>
-    <p><i class="fas fa-copyright"></i> Serial Monitor App © 2025</p>
-  </footer>
+      </div> <!-- End of right panel container -->
+    </div> <!-- End of right panel -->
+  </div> <!-- End of main container -->
+
+  <!-- Footer -->
+  <div style="text-align: center; padding: 12px; font-family: var(--font-mono); font-size: 0.75rem; color: #4d5b76; letter-spacing: 1px;">
+    &diams; Serial Monitor App &copy; 2025 - Bharat Innovates
+  </div>
 
   <script src="renderer.js"></script>
   <script>
@@ -2027,11 +2050,11 @@ function resetAllSensorDisplays() {
 }
 
   function toggleTheme() {
-    document.body.classList.toggle('dark-mode');
-    const isDark = document.body.classList.contains('dark-mode');
-    localStorage.setItem('appTheme', isDark ? 'dark' : 'light');
+    document.body.classList.toggle('light-mode');
+    const isLight = document.body.classList.contains('light-mode');
+    localStorage.setItem('appTheme', isLight ? 'light' : 'dark');
     const icon = document.querySelector('#indexThemeBtn i');
-    icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+    icon.className = isLight ? 'fas fa-moon' : 'fas fa-sun';
   }
 
   function clearOutput() {
