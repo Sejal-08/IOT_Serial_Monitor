@@ -1927,9 +1927,9 @@ function selectSensor(sensor) {
   // If switching away from SEN66, restore original thermometer/humidity titles
   if (selectedSensor === "SEN66" && sensor !== "SEN66") {
     const thermoTitle = document.querySelector("#thermometer-container h4");
-    if (thermoTitle) thermoTitle.textContent = "Temperature";
+    if (thermoTitle) thermoTitle.innerHTML = '<i class="fas fa-temperature-half"></i> Temperature';
     const humTitle = document.querySelector("#humidity-card h4");
-    if (humTitle) humTitle.textContent = "Humidity";
+    if (humTitle) humTitle.innerHTML = '<i class="fas fa-droplet"></i> Humidity';
     // Clear shared globals so they don't bleed into other sensors
     currentTemperature = null;
     currentHumidity    = null;
@@ -2061,9 +2061,9 @@ function _updateSEN66Card() {
   }
   // ── Update shared card titles ──
   const thermoTitle = document.querySelector("#thermometer-container h4");
-  if (thermoTitle) thermoTitle.textContent = "Temperature";
+  if (thermoTitle) thermoTitle.innerHTML = '<i class="fas fa-temperature-half"></i> Temperature';
   const humTitle = document.querySelector("#humidity-card h4");
-  if (humTitle) humTitle.textContent = "Humidity";
+  if (humTitle) humTitle.innerHTML = '<i class="fas fa-droplet"></i> Humidity';
 
   function setArc(arcId, value, maxVal) {
   const el = document.getElementById(arcId);

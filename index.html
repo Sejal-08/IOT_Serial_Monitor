@@ -214,16 +214,16 @@
                 <h4>Awaiting Signal</h4>
                 <p>Connect a serial device to begin streaming sensor data in real-time.</p>
               </div>
-              <button class="cyber-btn" style="border-color: var(--accent-cyan); color: var(--accent-cyan);" onclick="connectPort()">
+              <button class="cyber-btn btn-connect" onclick="connectPort()">
                 <i class="fas fa-play"></i> CONNECT DEVICE
               </button>
             </div>
 
             <!-- Existing Sensor Cards (Hidden initially or overlaid) -->
-            <div class="sensor-cards" id="sensor-cards-container" style="display: none; width: 100%; height: 100%; padding: 20px; overflow-y: auto; z-index: 20;">
+            <div class="sensor-cards" id="sensor-cards-container" style="display: none; width: 100%; padding: 20px; overflow-y: auto; z-index: 20;">
 <!-- TEMPERATURE (CELSIUS) – FINAL FIXED: NO CUT-OFF, PERFECT °C -->
 <div id="thermometer-container" class="thermometer-container">
-  <h4>Temperature</h4>
+  <h4><i class="fas fa-temperature-half"></i> Temperature</h4>
   <div id="thermometer-value" class="sensor-value" style="margin-bottom: 16px; font-size: 1.5rem; font-weight: 600; letter-spacing: -1px;"></div>
 
   <svg width="280" height="460" viewBox="0 0 280 460" class="thermometer">
@@ -290,7 +290,7 @@
 
 <!-- TEMPERATURE (FAHRENHEIT) – UPDATED TO MATCH CELSIUS STYLING -->
 <div id="thermometer-f-container" class="thermometer-container" style="display: none;">
-  <h4>Temperature (°F)</h4>
+  <h4><i class="fas fa-temperature-half"></i> Temperature (°F)</h4>
   <div id="thermometer-f-value" class="sensor-value" style="margin-bottom: 16px; font-size: 1.5rem; font-weight: 600; letter-spacing: -1px;"></div>
 
   <svg width="280" height="460" viewBox="0 0 280 460" class="thermometer">
@@ -356,7 +356,7 @@
 
             <!-- Humidity -->
       <div id="humidity-card" class="humidity-card-container">
-        <h4>Humidity</h4>
+        <h4><i class="fas fa-droplet"></i> Humidity</h4>
         <div id="humidity-value" class="sensor-value" style="margin-bottom: 16px; font-size: 1.5rem; font-weight: 600; letter-spacing: -1px;"></div>
         <svg id="humidity-wave" width="100%" height="80" viewBox="0 0 100 100" preserveAspectRatio="none">
           <defs>
@@ -372,7 +372,7 @@
       
           <!-- PRESSURE -->
 <div id="pressure-card" class="card-container">
-  <h4>Pressure</h4>
+  <h4><i class="fas fa-gauge-high"></i> Pressure</h4>
   <div class="card-content">
     <div id="pressure-value" class="main-value"  style="margin-bottom: 16px; font-size: 1.5rem; font-weight: 600; letter-spacing: -1px;">0.00</div>
   </div>
@@ -419,7 +419,7 @@
 
             <!-- Light Intensity Card with Sun/Moon Toggle -->
 <div id="light-card" class="card-container">
-  <h4>Light Intensity</h4>
+  <h4><i class="fas fa-lightbulb"></i> Light Intensity</h4>
   <div id="light-value" class="sensor-value" style="margin-bottom: 16px; font-size: 1.5rem; font-weight: 600; letter-spacing: -1px;" ></div>
   
   <!-- Sun SVG -->
@@ -524,7 +524,7 @@
 
 <!-- VCNL4040 Ambient Light (LUX) Card – PERFECTLY CENTERED -->
 <div id="vcnl-lux-card" class="card-container" style="display: none;">
-  <h4>Ambient Light (VCNL4040)</h4>
+  <h4><i class="fas fa-lightbulb"></i> Ambient Light (VCNL4040)</h4>
 
   <div id="vcnl-lux-value" class="sensor-value" style="margin-bottom: 16px; font-size: 1.5rem; font-weight: 600; letter-spacing: -1px;">
     0.0 lux
@@ -662,9 +662,9 @@
 
 <!-- RAIN GAUGE CARD - FIXED WITH RAIN ANIMATION -->
 <div id="rain-gauge-card" class="rain-gauge-card">
+  <h4><i class="fas fa-cloud-showers-heavy"></i> Rainfall</h4>
   <div class="rain-header">
-    <i class="fa-solid fa-cloud-rain"></i>
-    <div id="rain-value" class="rain-value">0.0 mm</div>
+    <div id="rain-value" class="sensor-value" style="margin-bottom: 16px; font-size: 1.5rem; font-weight: 600; letter-spacing: -1px;">0.0 mm</div>
   </div>
 
   <!-- NEW: Rain overlay (drops fall here) -->
@@ -689,7 +689,7 @@
 
 <!-- Relay Controller Card -->
 <div id="relay-card" class="card-container" style="display: none;">
-  <h4>⚡ Relay Controller</h4>
+  <h4><i class="fas fa-bolt"></i> Relay Controller</h4>
   <div id="relay-value" class="sensor-value" style="margin-bottom: 16px; font-size: 1.8rem; font-weight: 700; letter-spacing: -1px;">OFF</div>
 
   <svg id="relay-svg" width="520" height="280" viewBox="0 0 520 280" style="margin: 20px auto; display: block;">
@@ -835,7 +835,7 @@
 <!-- LIS3DH ACCELERATION CARD -->
 <div id="lis3dh-card" class="card-container" style="display: none; min-width: 300px;">
 
-  <h4>Acceleration (LIS3DH)</h4>
+  <h4><i class="fas fa-cube"></i> Acceleration (LIS3DH)</h4>
 
   <div class="accel-values">
     <div id="lis3dh-x-value" class="sensor-value">X: 0.00 m/s²</div>
@@ -891,7 +891,7 @@
      ============================================================ -->
 <!-- ── CO2 ── -->
 <div id="sen66-co2-card" class="card-container sen66-param-card" style="display:none;">
-  <h4>CO₂</h4>
+  <h4><i class="fas fa-smog"></i> CO₂</h4>
   <div class="sen66-param-value" id="sen66-co2-val">— ppm</div>
   <div class="sen66-gauge-wrap">
     <svg class="sen66-gauge-svg" viewBox="0 0 120 120" width="160" height="160">
@@ -944,7 +944,7 @@
 
 <!-- ── PM1.0 ── -->
 <div id="sen66-pm1-card" class="card-container sen66-param-card" style="display:none;">
-  <h4>PM<sub>1.0</sub></h4>
+  <h4><i class="fas fa-wind"></i> PM<sub>1.0</sub></h4>
   <div class="sen66-param-value" id="sen66-pm1-val">— µg/m³</div>
   <div class="sen66-gauge-wrap">
     <svg class="sen66-gauge-svg" viewBox="0 0 120 120" width="160" height="160">
@@ -987,7 +987,7 @@
 
 <!-- ── PM2.5 ── -->
 <div id="sen66-pm25-card" class="card-container sen66-param-card" style="display:none;">
-  <h4>PM<sub>2.5</sub></h4>
+  <h4><i class="fas fa-wind"></i> PM<sub>2.5</sub></h4>
   <div class="sen66-param-value" id="sen66-pm25-val">— µg/m³</div>
   <div class="sen66-gauge-wrap">
     <svg class="sen66-gauge-svg" viewBox="0 0 120 120" width="160" height="160">
@@ -1026,7 +1026,7 @@
 
 <!-- ── PM4 ── -->
 <div id="sen66-pm4-card" class="card-container sen66-param-card" style="display:none;">
-  <h4>PM<sub>4</sub></h4>
+  <h4><i class="fas fa-wind"></i> PM<sub>4</sub></h4>
   <div class="sen66-param-value" id="sen66-pm4-val">— µg/m³</div>
   <div class="sen66-gauge-wrap">
     <svg class="sen66-gauge-svg" viewBox="0 0 120 120" width="160" height="160">
@@ -1065,7 +1065,7 @@
 
 <!-- ── PM10 ── -->
 <div id="sen66-pm10-card" class="card-container sen66-param-card" style="display:none;">
-  <h4>PM<sub>10</sub></h4>
+  <h4><i class="fas fa-wind"></i> PM<sub>10</sub></h4>
   <div class="sen66-param-value" id="sen66-pm10-val">— µg/m³</div>
   <div class="sen66-gauge-wrap">
     <svg class="sen66-gauge-svg" viewBox="0 0 120 120" width="160" height="160">
@@ -1104,7 +1104,7 @@
 
 <!-- ── VOC ── -->
 <div id="sen66-voc-card" class="card-container sen66-param-card" style="display:none;">
-  <h4>VOC Index</h4>
+  <h4><i class="fas fa-leaf"></i> VOC Index</h4>
   <div class="sen66-param-value" id="sen66-voc-val">—</div>
   <div class="sen66-gauge-wrap">
     <svg class="sen66-gauge-svg" viewBox="0 0 120 120" width="160" height="160">
@@ -1141,7 +1141,7 @@
 
 <!-- ── NOx ── -->
 <div id="sen66-nox-card" class="card-container sen66-param-card" style="display:none;">
-  <h4>NOx Index</h4>
+  <h4><i class="fas fa-biohazard"></i> NOx Index</h4>
   <div class="sen66-param-value" id="sen66-nox-val">—</div>
   <div class="sen66-gauge-wrap">
     <svg class="sen66-gauge-svg" viewBox="0 0 120 120" width="160" height="160">
@@ -1182,7 +1182,7 @@
 
         <!-- Hall Sensor Card -->
 <div id="hall-card" class="card-container">
-  <h4>Hall Sensor</h4>
+  <h4><i class="fas fa-magnet"></i> Hall Sensor</h4>
   <div id="hall-value" class="sensor-value" style="margin-bottom: 16px; font-size: 1.5rem; font-weight: 600; letter-spacing: -1px;">Waiting for data…</div>
   
   <div class="hall-animation-container">
@@ -1288,7 +1288,7 @@
 
 <!-- TLV493D Magnetic Field – PERFECTLY SIZED & GRID-FRIENDLY -->
 <div id="tlv493d-card" class="card-container" style="display:none; text-align:center;">
-  <h4>Magnetic Field (TLV493D)</h4>
+  <h4><i class="fas fa-compass"></i> Magnetic Field (TLV493D)</h4>
 
   <!-- Live Values -->
   <div style="margin:16px 0; font-size:1.1rem; line-height:1.8;">
@@ -1336,7 +1336,7 @@
 
      <!-- Wind Direction Card -->
 <div id="wind-direction-card" class="card-container" style="display: none;">
-  <h4>Wind Direction</h4>
+  <h4><i class="fas fa-location-arrow"></i> Wind Direction</h4>
   <div id="wind-direction-value">0°</div>
   <div class="wind-compass">
     <div class="outer-ring"></div>
@@ -1361,7 +1361,7 @@
 
 <!-- Wind Speed Card -->
 <div id="wind-speed-card" class="card-container" style="display: none;">
-  <h4>Wind Speed</h4>
+  <h4><i class="fas fa-wind"></i> Wind Speed</h4>
   <div id="wind-speed-value" class="sensor-value">0.0 m/s</div>
   <div class="anemometer-container" style="margin: 20px auto;">
     <svg id="wind-svg" width="200" height="200" viewBox="0 0 200 120">
@@ -1389,7 +1389,7 @@
 
 <!-- Wind Flow Direction Card (NEW) -->
 <div id="wind-flow-card" class="card-container" style="display: none;">
-  <h4>Wind Flow</h4>
+  <h4><i class="fas fa-stream"></i> Wind Flow</h4>
   <div class="flow-icon-wrap">
     <span class="flow-from" id="flow-from">—</span>
     <span class="flow-arrow-big">→</span>
@@ -1418,7 +1418,7 @@
 <!-- VL53L0X Distance Sensor Card -->
 <div id="tof-card" class="sensor-card tof-animate">
   <div class="tof-header">
-    <h4>Distance</h4>
+    <h4><i class="fas fa-ruler-horizontal"></i> Distance</h4>
     <div id="tof-value" class="sensor-value">– cm</div>
   </div>
 
@@ -1455,7 +1455,7 @@
 <!-- UV LTR390 UV Index with Enhanced Sun Animation + Dynamic Pointer -->
 <div id="uvltr-card" class="card-container">
   <div class="sensor-card">
-    <h4>UV Index</h4>
+    <h4><i class="fas fa-umbrella-beach"></i> UV Index</h4>
     <div id="uv-value" class="sensor-value">UV: 0.00</div>
    
     <div class="sensor-visualization">
@@ -1558,7 +1558,7 @@
 
           <!-- IR Sensor Card with Proper Reflection Animation -->
 <div id="ir-card" class="card-container" style="display: none;">
-  <h4>IR Sensor</h4>
+  <h4><i class="fas fa-broadcast-tower"></i> IR Sensor</h4>
   <div id="ir-value" class="sensor-value" style="margin-bottom: 16px; font-size: 1.5rem; font-weight: 600; letter-spacing: -1px;">Waiting...</div>
   
   <svg width="650" height="280" viewBox="0 0 650 280" style="margin: 20px 0;">
@@ -1643,7 +1643,7 @@
 
 <!-- Blinky Card - Fixed Switch -->
 <div id="blinky-card" class="card-container" style="display: none;">
-  <h4>Blinky Controller</h4>
+  <h4><i class="fas fa-lightbulb"></i> Blinky Controller</h4>
   <div id="blinky-value" class="sensor-value" style="margin-bottom: 16px; font-size: 1.5rem; font-weight: 600; letter-spacing: -1px;">OFF</div>
   
   <svg id="blinky-svg" width="500" height="300" viewBox="0 0 500 300" style="margin: 0 auto;">
@@ -1763,7 +1763,7 @@
 
 <!-- Buzzer Card - Enhanced with Sound Wave Animation -->
 <div id="buzzer-card" class="card-container" style="display: none;">
-  <h4>Buzzer</h4>
+  <h4><i class="fas fa-volume-up"></i> Buzzer</h4>
   <div id="buzzer-value" class="sensor-value" style="margin-bottom: 16px; font-size: 1.8rem; font-weight: 700; letter-spacing: -1px;">Inactive</div>
 
   <div class="buzzer-animation-container" style="width: 220px; height: 220px; margin: 0 auto; position: relative;">
