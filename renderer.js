@@ -255,7 +255,7 @@ const selectedBackend = localStorage.getItem('selectedDevice'); // 'c' or 'pytho
 let isPythonBackend = selectedBackend === 'python';
 
 const sensorProtocolMap = {
-  "I2C": ["SHT40", "BME680", "STS30", "STTS751", "LIS3DH", "VEML7700", "TLV493D", "VL53L0X", "LTR390", "Weather Shield", "VCNL4040", "SEN66"],
+  "I2C": ["SHT40", "AHT20", "BME680", "STS30", "STTS751", "LIS3DH", "VEML7700", "TLV493D", "VL53L0X", "LTR390", "Weather Shield", "VCNL4040", "SEN66"],
   "RS485": ["MD02"],
   "RS232": ["Wind Sensor"],
   "SPI": [],
@@ -266,7 +266,7 @@ const sensorProtocolMap = {
 };
 // Track sensor presence and data
 let sensorStatus = {
-  "I2C": { SHT40: false, BME680: false, STS30: false, STTS751: false, LIS3DH: false, VEML7700: false, TLV493D: false, VL53L0X: false, LTR390: false, WeatherShield: false ,  SEN66: false },
+  "I2C": { SHT40: false, AHT20: false, BME680: false, STS30: false, STTS751: false, LIS3DH: false, VEML7700: false, TLV493D: false, VL53L0X: false, LTR390: false, WeatherShield: false, SEN66: false },
   "RS485": { MD02: false },
   "RS232": { WindSensor: false },
   "SPI": {},
@@ -436,6 +436,7 @@ function updateSensorUI() {
   const sensorParameters = {
     "BME680": ["Temperature", "Humidity", "Pressure"],
     "SHT40": ["Temperature", "Humidity"],
+    "AHT20": ["Temperature", "Humidity"],
     "SEN66": ["PM1.0", "PM2.5", "PM4", "PM10", "Temperature", "Humidity", "VOC", "NOx", "CO2"],
     "STTS751": ["Temperature"],
     "VEML7700": ["Lux"],
@@ -606,7 +607,7 @@ if (protocol && selectedSensor) {
   });
 }
   // Temperature sensors
-  if (["BME680", "STTS751", "SHT40", "STS30", "Weather Shield"].includes(selectedSensor) && protocol === "I2C") {
+  if (["BME680", "STTS751", "SHT40", "AHT20", "STS30", "Weather Shield"].includes(selectedSensor) && protocol === "I2C") {
     if (thermometerContainer) {
       thermometerContainer.style.display = "flex";
       thermometerContainer.classList.add('sensor-card');
@@ -616,7 +617,7 @@ if (protocol && selectedSensor) {
     }
   }
   // Humidity
-  if (["BME680", "SHT40", "Weather Shield"].includes(selectedSensor) && protocol === "I2C") {
+  if (["BME680", "SHT40", "AHT20", "Weather Shield"].includes(selectedSensor) && protocol === "I2C") {
     if (humidityContainer) {
       humidityContainer.style.display = "flex";
       humidityContainer.classList.add('sensor-card');
@@ -738,7 +739,7 @@ if (protocol && selectedSensor) {
       showLight: lightContainer ? lightContainer.style.display : 'N/A'
     });
 // === THERMOMETER UPDATE ===
-if ((protocol === "I2C" || isWeatherMode) && (isWeatherMode || selectedSensor === "BME680" || selectedSensor === "SEN66"|| selectedSensor === "STTS751" || selectedSensor === "SHT40" || selectedSensor === "STS30" || selectedSensor === "Weather Shield") && currentTemperature !== null) {
+if ((protocol === "I2C" || isWeatherMode) && (isWeatherMode || selectedSensor === "BME680" || selectedSensor === "SEN66" || selectedSensor === "STTS751" || selectedSensor === "SHT40" || selectedSensor === "AHT20" || selectedSensor === "STS30" || selectedSensor === "Weather Shield") && currentTemperature !== null) {
   const temp = parseFloat(currentTemperature);
   let fillColor;
   if (temp < 25) {
@@ -2385,6 +2386,30 @@ function parseSensorData(data) {
         }
       }
 
+      // AHT20 — format: "AHT20 Sensor: Temperature = XX.XX C, Humidity = XX.XX %"
+      const aht20Match = line.match(/AHT20\s*Sensor\s*:\s*Temperature\s*=\s*([\d.]+)\s*C\s*,\s*Humidity\s*=\s*([\d.]+)\s*%/i);
+      if (aht20Match && protocol === "I2C") {
+        const temp = parseFloat(aht20Match[1]);
+        const humidity = parseFloat(aht20Match[2]);
+        if (!isNaN(temp) && !isNaN(humidity)) {
+          sensorStatus[protocol]["AHT20"] = true;
+          if (!selectedSensor && !autoSelected) {
+            selectedSensor = "AHT20";
+            autoSelected = true;
+            const dropdown = document.getElementById("sensor-dropdown");
+            if (dropdown) dropdown.value = "AHT20";
+          }
+          sensorData[protocol] = sensorData[protocol] || {};
+          sensorData[protocol]["AHT20 Temperature"] = temp.toFixed(2);
+          sensorData[protocol]["AHT20 Humidity"] = humidity.toFixed(2);
+          currentTemperature = temp;
+          currentHumidity = humidity;
+          console.log('AHT20 parsed:', { temp, humidity });
+          if (selectedSensor === "AHT20") updateSensorUI();
+          dataParsed = true;
+        }
+      }
+
       // SEN66
       if (protocol === "I2C") {
         let sen66Matched = false;
@@ -2785,7 +2810,7 @@ _resetSEN66();
     "Analog": {},
   };
   sensorStatus = {
-    "I2C": { SHT40: false, BME680: false, STS30: false, STTS751: false, SEN66: false, LIS3DH: false, VEML7700: false, TLV493D: false, VL53L0X: false, LTR390: false },
+    "I2C": { SHT40: false, AHT20: false, BME680: false, STS30: false, STTS751: false, SEN66: false, LIS3DH: false, VEML7700: false, TLV493D: false, VL53L0X: false, LTR390: false },
     "RS485": { MD02: false },
     "RS232": { WindSensor: false },
     "WEATHER": { "WeatherParameters": true },
