@@ -148,27 +148,29 @@
       </section>
 
       <!-- SENSOR PROTOCOLS -->
-      <section class="control-section cyber-section" id="sensors-section">
+      <section class="control-section cyber-section" id="sensors-section" style="margin-bottom: 4px;">
         <h3><i class="fas fa-microchip"></i> SENSOR PROTOCOLS</h3>
         
-        <div class="cyber-form-group">
-          <label class="cyber-label">PROTOCOL</label>
-          <select id="sensor-select" class="input-field cyber-input" onchange="updateSensorUI()">
-            <option value="" disabled selected>Select a Sensor Protocol</option>
-            <option value="I2C">I2C</option>
-            <option value="ADC">ADC</option>
-            <option value="RS232">RS232</option>
-            <option value="Analog">Analog</option>
-            <option value="GPIO">GPIO</option>
-            <option value="WEATHER">Weather Parameter</option>
-          </select>
-        </div>
-        
-        <div class="cyber-form-group">
-          <label class="cyber-label">SUB-PROTOCOL</label>
-          <select id="sensor-dropdown" class="input-field cyber-input" onchange="selectSensor(this.value)">
-            <option value="" disabled selected>No protocol selected</option>
-          </select>
+        <div style="display: flex; gap: 8px;">
+          <div class="cyber-form-group" style="flex: 1;">
+            <label class="cyber-label">PROTOCOL</label>
+            <select id="sensor-select" class="input-field cyber-input" onchange="updateSensorUI()">
+              <option value="" disabled selected>Select a Sensor Protocol</option>
+              <option value="I2C">I2C</option>
+              <option value="ADC">ADC</option>
+              <option value="RS232">RS232</option>
+              <option value="Analog">Analog</option>
+              <option value="GPIO">GPIO</option>
+              <option value="WEATHER">Weather Parameter</option>
+            </select>
+          </div>
+          
+          <div class="cyber-form-group" style="flex: 1;">
+            <label class="cyber-label">SENSOR</label>
+            <select id="sensor-dropdown" class="input-field cyber-input" onchange="selectSensor(this.value)">
+              <option value="" disabled selected>No protocol selected</option>
+            </select>
+          </div>
         </div>
         
         <div id="sensor-data" class="sensor-data-container cyber-placeholder-box">
