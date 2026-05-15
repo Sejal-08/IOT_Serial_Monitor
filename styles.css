@@ -2183,8 +2183,26 @@ body:not(.dark-mode) .sen66-param-card h4 {
 }
 
 #rain-gauge-card h4 {
-    color: #cbd5ff;
-    margin-bottom: 5px;
+  font-size: 1.4rem !important;
+  font-weight: 800 !important;
+  margin-bottom: 12px !important;
+  background: linear-gradient(90deg, #60a5fa, #93c5fd) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  text-align: center !important;
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+}
+
+body:not(.dark-mode) #rain-gauge-card h4 {
+  background: linear-gradient(90deg, #1d4ed8, #3b82f6) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
 }
 /* Raindrop Animations */
 @keyframes raindropFall {    
@@ -5122,4 +5140,203 @@ body:not(.dark-mode) #vcnl-lux-card h4 {
     font-size: 1rem;
   }
 }
+}
+/* ============================================================
+   THERMOMETER CARD – UNIFORM SIZE WITH SIBLING CARDS
+   Applies when SHT40 / BME680 / STTS751 are selected
+   (NOT inside SEN66 layout or Weather Shield grid)
+   ============================================================ */
+
+/* When thermometer card appears alongside humidity/pressure
+   but NOT in a SEN66 or weather-shield context */
+.sensor-cards:not(.sen66-layout):not(.weather-shield-grid):not(.weather-combined-grid)
+  #thermometer-container,
+.sensor-cards:not(.sen66-layout):not(.weather-shield-grid):not(.weather-combined-grid)
+  #thermometer-f-container {
+  /* Match the standard card sizing */
+  min-width: 260px !important;
+  max-width: 340px !important;
+  width: 300px !important;
+  min-height: 460px !important;
+  max-height: 460px !important;
+  height: 460px !important;
+  flex: 0 0 300px !important;
+  padding: 24px 20px !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  animation: none !important;
+}
+
+/* Scale the thermometer SVG to fit within the constrained card */
+.sensor-cards:not(.sen66-layout):not(.weather-shield-grid):not(.weather-combined-grid)
+  #thermometer-container svg,
+.sensor-cards:not(.sen66-layout):not(.weather-shield-grid):not(.weather-combined-grid)
+  #thermometer-f-container svg {
+  width: 160px !important;
+  height: 340px !important;
+  max-width: 100% !important;
+}
+
+/* Scale down the title to match */
+.sensor-cards:not(.sen66-layout):not(.weather-shield-grid):not(.weather-combined-grid)
+  #thermometer-container h4,
+.sensor-cards:not(.sen66-layout):not(.weather-shield-grid):not(.weather-combined-grid)
+  #thermometer-f-container h4 {
+  font-size: 1.4rem !important;
+  margin-bottom: 8px !important;
+}
+
+/* Scale down value text */
+.sensor-cards:not(.sen66-layout):not(.weather-shield-grid):not(.weather-combined-grid)
+  #thermometer-value,
+.sensor-cards:not(.sen66-layout):not(.weather-shield-grid):not(.weather-combined-grid)
+  #thermometer-f-value {
+  font-size: 1.1rem !important;
+  margin-bottom: 8px !important;
+}
+
+/* Match humidity card height to thermometer */
+.sensor-cards:not(.sen66-layout):not(.weather-shield-grid):not(.weather-combined-grid)
+  #humidity-card {
+  min-height: 460px !important;
+  max-height: 460px !important;
+  height: 460px !important;
+  min-width: 260px !important;
+  max-width: 340px !important;
+  width: 300px !important;
+  flex: 0 0 300px !important;
+  overflow: hidden !important;
+}
+
+/* Match pressure card height */
+.sensor-cards:not(.sen66-layout):not(.weather-shield-grid):not(.weather-combined-grid)
+  #pressure-card {
+  min-height: 460px !important;
+  max-height: 460px !important;
+  height: 460px !important;
+  min-width: 260px !important;
+  max-width: 340px !important;
+  width: 300px !important;
+  flex: 0 0 300px !important;
+  overflow: hidden !important;
+}/* ============================================================
+   GLOBAL UNIFIED SENSOR CARD HEADING – SINGLE SOURCE OF TRUTH
+   Overrides ALL individual card h4 rules everywhere
+   ============================================================ */
+
+#thermometer-container h4,
+#thermometer-f-container h4,
+#humidity-card h4,
+#pressure-card h4,
+#light-card h4,
+#rain-gauge-card h4,
+#wind-direction-card h4,
+#wind-speed-card h4,
+#wind-flow-card h4,
+#tof-card h4,
+#uvltr-card h4,
+#tlv493d-card h4,
+#buzzer-card h4,
+#blinky-card h4,
+#relay-card h4,
+#vcnl-lux-card h4,
+#hall-card h4,
+#lis3dh-card h4,
+#ir-card h4,
+#rain-gauge-card h4,
+.sen66-param-card h4,
+.sensor-card h4,
+[id$="-card"] h4 {
+  /* Typography */
+  font-size: 1.3rem !important;
+  font-weight: 700 !important;
+  font-family: var(--font-sans) !important;
+  letter-spacing: 0.3px !important;
+  line-height: 1.2 !important;
+
+  /* Gradient text – dark mode */
+  background: linear-gradient(90deg, #60a5fa, #93c5fd) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+
+  /* Layout */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  text-align: center !important;
+  width: 100% !important;
+  margin: 0 0 12px 0 !important;
+  padding: 0 !important;
+
+  /* Reset any stray decoration */
+  text-shadow: none !important;
+  text-decoration: none !important;
+}
+
+/* Light mode override */
+body.light-mode #thermometer-container h4,
+body.light-mode #thermometer-f-container h4,
+body.light-mode #humidity-card h4,
+body.light-mode #pressure-card h4,
+body.light-mode #light-card h4,
+body.light-mode #rain-gauge-card h4,
+body.light-mode #wind-direction-card h4,
+body.light-mode #wind-speed-card h4,
+body.light-mode #wind-flow-card h4,
+body.light-mode #tof-card h4,
+body.light-mode #uvltr-card h4,
+body.light-mode #tlv493d-card h4,
+body.light-mode #buzzer-card h4,
+body.light-mode #blinky-card h4,
+body.light-mode #relay-card h4,
+body.light-mode #vcnl-lux-card h4,
+body.light-mode #hall-card h4,
+body.light-mode #lis3dh-card h4,
+body.light-mode #ir-card h4,
+body.light-mode .sen66-param-card h4,
+body.light-mode .sensor-card h4,
+body.light-mode [id$="-card"] h4 {
+  background: linear-gradient(90deg, #1d4ed8, #3b82f6) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+}
+
+/* Icon inside heading – uniform size and color */
+#thermometer-container h4 i,
+#thermometer-f-container h4 i,
+#humidity-card h4 i,
+#pressure-card h4 i,
+#light-card h4 i,
+#rain-gauge-card h4 i,
+#wind-direction-card h4 i,
+#wind-speed-card h4 i,
+#wind-flow-card h4 i,
+#tof-card h4 i,
+#uvltr-card h4 i,
+#tlv493d-card h4 i,
+#buzzer-card h4 i,
+#blinky-card h4 i,
+#relay-card h4 i,
+#vcnl-lux-card h4 i,
+#hall-card h4 i,
+#lis3dh-card h4 i,
+#ir-card h4 i,
+.sen66-param-card h4 i,
+.sensor-card h4 i,
+[id$="-card"] h4 i {
+  font-size: 1.1rem !important;
+  /* Let gradient bleed into icon too */
+  -webkit-text-fill-color: #60a5fa !important;
+  color: #60a5fa !important;
+  flex-shrink: 0 !important;
+}
+
+body.light-mode [id$="-card"] h4 i,
+body.light-mode .sen66-param-card h4 i,
+body.light-mode .sensor-card h4 i {
+  -webkit-text-fill-color: #2563eb !important;
+  color: #2563eb !important;
 }
