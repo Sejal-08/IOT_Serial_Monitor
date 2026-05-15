@@ -125,8 +125,8 @@
         </div>
 
         <div class="cyber-button-group">
-          <button class="action-button cyber-btn btn-connect" onclick="connectPort()"><i class="fas fa-play"></i> CONNECT</button>
-          <button class="action-button cyber-btn btn-disconnect" onclick="disconnectPort()"><i class="fas fa-stop"></i> DISCONNECT</button>
+          <button id="btn-connect-main" class="action-button cyber-btn btn-connect" onclick="connectPort()"><i class="fas fa-play"></i> CONNECT</button>
+          <button id="btn-disconnect-main" class="action-button cyber-btn btn-disconnect" onclick="disconnectPort()"><i class="fas fa-stop"></i> DISCONNECT</button>
         </div>
       </section>
 
@@ -172,10 +172,6 @@
             </select>
           </div>
         </div>
-        
-        <div id="sensor-data" class="sensor-data-container cyber-placeholder-box">
-          <span style="font-style: italic; color: #4d5b76;">No sensor data available.</span>
-        </div>
       </section>
 
       <!-- UART LOGS IN LEFT PANEL -->
@@ -197,9 +193,9 @@
           <div class="cyber-grid-header">
             <h3><i class="fas fa-chart-line"></i> SENSOR DATA VISUALIZATION</h3>
             <div class="cyber-grid-actions">
-              <div class="status-box" id="status-box" style="margin: 0; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-family: var(--font-mono); display: flex; align-items: center; gap: 6px; border: 1px solid rgba(255, 42, 85, 0.4); background: rgba(255, 42, 85, 0.05); color: var(--accent-red); text-transform: uppercase;">
-                <i class="fas fa-circle status-icon" id="status-dot" style="font-size: 0.5rem;"></i>
-                <span id="status-text" style="font-weight: 500;">NOT CONNECTED</span>
+              <div class="status-box disconnected" id="status-box">
+                <i class="fas fa-circle status-icon" id="status-dot"></i>
+                <span id="status-text">NOT CONNECTED</span>
               </div>
             </div>
           </div>

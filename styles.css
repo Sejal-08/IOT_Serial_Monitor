@@ -241,6 +241,33 @@ ul.nav-links {
   background: rgba(0, 229, 255, 0.05);
 }
 
+/* Button States: Highlight & Dim */
+.btn-highlight.btn-connect {
+  background: #00ff88 !important;
+  color: #000 !important;
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
+}
+.btn-highlight.btn-connect i {
+  color: #000 !important;
+}
+
+.btn-highlight.btn-disconnect {
+  background: #ff2a55 !important;
+  color: #fff !important;
+  box-shadow: 0 0 20px rgba(255, 42, 85, 0.4);
+}
+.btn-highlight.btn-disconnect i {
+  color: #fff !important;
+}
+
+.btn-dim {
+  opacity: 0.25 !important;
+  filter: grayscale(0.8);
+  pointer-events: none;
+}
+
+
+
 .btn-connect {
   border: 1px solid #00ff88 !important;
   color: #00ff88 !important;
@@ -370,8 +397,8 @@ ul.nav-links {
   background-size: 40px 40px;
   background-position: center center;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-start;
+  justify-content: flex-start;
   overflow: hidden;
 }
 
@@ -382,6 +409,7 @@ ul.nav-links {
   align-items: center;
   gap: 16px;
   z-index: 10;
+  margin: auto;
 }
 
 .cyber-empty-icon {
@@ -5340,3 +5368,46 @@ body.light-mode .sensor-card h4 i {
   -webkit-text-fill-color: #2563eb !important;
   color: #2563eb !important;
 }
+
+/* Status Box UI */
+.status-box {
+  margin: 0;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-transform: uppercase;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(255, 42, 85, 0.2);
+}
+
+.status-box.connected {
+  border-color: rgba(0, 230, 118, 0.4) !important;
+  background: rgba(0, 230, 118, 0.05) !important;
+  color: var(--accent-green) !important;
+  box-shadow: 0 0 10px rgba(0, 230, 118, 0.1);
+}
+
+.status-box.connected .status-icon {
+  color: var(--accent-green) !important;
+  animation: pulse-green 2s infinite;
+}
+
+.status-box.disconnected {
+  border-color: rgba(255, 42, 85, 0.4) !important;
+  background: rgba(255, 42, 85, 0.05) !important;
+  color: var(--accent-red) !important;
+}
+
+.status-box.disconnected .status-icon {
+  color: var(--accent-red) !important;
+}
+
+@keyframes pulse-green {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
+}

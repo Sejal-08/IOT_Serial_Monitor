@@ -360,7 +360,7 @@ function updateSensorUI() {
   const protocol = document.getElementById("sensor-select").value;
   const isWeatherMode = protocol === "WEATHER";
   const sensorDropdown = document.getElementById("sensor-dropdown");
-  const sensorDataDiv = document.getElementById("sensor-data");
+  const sensorDataDiv = null; // element removed from HTML
  
   const thermometerContainer = document.getElementById("thermometer-container");
   const thermometerFContainer = document.getElementById("thermometer-f-container");
@@ -432,7 +432,6 @@ function updateSensorUI() {
   const blinkyCard = document.getElementById("blinky-card");
   const buzzerCard = document.getElementById("buzzer-card");
   sensorDropdown.innerHTML = '<option value="" disabled selected>Select a Sensor</option>';
-  sensorDataDiv.innerHTML = "";
   // Define which sensors support which parameters
   const sensorParameters = {
     "BME680": ["Temperature", "Humidity", "Pressure"],
@@ -518,8 +517,7 @@ if (selectedSensor && sensorData[protocol]) {
   dataHtml += "<p>Please select a sensor to view data.</p>";
 }
 
-dataHtml += `</div>`;
-sensorDataDiv.innerHTML = dataHtml;
+// sensorDataDiv removed from HTML — data shown in animation cards only
   
 // === HIDE ALL CARDS FIRST ===
 const allCards = [
@@ -2011,25 +2009,23 @@ function updatePressureCard(hpa) {
   if (card) card.style.display = 'flex';
 
   if (hpa === null || isNaN(hpa)) {
-    if (topVal) topVal.textContent = '– kPa';
+    if (topVal) topVal.textContent = '– hPa';
     if (midVal) midVal.textContent = '–';
     if (fill) fill.style.strokeDasharray = '0 565.48';
     return;
   }
 
-  // ✅ Convert to kPa
-  const kpa = hpa / 10;
+  // Use hPa directly for display
+  const txt = hpa.toFixed(1);
 
-  const txt = kpa.toFixed(2);
-
-  if (topVal) topVal.textContent = `${txt} kPa`;
+  if (topVal) topVal.textContent = `${txt} hPa`;
   if (midVal) midVal.textContent = txt;
 
-  // ✅ Update range also to kPa
-  const minP = 30;   // 300 hPa → 30 kPa
-  const maxP = 110;  // 1100 hPa → 110 kPa
+  // Update range for hPa (Standard range: 300 hPa to 1100 hPa)
+  const minP = 300;
+  const maxP = 1100;
 
-  const t = Math.min(Math.max((kpa - minP) / (maxP - minP), 0), 1);
+  const t = Math.min(Math.max((hpa - minP) / (maxP - minP), 0), 1);
 
   const circumference = 2 * Math.PI * 90;
 
@@ -2885,9 +2881,11 @@ async function disconnectPort() {
     return;
   }
 
+  isConnected = false; // Set this first so UI updates correctly
   const result = await window.electronAPI.disconnectPort();
   
   if (result.error) {
+    isConnected = true; // Rollback if it failed
     document.getElementById("output").innerHTML += `<span style="color: red;">Disconnect failed: ${result.error}</span><br>`;
     console.error(`Disconnect error: ${result.error}`);
     return;
@@ -2895,9 +2893,9 @@ async function disconnectPort() {
 
   document.getElementById("output").innerHTML += `<span style="color: green;">${result}</span><br>`;
   resetSensorData();
-  isConnected = false;
   currentBaud = null;
   currentPort = null;
+
   
   console.log(`Disconnected successfully → isConnected: ${isConnected}, currentPort: ${currentPort}, currentBaud: ${currentBaud}`);
   
@@ -2917,13 +2915,19 @@ function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 window.electronAPI.onSerialData((data) => {
-  if (data && !isConnected) {
-    isConnected = true;  // ← Auto-set on first data (fixes silent connect issues)
-    console.log('Auto-set isConnected=true on data receipt');
-    updateSensorConnectionStatus();
-  }
   if (data) {
     const sanitizedData = data.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    
+    // Only auto-connect if it's not a disconnect or error message
+    const isDisconnectMsg = sanitizedData.includes("disconnected") || sanitizedData.includes("cable unplug");
+    const isErrorMsg = sanitizedData.includes("Error") || sanitizedData.includes("error") || sanitizedData.includes("failed");
+
+    if (!isConnected && !isDisconnectMsg && !isErrorMsg) {
+      isConnected = true;
+      console.log('Auto-set isConnected=true on data receipt');
+      updateSensorConnectionStatus();
+    }
+
     const outputDiv = document.getElementById("output");
     let logClass = "log-default";
     
@@ -3076,34 +3080,44 @@ function updateSensorConnectionStatus() {
     );
 
   const statusText = document.getElementById('status-text');
-  const statusBox = document.querySelector('.status-box');
-  const statusDot = document.querySelector('.status-dot'); // the red dot element
+  const statusBox = document.getElementById('status-box');
+  const statusDot = document.getElementById('status-dot');
+  
+  const btnConnect = document.getElementById('btn-connect-main');
+  const btnDisconnect = document.getElementById('btn-disconnect-main');
 
-  if (!statusText) return;
+  if (!statusText || !statusBox) return;
 
-  if (hasRealData) {
-    statusText.textContent = 'Connected';
+  // Update Connect/Disconnect buttons
+  if (isConnected || hasRealData) {
+    statusText.textContent = 'CONNECTED';
     document.body.classList.add('sensors-connected');
     document.body.classList.remove('sensors-disconnected');
-    if (statusBox) {
-      statusBox.classList.add('bg-green-500/20', 'text-green-400');
-      statusBox.classList.remove('bg-red-500/20', 'text-red-400');
+    
+    statusBox.classList.add('connected');
+    statusBox.classList.remove('disconnected');
+    
+    if (btnConnect) {
+      btnConnect.classList.add('btn-dim');
+      btnConnect.classList.remove('btn-highlight');
     }
-    if (statusDot) {
-      statusDot.classList.add('bg-green-500');
-      statusDot.classList.remove('bg-red-500');
+    if (btnDisconnect) {
+      btnDisconnect.classList.add('btn-highlight');
+      btnDisconnect.classList.remove('btn-dim');
     }
   } else {
-    statusText.textContent = 'Not connected';
+    statusText.textContent = 'NOT CONNECTED';
     document.body.classList.remove('sensors-connected');
     document.body.classList.add('sensors-disconnected');
-    if (statusBox) {
-      statusBox.classList.add('bg-red-500/20', 'text-red-400');
-      statusBox.classList.remove('bg-green-500/20', 'text-green-400');
+    
+    statusBox.classList.add('disconnected');
+    statusBox.classList.remove('connected');
+    
+    if (btnConnect) {
+      btnConnect.classList.remove('btn-dim', 'btn-highlight');
     }
-    if (statusDot) {
-      statusDot.classList.add('bg-red-500');
-      statusDot.classList.remove('bg-green-500');
+    if (btnDisconnect) {
+      btnDisconnect.classList.remove('btn-dim', 'btn-highlight');
     }
   }
 
