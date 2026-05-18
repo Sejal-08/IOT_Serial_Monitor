@@ -130,7 +130,7 @@ nav {
   right: 0;
   height: 4.5rem;
   padding: 0 2vw;
-  z-index: 10;
+  z-index: 1000;
   box-shadow: var(--nav-shadow);
   border-bottom: 1px solid var(--nav-border);
 }
@@ -569,6 +569,8 @@ ul.nav-links {
   flex-shrink: 0; /* Prevent shrinking */
   overflow-x: auto; /* Allow horizontal scrolling for sensor cards if needed */
   overflow-y: visible; /* Ensure no vertical clipping */
+  z-index: 1;
+  position: relative;
 }
 
 .control-section:has(h3 > i.fa-file-alt) {
@@ -809,6 +811,8 @@ body:not(.dark-mode) #light-card h4 {
   justify-content: center;
   align-items: flex-start;
   overflow-x: auto;
+  z-index: 1;
+  position: relative;
 }
 
 
@@ -5410,4 +5414,4 @@ body.light-mode .sensor-card h4 i {
   0% { transform: scale(1); opacity: 1; }
   50% { transform: scale(1.2); opacity: 0.7; }
   100% { transform: scale(1); opacity: 1; }
-}
+}

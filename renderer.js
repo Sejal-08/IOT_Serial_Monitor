@@ -687,7 +687,7 @@ if (protocol && selectedSensor) {
     if (windFlowContainer) windFlowContainer.style.display = "flex";
   }
   // Rain Gauge
-  if (selectedSensor === "Rain Gauge" && protocol === "ADC") {
+  if (selectedSensor === "Rain Gauge" && (protocol === "ADC" || isWeatherMode)) {
     if (rainGaugeCard) rainGaugeCard.style.display = "flex";
   }
 
@@ -922,7 +922,8 @@ if ((protocol === "ADC" || isWeatherMode) && (isWeatherMode || selectedSensor ==
   const roof = document.getElementById("roof");
   const overlay = document.getElementById("rain-overlay");
   if (rainValEl && roof && overlay) {
-    const rainStr = sensorData.ADC["Rainfall"];
+    const targetProto = isWeatherMode ? "WEATHER" : "ADC";
+    const rainStr = sensorData[targetProto]["Rainfall"];
    
     // === INITIALIZE STATE ===
     let state;
