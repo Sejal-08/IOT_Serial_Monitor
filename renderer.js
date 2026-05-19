@@ -330,6 +330,13 @@ let isConnected = false;
 let currentBaud = null;
 let currentPort = null;
 
+// Auto-reconnection variables
+let autoReconnectActive = false;
+let autoReconnectInterval = null;
+let lastBaud = null;
+let lastPort = null;
+let suppressAutoConnect = false;
+
 const MAX_LOG_LINES = 100;
 let _logLineCount = 0;
 
@@ -2303,6 +2310,88 @@ function updateSensorVisualizationVisibility() {
     visualizationSection.style.display = hasVisibleCards ? 'grid' : 'none';
   }
 }
+
+/* ================================================
+   AUTO-RECONNECTION MECHANISM
+   ================================================ */
+function startAutoReconnect(port, baud) {
+  if (autoReconnectActive) {
+    console.log("Auto-reconnect already active, skipping...");
+    return;
+  }
+
+  console.log(`Starting auto-reconnect for port ${port} at ${baud} baud`);
+  autoReconnectActive = true;
+  appendLog(`<span style="color: #fbbf24;">⚙️ Attempting to reconnect to ${port}...</span>`, 'log-warning');
+
+  autoReconnectInterval = setInterval(async () => {
+    if (isConnected) {
+      console.log("Connection restored, stopping auto-reconnect");
+      stopAutoReconnect();
+      appendLog(`<span style="color: #34d399;">✓ Connection restored!</span>`, 'log-success');
+      updateSensorConnectionStatus();
+      return;
+    }
+
+    console.log(`Auto-reconnect attempt: checking ${port} at ${baud} baud`);
+
+    // Refresh the port list and only try to connect if the port exists again
+    const availablePorts = await window.electronAPI.listPorts();
+    if (availablePorts.error) {
+      console.warn("Failed to list ports during auto-reconnect:", availablePorts.error);
+      return;
+    }
+
+    const portAvailable = availablePorts.includes(port);
+    const portDropdown = document.getElementById('ports');
+    const baudDropdown = document.getElementById('baud-rate');
+    if (portDropdown) {
+      portDropdown.innerHTML = '';
+      availablePorts.forEach((p) => {
+        const option = document.createElement('option');
+        option.value = p;
+        option.textContent = p;
+        if (p === currentPort || p === port) {
+          option.selected = true;
+        }
+        portDropdown.appendChild(option);
+      });
+    }
+    if (baudDropdown) baudDropdown.value = baud;
+
+    if (!portAvailable) {
+      console.log(`Port ${port} not present yet, waiting...`);
+      return;
+    }
+
+    try {
+      const result = await window.electronAPI.connectPort(port, parseInt(baud));
+      if (result && !result.error) {
+        console.log("Auto-reconnect successful!");
+        isConnected = true;
+        currentPort = port;
+        currentBaud = baud;
+        stopAutoReconnect();
+        appendLog(`<span style="color: #34d399;">✓ Auto-reconnected to ${port} at ${baud} baud</span>`, 'log-success');
+        updateSensorConnectionStatus();
+      } else {
+        console.log(`Auto-reconnect attempt failed: ${result.error || JSON.stringify(result)}`);
+      }
+    } catch (error) {
+      console.log(`Auto-reconnect attempt failed: ${error.message || error}`);
+    }
+  }, 3000); // Try every 3 seconds
+}
+
+function stopAutoReconnect() {
+  if (autoReconnectInterval) {
+    clearInterval(autoReconnectInterval);
+    autoReconnectInterval = null;
+  }
+  autoReconnectActive = false;
+  console.log("Auto-reconnect stopped");
+}
+
 function parseSensorData(data) {
   const protocol = document.getElementById("sensor-select").value;
   const isWeatherMode = protocol === "WEATHER";
@@ -2859,6 +2948,9 @@ async function connectPort() {
     return;
   }
 
+  // Stop auto-reconnect when the user manually connects again
+  stopAutoReconnect();
+
   // If already connected but settings changed → disconnect first
   if (isConnected && (baudRate !== currentBaud || portName !== currentPort)) {
     console.log(`Settings changed (port: ${currentPort} → ${portName}, baud: ${currentBaud} → ${baudRate}), disconnecting first...`);
@@ -2902,31 +2994,52 @@ async function connectPort() {
 async function disconnectPort() {
   console.log(`disconnectPort called → currentPort: ${currentPort}, currentBaud: ${currentBaud}, isConnected: ${isConnected}`);
   
+  // Stop any ongoing auto-reconnect
+  stopAutoReconnect();
+  
   if (!isConnected) {
     document.getElementById("output").innerHTML += `<span style="color: orange;">Not connected — nothing to disconnect.</span><br>`;
+    updateSensorConnectionStatus();
     return;
   }
 
+  const previousPort = currentPort;
+  const previousBaud = currentBaud;
+
   isConnected = false; // Set this first so UI updates correctly
+  suppressAutoConnect = true;
+  currentPort = null;
+  currentBaud = null;
+  stopAutoReconnect();
+  lastPort = null;
+  lastBaud = null;
+  updateSensorConnectionStatus();
+
   const result = await window.electronAPI.disconnectPort();
   
   if (result.error) {
     isConnected = true; // Rollback if it failed
+    suppressAutoConnect = false;
+    currentPort = previousPort;
+    currentBaud = previousBaud;
     document.getElementById("output").innerHTML += `<span style="color: red;">Disconnect failed: ${result.error}</span><br>`;
     console.error(`Disconnect error: ${result.error}`);
+    updateSensorConnectionStatus();
     return;
   }
 
+  suppressAutoConnect = false;
   document.getElementById("output").innerHTML += `<span style="color: green;">${result}</span><br>`;
   resetSensorData();
   currentBaud = null;
   currentPort = null;
+  lastPort = null;
+  lastBaud = null;
 
-  
   console.log(`Disconnected successfully → isConnected: ${isConnected}, currentPort: ${currentPort}, currentBaud: ${currentBaud}`);
   
-  await listPorts();
   updateSensorConnectionStatus();  // Update status immediately
+  await listPorts();
 }
 async function sendCommand(cmd) {
   if (!cmd) return;
@@ -2948,7 +3061,7 @@ window.electronAPI.onSerialData((data) => {
     const isDisconnectMsg = sanitizedData.includes("disconnected") || sanitizedData.includes("cable unplug");
     const isErrorMsg = sanitizedData.includes("Error") || sanitizedData.includes("error") || sanitizedData.includes("failed");
 
-    if (!isConnected && !isDisconnectMsg && !isErrorMsg) {
+    if (!isConnected && !suppressAutoConnect && currentPort && currentBaud && !isDisconnectMsg && !isErrorMsg) {
       isConnected = true;
       console.log('Auto-set isConnected=true on data receipt');
       updateSensorConnectionStatus();
@@ -2959,13 +3072,21 @@ window.electronAPI.onSerialData((data) => {
     
     // === HANDLE C/NRF BACKEND DATA (existing code) ===
     if (sanitizedData.includes("Port disconnected due to cable unplug.")) {
-      console.log("Cable unplugged detected, resetting data and state");
+      console.log("Cable unplugged detected, updating disconnected UI state and attempting auto-reconnect...");
       resetSensorData();
       isConnected = false;
+      // Save the connection details for auto-reconnect
+      lastBaud = currentBaud;
+      lastPort = currentPort;
       currentBaud = null;
       currentPort = null;
       logClass = "log-error";
+      updateSensorConnectionStatus();
       listPorts();
+      // Start auto-reconnection if we had valid connection details
+      if (lastPort && lastBaud) {
+        startAutoReconnect(lastPort, lastBaud);
+      }
     }
 
     if (sanitizedData.includes("Error") || sanitizedData.includes("error") || sanitizedData.includes("failed") || sanitizedData.includes("ENOENT") || sanitizedData.includes("Invalid")) {
@@ -3115,7 +3236,7 @@ function updateSensorConnectionStatus() {
   if (!statusText || !statusBox) return;
 
   // Update Connect/Disconnect buttons
-  if (isConnected || hasRealData) {
+  if (isConnected) {
     statusText.textContent = 'CONNECTED';
     document.body.classList.add('sensors-connected');
     document.body.classList.remove('sensors-disconnected');
