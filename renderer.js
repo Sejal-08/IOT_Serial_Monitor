@@ -823,7 +823,7 @@ if ((protocol === "I2C" || isWeatherMode) && (isWeatherMode || selectedSensor ==
   }
 }
 // === HUMIDITY WAVE UPDATE ===
-if ((protocol === "I2C" || isWeatherMode) && (isWeatherMode || selectedSensor === "BME680" || selectedSensor === "SHT40" || selectedSensor === "Weather Shield" || selectedSensor === "SEN66")) {
+if ((protocol === "I2C" || isWeatherMode) && (isWeatherMode || selectedSensor === "BME680" || selectedSensor === "SHT40" || selectedSensor === "AHT20" || selectedSensor === "Weather Shield" || selectedSensor === "SEN66")) {
   if (currentHumidity !== null) {
     const humidity = parseFloat(currentHumidity);
     humidityValue.textContent = `${humidity.toFixed(2)}%`;
@@ -2476,8 +2476,8 @@ function parseSensorData(data) {
         }
       }
 
-      // AHT20 — format: "AHT20 Sensor: Temperature = XX.XX C, Humidity = XX.XX %"
-      const aht20Match = line.match(/AHT20\s*Sensor\s*:\s*Temperature\s*=\s*([\d.]+)\s*C\s*,\s*Humidity\s*=\s*([\d.]+)\s*%/i);
+      // AHT20 — format: "AHT20 Sensor: Temperature = XX.XX C, Humidity = XX.XX %" or "AHT20: Temperature: XX.XX°C..."
+      const aht20Match = line.match(/AHT20(?:\s*Sensor)?\s*:\s*Temperature\s*[:=]\s*([\d.]+)\s*°?C\s*,\s*Humidity\s*[:=]\s*([\d.]+)\s*%/i);
       if (aht20Match && protocol === "I2C") {
         const temp = parseFloat(aht20Match[1]);
         const humidity = parseFloat(aht20Match[2]);
@@ -2501,7 +2501,7 @@ function parseSensorData(data) {
       }
 
       // SEN66
-      if (protocol === "I2C") {
+      if (protocol === "I2C" && !dataParsed) {
         let sen66Matched = false;
         const pm1Match = line.match(/PM1\.0\s*:\s*([\d.]+)/i);
         const pm25Match = line.match(/PM2\.5\s*:\s*([\d.]+)/i);
