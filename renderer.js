@@ -2501,14 +2501,15 @@ function parseSensorData(data) {
       }
 
       // SEN66
-      if (protocol === "I2C" && !dataParsed) {
+      // Ignore lines that explicitly belong to other known I2C sensors to prevent false positives for SEN66
+      if (protocol === "I2C" && !dataParsed && !/STTS751|BME680|SHT40|AHT20|STS30|LIS3DH|VEML7700/i.test(line)) {
         let sen66Matched = false;
         const pm1Match = line.match(/PM1\.0\s*:\s*([\d.]+)/i);
         const pm25Match = line.match(/PM2\.5\s*:\s*([\d.]+)/i);
         const pm4Match = line.match(/PM4\s*:\s*([\d.]+)/i);
         const pm10Match = line.match(/PM10\s*:\s*([\d.]+)/i);
         const sen66HumMatch = line.match(/Relative\s*Humidity\s*:\s*([\d.]+)/i);
-        const sen66TempMatch = line.match(/Temperature\s*:\s*([\d.]+)\s*°?C/i);
+        const sen66TempMatch = line.match(/Temperature\s*:\s*([\d.-]+)\s*°?C/i);
         const vocMatch = line.match(/VOC\s*:\s*([\d.]+)/i);
         const noxMatch = line.match(/NOx\s*:\s*([\d.]+)/i);
         const co2Match = line.match(/CO2\s*:\s*([\d.]+)/i);
