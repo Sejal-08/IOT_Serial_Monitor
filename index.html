@@ -1276,52 +1276,44 @@
   </div>
 </div>
 
-<!-- TLV493D Magnetic Field – PERFECTLY SIZED & GRID-FRIENDLY -->
+<!-- TLV493D Magnetic Field – PERFECTLY SIZED & GRID-FRIENDLY 
 <div id="tlv493d-card" class="card-container" style="display:none; text-align:center;">
   <h4><i class="fas fa-compass"></i> Magnetic Field (TLV493D)</h4>
 
-  <!-- Live Values -->
   <div style="margin:16px 0; font-size:1.1rem; line-height:1.8;">
     <div id="tlv493d-x-value" style="color:#ff6b6b;">X: 0.00 mT</div>
     <div id="tlv493d-y-value" style="color:#4ecdc4;">Y: 0.00 mT</div>
     <div id="tlv493d-z-value" style="color:#60a5fa;">Z: 0.00 mT</div>
   </div>
 
-  <!-- Compact 140×140 SVG -->
   <div style="width:160px; height:160px; margin:20px auto; background:#0f172a; border-radius:20px; display:flex; align-items:center; justify-content:center;">
     <svg width="140" height="140" viewBox="0 0 140 140">
-      <!-- Background circles -->
       <circle cx="70" cy="70" r="68" fill="none" stroke="#334155" stroke-width="1"/>
       <circle cx="70" cy="70" r="45" fill="none" stroke="#334155" stroke-width="1" opacity="0.6"/>
 
-      <!-- Axes -->
       <line x1="10" y1="70" x2="130" y2="70" stroke="#475569" stroke-width="1.5"/>
       <line x1="70" y1="10" x2="70" y2="130" stroke="#475569" stroke-width="1.5"/>
 
-      <!-- Z dominant indicator -->
       <circle id="z-axis-indicator" cx="70" cy="70" r="12" fill="#60a5fa33" stroke="#60a5fa" stroke-width="3" opacity="0">
         <animate attributeName="r" values="12;22;12" dur="2s" repeatCount="indefinite"/>
         <animate attributeName="opacity" values="0;0.6;0" dur="2s" repeatCount="indefinite"/>
       </circle>
 
-      <!-- Magnetic field vector LINE -->
       <line id="vector-line" x1="70" y1="70" x2="70" y2="70"
             stroke="#6ee7ff" stroke-width="5" stroke-linecap="round"/>
       
-      <!-- Arrow head - proper triangle shape pointing RIGHT by default -->
       <polygon id="vector-head" points="0,-6 12,0 0,6" fill="#6ee7ff"
                transform="translate(70,70) rotate(0)"/>
 
-      <!-- Center dot -->
       <circle cx="70" cy="70" r="3" fill="#94a3b8" opacity="0.6"/>
     </svg>
   </div>
 
-  <!-- Direction label -->
   <div id="mag-label" style="font-size:1.8rem; font-weight:bold; color:#ffd43b; margin-top:8px;">
     Waiting...
   </div>
 </div>
+-->
 
 
      <!-- Wind Direction Card -->
