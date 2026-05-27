@@ -1145,11 +1145,6 @@ if (selectedSensor === "VCNL4040") {  // ← Remove protocol check, it's redunda
     console.log("[VCNL] Arc updated to angle:", angle);
   }
 
-  if (sunGroup) {
-  sunGroup.style.opacity = intensity;
-  sunGroup.style.filter = `brightness(${1 + intensity * 1.8}) drop-shadow(0 0 ${20 + intensity * 40}px #fef08a)`;
-  sunGroup.setAttribute("transform", "translate(140,140)"); // force center every update
-  }
   // Intensity & level
   let levelText = "Dark";
   let intensity = 0.25;
@@ -1161,9 +1156,11 @@ if (selectedSensor === "VCNL4040") {  // ← Remove protocol check, it's redunda
   else if (lux > 20)    { levelText = "Dim Room"; intensity = 0.35; }
 
   if (levelEl) levelEl.textContent = levelText;
+
   if (sunGroup) {
     sunGroup.style.opacity = intensity;
-    sunGroup.style.filter = `brightness(${1 + intensity})`;
+    sunGroup.style.filter = `brightness(${1 + intensity * 1.8}) drop-shadow(0 0 ${20 + intensity * 40}px #fef08a)`;
+    sunGroup.setAttribute("transform", "translate(140,140)"); // force center every update
     console.log("[VCNL] Sun updated → opacity:", intensity);
   }
 }
@@ -2659,6 +2656,7 @@ function parseSensorData(data) {
         if (!isNaN(luxValue)) {
           sensorStatus[protocol]["VCNL4040"] = true;
           currentVCNLLux = luxValue;
+          currentLight = luxValue;
           sensorData[protocol]["VCNL4040 Lux"] = luxValue.toFixed(1);
           if (!selectedSensor) {
             selectedSensor = "VCNL4040";
@@ -2767,6 +2765,7 @@ function parseSensorData(data) {
       if (vemlMatch && protocol === "I2C") {
         const lux = parseFloat(vemlMatch[1]);
         currentLight = lux;
+        currentVCNLLux = lux;
         if (!sensorStatus[protocol]) sensorStatus[protocol] = {};
         if (!sensorData[protocol]) sensorData[protocol] = {};
         sensorStatus[protocol]["VEML7700"] = true;
@@ -2777,7 +2776,7 @@ function parseSensorData(data) {
           const dropdown = document.getElementById("sensor-dropdown");
           if (dropdown) dropdown.value = "VEML7700";
         }
-        if (selectedSensor === "VEML7700") updateSensorUI();
+        updateSensorUI();
         console.log('✅ VEML7700 parsed:', { lux });
         dataParsed = true;
       }
