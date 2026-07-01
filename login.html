@@ -59,7 +59,7 @@
     flex-direction: column;
     align-items: center;
     gap: 24px;
-    max-width: 800px;
+    max-width: 1100px;
     width: 100%;
     margin-top: 60px;
     animation: fadeInUp 0.6s ease-out;
@@ -127,7 +127,7 @@
   /* ── Card grid ── */
   .card-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 24px;
     width: 100%;
     margin-top: 20px;
@@ -228,6 +228,7 @@
 
   .runtime-card:nth-child(1) .card-icon { color: #3ecf8e; }
   .runtime-card:nth-child(2) .card-icon { color: var(--accent-cyan); }
+  .runtime-card:nth-child(3) .card-icon { color: #ff9f43; }
 
   .runtime-card.selected .card-icon {
     border-color: rgba(0, 229, 255, 0.2);
@@ -496,7 +497,10 @@
   }
 
   /* ── Responsive ── */
-  @media (max-width: 700px) {
+  @media (max-width: 900px) {
+    .card-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 600px) {
     .card-grid { grid-template-columns: 1fr; }
     .heading-area h1 { font-size: 2.5rem; }
     .login-nav { padding: 0 20px; }
@@ -662,6 +666,18 @@
         <div class="sub-label">Selected</div>
       </div>
 
+      <!-- Arduino card -->
+      <div class="runtime-card" id="card-arduino" onclick="selectDevice('arduino')">
+        <div class="card-accent accent-tl"></div>
+        <div class="card-accent accent-br"></div>
+        <div class="radio-indicator"><i class="fas fa-check"></i></div>
+        <div class="card-icon">
+          <i class="fas fa-microchip"></i>
+        </div>
+        <div class="card-title">Arduino</div>
+        <div class="sub-label">Selected</div>
+      </div>
+
     </div>
 
     <!-- Connect button -->
@@ -688,7 +704,10 @@
       });
 
       // Select clicked card
-      const cardId = device === 'python' ? 'card-python' : 'card-c';
+      let cardId;
+      if (device === 'python') cardId = 'card-python';
+      else if (device === 'c') cardId = 'card-c';
+      else cardId = 'card-arduino';
       document.getElementById(cardId).classList.add('selected');
 
       selectedDevice = device;
@@ -710,7 +729,11 @@
         localStorage.setItem('selectedDevice', selectedDevice);
         localStorage.setItem('deviceConnected', 'true');
         localStorage.setItem('connectionTime', new Date().toISOString());
-        window.location.href = 'index.html';
+        if (selectedDevice === 'arduino') {
+          window.location.href = 'arduino.html';
+        } else {
+          window.location.href = 'index.html';
+        }
       }, 1200);
     }
 
