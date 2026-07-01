@@ -5416,23 +5416,31 @@ body.light-mode .sensor-card h4 i {
   100% { transform: scale(1); opacity: 1; }
 }
 
-/* Soil Sensor Card styling */
-.soil-card {
-  flex: 1;
-  min-width: 200px;
-  max-width: 260px;
-  min-height: 240px;
-  padding: 25px 20px;
-  border-radius: 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: var(--sensor-bg, rgba(30, 41, 59, 0.5));
-  border: 1.5px solid var(--sensor-border, rgba(71, 85, 105, 0.5));
-  box-shadow: var(--sensor-shadow, 0 10px 30px rgba(0, 0, 0, 0.3));
-  transition: all 0.4s ease;
-  overflow: hidden;
-  text-align: center;
+/* ============================================================
+   SOIL SENSOR LAYOUT
+   ============================================================ */
+.sensor-cards.soil-layout {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 20px;
+  width: 100%;
+}
+
+@media (max-width: 1200px) {
+  .sensor-cards.soil-layout {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .sensor-cards.soil-layout {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .sensor-cards.soil-layout {
+    grid-template-columns: 1fr !important;
+  }
 }
 

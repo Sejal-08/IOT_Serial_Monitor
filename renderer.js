@@ -256,7 +256,7 @@ let isPythonBackend = selectedBackend === 'python';
 
 const sensorProtocolMap = {
   "I2C": ["SHT40", "AHT20", "BME680", "STS30", "STTS751", "LIS3DH", "VEML7700", "VL53L0X", "LTR390", "Weather Shield", "VCNL4040", "SEN66"],
-  "RS485": ["MD02"],
+  "RS485": ["Soil Sensor", "Wind Sensor"],
   "RS232": ["Wind Sensor"],
   "SPI": [],
   "Analog": ["Hall Sensor", "IR Sensor"],
@@ -267,7 +267,7 @@ const sensorProtocolMap = {
 // Track sensor presence and data
 let sensorStatus = {
   "I2C": { SHT40: false, AHT20: false, BME680: false, STS30: false, STTS751: false, LIS3DH: false, VEML7700: false, TLV493D: false, VL53L0X: false, LTR390: false, WeatherShield: false, SEN66: false },
-  "RS485": { MD02: false },
+  "RS485": { "Soil Sensor": false, "Wind Sensor": false },
   "RS232": { WindSensor: false },
   "SPI": {},
   "Analog": { Hall_Sensor: false, IR_Sensor: false },
@@ -304,6 +304,15 @@ let currentIR = null;
 let currentRelayState = null;
 let currentWindDirection = null;
 let currentWindSpeed = null;
+// ── Soil Sensor globals ──
+let currentSoilN = null;
+let currentSoilP = null;
+let currentSoilK = null;
+let currentSoilMoist = null;
+let currentSoilTemp = null;
+let currentSoilEC = null;
+let currentSoilPH = null;
+let currentSoilSal = null;
 // ── SEN66 globals ──
 let currentSEN66_PM1  = null;
 let currentSEN66_PM25 = null;
@@ -389,6 +398,17 @@ function updateSensorUI() {
   const windSpeedValue = document.getElementById("wind-speed-value");
   const windSpeedCups = document.getElementById("anemometer-cups");
   const windSpeedBar = document.getElementById("wind-speed-bar");
+  
+  // Soil Sensor Cards
+  const soilNContainer = document.getElementById("soil-n-card");
+  const soilPContainer = document.getElementById("soil-p-card");
+  const soilKContainer = document.getElementById("soil-k-card");
+  const soilMoistContainer = document.getElementById("soil-moist-card");
+  const soilTempContainer = document.getElementById("soil-temp-card");
+  const soilECContainer = document.getElementById("soil-ec-card");
+  const soilPHContainer = document.getElementById("soil-ph-card");
+  const soilSalContainer = document.getElementById("soil-sal-card");
+
   const thermometerFill = document.getElementById("thermometer-fill");
   const thermometerBulb = document.getElementById("thermometer-bulb");
   const thermometerValue = document.getElementById("thermometer-value");
@@ -454,7 +474,7 @@ function updateSensorUI() {
     "VL53L0X": ["Distance"],
     "LTR390": ["UV"],
     "IR Sensor": ["Infrared"],
-    "MD02": ["Temperature", "Humidity"],
+    "Soil Sensor": ["Nitrogen", "Phosphorus", "Potassium", "Moisture", "Temperature", "EC", "pH", "Salinity"],
     "Rain Gauge": ["Rainfall"],
     "Wind Sensor": ["Direction", "Speed"]
   };
@@ -545,6 +565,9 @@ const allCards = [
       document.getElementById("sen66-voc-card"),
       document.getElementById("sen66-nox-card"),
       document.getElementById("sen66-co2-card"),
+      // Soil Sensor cards
+      soilNContainer, soilPContainer, soilKContainer, soilMoistContainer, 
+      soilTempContainer, soilECContainer, soilPHContainer, soilSalContainer,
     ];
 
 allCards.forEach(card => {
@@ -687,8 +710,8 @@ if (protocol && selectedSensor) {
     if (irContainer) irContainer.style.display = "flex";
   }
   // Wind Sensor
-// Wind Sensor
-  if (selectedSensor === "Wind Sensor" && protocol === "RS232") {
+  // Wind Sensor
+  if (selectedSensor === "Wind Sensor" && (protocol === "RS232" || protocol === "RS485")) {
     if (windDirectionContainer) windDirectionContainer.style.display = "block";
     if (windSpeedContainer) windSpeedContainer.style.display = "flex";
     if (windFlowContainer) windFlowContainer.style.display = "flex";
@@ -732,7 +755,20 @@ if (protocol && selectedSensor) {
           if (el) { el.style.display = "flex"; el.classList.add('sensor-card'); }
         });
       }
- 
+
+  // ── Soil Sensor ──
+  if (selectedSensor === "Soil Sensor" && protocol === "RS485") {
+    if (sensorCards) sensorCards.classList.add('soil-layout');
+    
+    [soilNContainer, soilPContainer, soilKContainer, soilMoistContainer, 
+     soilTempContainer, soilECContainer, soilPHContainer, soilSalContainer].forEach(card => {
+      if (card) {
+        card.style.display = "flex";
+        card.classList.add('sensor-card');
+      }
+    });
+  }
+
     } // end if (protocol && selectedSensor)
 
     console.log('Card visibility for', selectedSensor, ':', {
@@ -1769,7 +1805,7 @@ if (protocol === "I2C" && selectedSensor === "LIS3DH") {
 }
 
        // Updated Wind Direction rotation code (now centered perfectly with new needle size)
-        if ((protocol === "RS232" || isWeatherMode) && (isWeatherMode || selectedSensor === "Wind Sensor") && currentWindDirection !== null) {
+        if ((protocol === "RS232" || protocol === "RS485" || isWeatherMode) && (isWeatherMode || selectedSensor === "Wind Sensor") && currentWindDirection !== null) {
           const direction = parseFloat(currentWindDirection);
           const windDirectionArrow = document.getElementById('wind-direction-arrow');
           const windDirectionValue = document.getElementById('wind-direction-value');
@@ -1796,7 +1832,8 @@ if (protocol === "I2C" && selectedSensor === "LIS3DH") {
           }
         }
 
-if ((protocol === "RS232" || isWeatherMode) && (isWeatherMode || selectedSensor === "Wind Sensor") && currentWindSpeed !== null) {
+// === WIND SPEED UPDATE ===
+if ((protocol === "RS232" || protocol === "RS485" || isWeatherMode) && (isWeatherMode || selectedSensor === "Wind Sensor") && currentWindSpeed !== null) {
   const speed = parseFloat(currentWindSpeed);
   if (windSpeedValue) windSpeedValue.textContent = `${speed.toFixed(1)} m/s`;
 
@@ -2630,7 +2667,7 @@ function parseSensorData(data) {
 
       // Wind Sensor
       const windMatch = line.match(/Wind speed:\s*([\d.]+),\s*Wind direction:\s*([\d.]+)/);
-      if (windMatch && (protocol === "RS232" || isWeatherMode)) {
+      if (windMatch && (protocol === "RS232" || protocol === "RS485" || isWeatherMode)) {
         const [, speed, direction] = windMatch;
         const targetProtocol = isWeatherMode ? "WEATHER" : protocol;
         sensorStatus[targetProtocol]["WindSensor"] = true;
@@ -2853,6 +2890,55 @@ function parseSensorData(data) {
         dataParsed = true;
       }
 
+      // Soil Sensor (RS485)
+      // Format: Soil: N=10, P=20, K=30, Moist=40%, T=25.5C, EC=1.5, pH=6.5, Sal=5
+      const soilMatch = line.match(/Soil:\s*N=([\d.]+),\s*P=([\d.]+),\s*K=([\d.]+),\s*Moist=([\d.]+)%?,\s*T=([\d.]+)C?,\s*EC=([\d.]+),\s*pH=([\d.]+),\s*Sal=([\d.]+)/i);
+      if (soilMatch && protocol === "RS485") {
+        if (!sensorStatus[protocol]) sensorStatus[protocol] = {};
+        if (!sensorData[protocol]) sensorData[protocol] = {};
+        sensorStatus[protocol]["Soil Sensor"] = true;
+        
+        currentSoilN = parseFloat(soilMatch[1]);
+        currentSoilP = parseFloat(soilMatch[2]);
+        currentSoilK = parseFloat(soilMatch[3]);
+        currentSoilMoist = parseFloat(soilMatch[4]);
+        currentSoilTemp = parseFloat(soilMatch[5]);
+        currentSoilEC = parseFloat(soilMatch[6]);
+        currentSoilPH = parseFloat(soilMatch[7]);
+        currentSoilSal = parseFloat(soilMatch[8]);
+        
+        sensorData[protocol]["Soil Sensor Nitrogen"] = currentSoilN.toFixed(0) + " mg/kg";
+        sensorData[protocol]["Soil Sensor Phosphorus"] = currentSoilP.toFixed(0) + " mg/kg";
+        sensorData[protocol]["Soil Sensor Potassium"] = currentSoilK.toFixed(0) + " mg/kg";
+        sensorData[protocol]["Soil Sensor Moisture"] = currentSoilMoist.toFixed(1) + " %";
+        sensorData[protocol]["Soil Sensor Temperature"] = currentSoilTemp.toFixed(1) + " °C";
+        sensorData[protocol]["Soil Sensor EC"] = currentSoilEC.toFixed(1) + " mS/cm";
+        sensorData[protocol]["Soil Sensor pH"] = currentSoilPH.toFixed(1);
+        sensorData[protocol]["Soil Sensor Salinity"] = currentSoilSal.toFixed(0);
+
+        if (!selectedSensor && !autoSelected) {
+          selectedSensor = "Soil Sensor";
+          autoSelected = true;
+          const sensorDropdown = document.getElementById("sensor-dropdown");
+          if (sensorDropdown) sensorDropdown.value = "Soil Sensor";
+        }
+        
+        if (selectedSensor === "Soil Sensor") {
+          const updateValue = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+          updateValue("soil-n-val", currentSoilN.toFixed(0) + " mg/kg");
+          updateValue("soil-p-val", currentSoilP.toFixed(0) + " mg/kg");
+          updateValue("soil-k-val", currentSoilK.toFixed(0) + " mg/kg");
+          updateValue("soil-moist-val", currentSoilMoist.toFixed(1) + " %");
+          updateValue("soil-temp-val", currentSoilTemp.toFixed(1) + " °C");
+          updateValue("soil-ec-val", currentSoilEC.toFixed(1) + " mS/cm");
+          updateValue("soil-ph-val", currentSoilPH.toFixed(1));
+          updateValue("soil-sal-val", currentSoilSal.toFixed(0));
+          updateSensorUI();
+        }
+        console.log('Soil Sensor parsed:', { currentSoilN, currentSoilP, currentSoilK, currentSoilMoist, currentSoilTemp, currentSoilEC, currentSoilPH, currentSoilSal });
+        dataParsed = true;
+      }
+
     } catch (error) {
       console.error('Parsing error:', error);
       document.getElementById("output").innerHTML += `<span class="log-error">Parsing error: ${error.message}</span><br>`;
@@ -2890,6 +2976,15 @@ _resetSEN66();
   // ADD THESE:
   currentWindDirection = null;
   currentWindSpeed = null;
+  currentSoilN = null;
+  currentSoilP = null;
+  currentSoilK = null;
+  currentSoilMoist = null;
+  currentSoilTemp = null;
+  currentSoilEC = null;
+  currentSoilPH = null;
+  currentSoilSal = null;
+  
   sensorData = {
     "I2C": {},
     "ADC": {},
@@ -2901,7 +2996,7 @@ _resetSEN66();
   };
   sensorStatus = {
     "I2C": { SHT40: false, AHT20: false, BME680: false, STS30: false, STTS751: false, SEN66: false, LIS3DH: false, VEML7700: false, TLV493D: false, VL53L0X: false, LTR390: false },
-    "RS485": { MD02: false },
+    "RS485": { "Soil Sensor": false, "Wind Sensor": false },
     "RS232": { WindSensor: false },
     "WEATHER": { "WeatherParameters": true },
     "SPI": {},

@@ -1167,6 +1167,176 @@
   <div class="sen66-aqi-pill" id="sen66-nox-status">—</div>
 </div>
 
+<!-- ============================================================
+     SOIL SENSOR - 8 ANIMATED PARAMETER CARDS
+     ============================================================ -->
+<!-- ── Nitrogen (N) ── -->
+<div id="soil-n-card" class="card-container sen66-param-card" style="display:none;">
+  <h4><i class="fas fa-leaf" style="color: #4ade80;"></i> Nitrogen (N)</h4>
+  <div class="sen66-param-value" id="soil-n-val">— mg/kg</div>
+  <div class="sen66-gauge-wrap">
+    <svg class="sen66-gauge-svg" viewBox="0 0 120 120" width="160" height="160">
+      <defs>
+        <linearGradient id="soilNGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#4ade80"/>
+          <stop offset="100%" stop-color="#16a34a"/>
+        </linearGradient>
+      </defs>
+      <circle class="sen66-gauge-bg" cx="60" cy="60" r="50"/>
+      <circle class="sen66-gauge-arc" cx="60" cy="60" r="50" stroke="url(#soilNGrad)" stroke-dasharray="200 314.16"/>
+      <g class="sen66-dust-group">
+        <circle r="3" fill="#4ade80" opacity="0"><animate attributeName="cy" values="90;20;90" dur="3s" repeatCount="indefinite"/><animate attributeName="cx" values="30;60;90" dur="3s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;0.8;0" dur="3s" repeatCount="indefinite"/></circle>
+      </g>
+    </svg>
+  </div>
+</div>
+
+<!-- ── Phosphorus (P) ── -->
+<div id="soil-p-card" class="card-container sen66-param-card" style="display:none;">
+  <h4><i class="fas fa-seedling" style="color: #fb923c;"></i> Phosphorus (P)</h4>
+  <div class="sen66-param-value" id="soil-p-val">— mg/kg</div>
+  <div class="sen66-gauge-wrap">
+    <svg class="sen66-gauge-svg" viewBox="0 0 120 120" width="160" height="160">
+      <defs>
+        <linearGradient id="soilPGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#fb923c"/>
+          <stop offset="100%" stop-color="#c2410c"/>
+        </linearGradient>
+      </defs>
+      <circle class="sen66-gauge-bg" cx="60" cy="60" r="50"/>
+      <circle class="sen66-gauge-arc" cx="60" cy="60" r="50" stroke="url(#soilPGrad)" stroke-dasharray="150 314.16"/>
+      <g class="sen66-dust-group">
+        <circle r="3" fill="#fb923c" opacity="0"><animate attributeName="cy" values="85;25;85" dur="3.5s" repeatCount="indefinite"/><animate attributeName="cx" values="70;40;70" dur="3.5s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;0.7;0" dur="3.5s" repeatCount="indefinite"/></circle>
+      </g>
+    </svg>
+  </div>
+</div>
+
+<!-- ── Potassium (K) ── -->
+<div id="soil-k-card" class="card-container sen66-param-card" style="display:none;">
+  <h4><i class="fas fa-tree" style="color: #c084fc;"></i> Potassium (K)</h4>
+  <div class="sen66-param-value" id="soil-k-val">— mg/kg</div>
+  <div class="sen66-gauge-wrap">
+    <svg class="sen66-gauge-svg" viewBox="0 0 120 120" width="160" height="160">
+      <defs>
+        <linearGradient id="soilKGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#c084fc"/>
+          <stop offset="100%" stop-color="#7e22ce"/>
+        </linearGradient>
+      </defs>
+      <circle class="sen66-gauge-bg" cx="60" cy="60" r="50"/>
+      <circle class="sen66-gauge-arc" cx="60" cy="60" r="50" stroke="url(#soilKGrad)" stroke-dasharray="250 314.16"/>
+      <g class="sen66-dust-group">
+        <circle r="3" fill="#c084fc" opacity="0"><animate attributeName="cy" values="80;20;80" dur="2.8s" repeatCount="indefinite"/><animate attributeName="cx" values="50;80;50" dur="2.8s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;0.9;0" dur="2.8s" repeatCount="indefinite"/></circle>
+      </g>
+    </svg>
+  </div>
+</div>
+
+<!-- ── Moisture ── -->
+<div id="soil-moist-card" class="card-container sen66-param-card" style="display:none;">
+  <h4><i class="fas fa-tint" style="color: #38bdf8;"></i> Moisture</h4>
+  <div class="sen66-param-value" id="soil-moist-val">— %</div>
+  <div class="sen66-gauge-wrap">
+    <svg class="sen66-gauge-svg" viewBox="0 0 120 120" width="160" height="160">
+      <defs>
+        <linearGradient id="soilMoistGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#38bdf8"/>
+          <stop offset="100%" stop-color="#0284c7"/>
+        </linearGradient>
+      </defs>
+      <circle class="sen66-gauge-bg" cx="60" cy="60" r="50"/>
+      <circle class="sen66-gauge-arc" cx="60" cy="60" r="50" stroke="url(#soilMoistGrad)" stroke-dasharray="180 314.16"/>
+      <g class="sen66-dust-group">
+        <circle r="4" fill="#38bdf8" opacity="0"><animate attributeName="cy" values="90;10;90" dur="4s" repeatCount="indefinite"/><animate attributeName="cx" values="60;60;60" dur="4s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;0.6;0" dur="4s" repeatCount="indefinite"/></circle>
+      </g>
+    </svg>
+  </div>
+</div>
+
+<!-- ── Temperature ── -->
+<div id="soil-temp-card" class="card-container sen66-param-card" style="display:none;">
+  <h4><i class="fas fa-thermometer-half" style="color: #f87171;"></i> Temperature</h4>
+  <div class="sen66-param-value" id="soil-temp-val">— °C</div>
+  <div class="sen66-gauge-wrap">
+    <svg class="sen66-gauge-svg" viewBox="0 0 120 120" width="160" height="160">
+      <defs>
+        <linearGradient id="soilTempGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#f87171"/>
+          <stop offset="100%" stop-color="#b91c1c"/>
+        </linearGradient>
+      </defs>
+      <circle class="sen66-gauge-bg" cx="60" cy="60" r="50"/>
+      <circle class="sen66-gauge-arc" cx="60" cy="60" r="50" stroke="url(#soilTempGrad)" stroke-dasharray="140 314.16"/>
+      <g class="sen66-dust-group">
+        <circle r="3" fill="#f87171" opacity="0"><animate attributeName="cy" values="70;30;70" dur="2s" repeatCount="indefinite"/><animate attributeName="cx" values="40;80;40" dur="2s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite"/></circle>
+      </g>
+    </svg>
+  </div>
+</div>
+
+<!-- ── EC ── -->
+<div id="soil-ec-card" class="card-container sen66-param-card" style="display:none;">
+  <h4><i class="fas fa-bolt" style="color: #facc15;"></i> EC</h4>
+  <div class="sen66-param-value" id="soil-ec-val">— mS/cm</div>
+  <div class="sen66-gauge-wrap">
+    <svg class="sen66-gauge-svg" viewBox="0 0 120 120" width="160" height="160">
+      <defs>
+        <linearGradient id="soilECGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#facc15"/>
+          <stop offset="100%" stop-color="#ca8a04"/>
+        </linearGradient>
+      </defs>
+      <circle class="sen66-gauge-bg" cx="60" cy="60" r="50"/>
+      <circle class="sen66-gauge-arc" cx="60" cy="60" r="50" stroke="url(#soilECGrad)" stroke-dasharray="100 314.16"/>
+      <g class="sen66-dust-group">
+        <circle r="2.5" fill="#facc15" opacity="0"><animate attributeName="cy" values="85;15;85" dur="1.5s" repeatCount="indefinite"/><animate attributeName="cx" values="60;40;60" dur="1.5s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;0.9;0" dur="1.5s" repeatCount="indefinite"/></circle>
+      </g>
+    </svg>
+  </div>
+</div>
+
+<!-- ── pH ── -->
+<div id="soil-ph-card" class="card-container sen66-param-card" style="display:none;">
+  <h4><i class="fas fa-vial" style="color: #2dd4bf;"></i> pH</h4>
+  <div class="sen66-param-value" id="soil-ph-val">—</div>
+  <div class="sen66-gauge-wrap">
+    <svg class="sen66-gauge-svg" viewBox="0 0 120 120" width="160" height="160">
+      <defs>
+        <linearGradient id="soilPHGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#2dd4bf"/>
+          <stop offset="100%" stop-color="#0f766e"/>
+        </linearGradient>
+      </defs>
+      <circle class="sen66-gauge-bg" cx="60" cy="60" r="50"/>
+      <circle class="sen66-gauge-arc" cx="60" cy="60" r="50" stroke="url(#soilPHGrad)" stroke-dasharray="210 314.16"/>
+      <g class="sen66-dust-group">
+        <circle r="3" fill="#2dd4bf" opacity="0"><animate attributeName="cy" values="75;25;75" dur="3.2s" repeatCount="indefinite"/><animate attributeName="cx" values="70;50;70" dur="3.2s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;0.8;0" dur="3.2s" repeatCount="indefinite"/></circle>
+      </g>
+    </svg>
+  </div>
+</div>
+
+<!-- ── Salinity ── -->
+<div id="soil-sal-card" class="card-container sen66-param-card" style="display:none;">
+  <h4><i class="fas fa-water" style="color: #818cf8;"></i> Salinity</h4>
+  <div class="sen66-param-value" id="soil-sal-val">—</div>
+  <div class="sen66-gauge-wrap">
+    <svg class="sen66-gauge-svg" viewBox="0 0 120 120" width="160" height="160">
+      <defs>
+        <linearGradient id="soilSalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#818cf8"/>
+          <stop offset="100%" stop-color="#4338ca"/>
+        </linearGradient>
+      </defs>
+      <circle class="sen66-gauge-bg" cx="60" cy="60" r="50"/>
+      <circle class="sen66-gauge-arc" cx="60" cy="60" r="50" stroke="url(#soilSalGrad)" stroke-dasharray="120 314.16"/>
+      <g class="sen66-dust-group">
+        <circle r="2" fill="#818cf8" opacity="0"><animate attributeName="cy" values="95;5;95" dur="2.5s" repeatCount="indefinite"/><animate attributeName="cx" values="45;75;45" dur="2.5s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;0.7;0" dur="2.5s" repeatCount="indefinite"/></circle>
+      </g>
+    </svg>
+  </div>
+</div>
 
         <!-- Hall Sensor Card -->
 <div id="hall-card" class="card-container">
