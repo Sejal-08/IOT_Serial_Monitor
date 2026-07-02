@@ -1,4 +1,4 @@
-﻿/* Google Fonts and Font Awesome */
+/* Google Fonts and Font Awesome */
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css');
 
@@ -1015,7 +1015,8 @@ body:not(.dark-mode) .humidity-card-container h4 {
   z-index: 1;
 }
 
-#humidity-wave path {
+#humidity-wave path,
+#soil-moist-wave-path {
   transition: d 1.2s ease-in-out;
 }
 
@@ -1713,6 +1714,8 @@ body:not(.dark-mode) .sen66-param-card h4 {
   max-height: 380px !important;
   height: 380px !important;
   flex: 0 0 260px !important;
+  position: relative !important;
+  overflow: hidden !important;
 }
 
 /* Responsive */
