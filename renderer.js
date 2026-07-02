@@ -254,8 +254,11 @@ function _stopWindBubbles() {
 const selectedBackend = localStorage.getItem('selectedDevice'); // 'c' or 'python'
 let isPythonBackend = selectedBackend === 'python';
 
+const isArduinoBackend = selectedBackend === 'arduino';
 const sensorProtocolMap = {
-  "I2C": ["SHT40", "AHT20", "BME680", "STS30", "STTS751", "LIS3DH", "VEML7700", "VL53L0X", "LTR390", "Weather Shield", "VCNL4040", "SEN66"],
+  "I2C": isArduinoBackend
+    ? ["Weather Shield"]
+    : ["SHT40", "AHT20", "BME680", "STS30", "STTS751", "LIS3DH", "VEML7700", "VL53L0X", "LTR390", "Weather Shield", "VCNL4040", "SEN66"],
   "RS485": ["Soil Sensor", "Wind Sensor"],
   "RS232": ["Wind Sensor"],
   "SPI": [],
@@ -760,7 +763,7 @@ if (protocol && selectedSensor) {
   if (selectedSensor === "Soil Sensor" && protocol === "RS485") {
     if (sensorCards) sensorCards.classList.add('soil-layout');
     
-    [soilNContainer, soilPContainer, soilKContainer, soilMoistContainer, 
+    [soilNContainer, soilPContainer, soilKContainer, soilMoistContainer,
      soilTempContainer, soilECContainer, soilPHContainer, soilSalContainer].forEach(card => {
       if (card) {
         card.style.display = "flex";
@@ -768,6 +771,7 @@ if (protocol && selectedSensor) {
       }
     });
   }
+
 
     } // end if (protocol && selectedSensor)
 
@@ -782,7 +786,7 @@ if (protocol && selectedSensor) {
       showLight: lightContainer ? lightContainer.style.display : 'N/A'
     });
 // === THERMOMETER UPDATE ===
-if ((protocol === "I2C" || isWeatherMode) && (isWeatherMode || selectedSensor === "BME680" || selectedSensor === "SEN66" || selectedSensor === "STTS751" || selectedSensor === "SHT40" || selectedSensor === "AHT20" || selectedSensor === "STS30" || selectedSensor === "Weather Shield") && currentTemperature !== null) {
+if ((protocol === "I2C" || protocol === "RS485" || isWeatherMode) && (isWeatherMode || selectedSensor === "BME680" || selectedSensor === "SEN66" || selectedSensor === "STTS751" || selectedSensor === "SHT40" || selectedSensor === "AHT20" || selectedSensor === "STS30" || selectedSensor === "Weather Shield") && currentTemperature !== null) {
   const temp = parseFloat(currentTemperature);
   let fillColor;
   if (temp < 25) {
@@ -2903,6 +2907,7 @@ function parseSensorData(data) {
         currentSoilK = parseFloat(soilMatch[3]);
         currentSoilMoist = parseFloat(soilMatch[4]);
         currentSoilTemp = parseFloat(soilMatch[5]);
+        currentTemperature = currentSoilTemp;
         currentSoilEC = parseFloat(soilMatch[6]);
         currentSoilPH = parseFloat(soilMatch[7]);
         currentSoilSal = parseFloat(soilMatch[8]);
@@ -2933,7 +2938,23 @@ function parseSensorData(data) {
           updateValue("soil-ec-val", currentSoilEC.toFixed(1) + " mS/cm");
           updateValue("soil-ph-val", currentSoilPH.toFixed(1));
           updateValue("soil-sal-val", currentSoilSal.toFixed(0));
+          // Animate mini soil thermometer (tube: y=20 at 50°C, y=230 at 0°C, height=210)
+          const soilThermoFill = document.getElementById("soil-thermo-fill");
+          const soilThermoBulb = document.getElementById("soil-thermo-bulb");
+          if (soilThermoFill && soilThermoBulb) {
+            const tFrac   = Math.min(Math.max(currentSoilTemp / 50, 0), 1);
+            const fillH   = Math.round(tFrac * 210);   // 0–210 px
+            const fillY   = 230 - fillH;               // rect grows upward
+            const tColor  = currentSoilTemp < 25 ? "#ffeb3b"
+                          : currentSoilTemp <= 35 ? "#ff9800" : "#f44336";
+            soilThermoFill.setAttribute("y",      fillY);
+            soilThermoFill.setAttribute("height", fillH);
+            soilThermoFill.setAttribute("fill",   tColor);
+            soilThermoBulb.setAttribute("fill",   tColor);
+          }
           updateSensorUI();
+
+
         }
         console.log('Soil Sensor parsed:', { currentSoilN, currentSoilP, currentSoilK, currentSoilMoist, currentSoilTemp, currentSoilEC, currentSoilPH, currentSoilSal });
         dataParsed = true;

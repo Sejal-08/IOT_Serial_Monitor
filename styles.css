@@ -1,4 +1,4 @@
-/* Google Fonts and Font Awesome */
+﻿/* Google Fonts and Font Awesome */
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css');
 
@@ -5443,4 +5443,32 @@ body.light-mode .sensor-card h4 i {
     grid-template-columns: 1fr !important;
   }
 }
+
+/* ── Soil temperature card – mini thermometer ── */
+/* .soil-thermo-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  width: 100%;
+  margin-top: 8px;
+  overflow: visible;
+}
+
+#soil-thermo-svg text {
+  fill: #a0d8ff;
+}
+
+body:not(.dark-mode) #soil-thermo-svg text {
+  fill: #1e40af;
+}
+
+body:not(.dark-mode) #soil-thermo-svg line {
+  stroke: #64748b;
+}
+
+body:not(.dark-mode) #soil-thermo-svg rect[fill="none"],
+body:not(.dark-mode) #soil-thermo-svg circle[fill="none"] {
+  stroke: #64748b;
+} */
 
