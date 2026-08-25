@@ -2464,7 +2464,7 @@ function parseSensorData(data) {
 
     try {
       // BME680
-      const bme680Match = line.match(/Temperature:\s*([+-]?\d+\.?\d*)\s*[°]?C\s*,\s*Humidity:\s*(\d+\.?\d*)\s*%RH\s*,\s*Pressure:\s*(\d+\.?\d*)\s*kPa/i);
+      const bme680Match = line.match(/Temperature:\s*([+-]?\d+\.?\d*)\s*[°]?C\s*,\s*Humidity:\s*(\d+\.?\d*)\s*%RH\s*,\s*Pressure:\s*(\d+\.?\d*)\s*(?:kPa|hPa)/i);
       if (bme680Match && protocol === "I2C") {
         const temp = parseFloat(bme680Match[1]);
         const humidity = parseFloat(bme680Match[2]);
@@ -2481,63 +2481,8 @@ function parseSensorData(data) {
         sensorData[protocol]["BME680 Pressure"] = pressure.toFixed(2);
         currentTemperature = temp;
         currentHumidity = humidity;
-        currentPressure = pressure * 10;
-        console.log('BME680 parsed:', { temp, humidity, pressure });
-        if (selectedSensor === "BME680") updateSensorUI();
-        dataParsed = true;
-      }
-      
-      // BME680 individual lines
-      const genericTempMatch = line.match(/^Temperature:\s*([+-]?\d+\.?\d*)\s*.*?C/i);
-      if (genericTempMatch && protocol === "I2C") {
-        const temp = parseFloat(genericTempMatch[1]);
-        currentTemperature = temp;
-        sensorStatus[protocol]["BME680"] = true;
-        
-        if (!selectedSensor && !autoSelected) {
-          selectedSensor = "BME680";
-          autoSelected = true;
-          const dropdown = document.getElementById("sensor-dropdown");
-          if (dropdown) dropdown.value = "BME680";
-        }
-        
-        sensorData[protocol]["BME680 Temperature"] = temp.toFixed(2);
-        if (selectedSensor === "BME680") updateSensorUI();
-        dataParsed = true;
-      }
-      
-      const genericHumMatch = line.match(/^Humidity:\s*(\d+\.?\d*)\s*%/i);
-      if (genericHumMatch && protocol === "I2C") {
-        const humidity = parseFloat(genericHumMatch[1]);
-        currentHumidity = humidity;
-        sensorStatus[protocol]["BME680"] = true;
-        
-        if (!selectedSensor && !autoSelected) {
-          selectedSensor = "BME680";
-          autoSelected = true;
-          const dropdown = document.getElementById("sensor-dropdown");
-          if (dropdown) dropdown.value = "BME680";
-        }
-        
-        sensorData[protocol]["BME680 Humidity"] = humidity.toFixed(2);
-        if (selectedSensor === "BME680") updateSensorUI();
-        dataParsed = true;
-      }
-      
-      const genericPressMatch = line.match(/^Pressure:\s*(\d+\.?\d*)\s*hPa/i);
-      if (genericPressMatch && protocol === "I2C") {
-        const pressure = parseFloat(genericPressMatch[1]);
         currentPressure = pressure;
-        sensorStatus[protocol]["BME680"] = true;
-        
-        if (!selectedSensor && !autoSelected) {
-          selectedSensor = "BME680";
-          autoSelected = true;
-          const dropdown = document.getElementById("sensor-dropdown");
-          if (dropdown) dropdown.value = "BME680";
-        }
-        
-        sensorData[protocol]["BME680 Pressure"] = pressure.toFixed(2);
+        console.log('BME680 parsed:', { temp, humidity, pressure });
         if (selectedSensor === "BME680") updateSensorUI();
         dataParsed = true;
       }
