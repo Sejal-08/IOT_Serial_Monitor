@@ -256,9 +256,7 @@ let isPythonBackend = selectedBackend === 'python';
 
 const isArduinoBackend = selectedBackend === 'arduino';
 const sensorProtocolMap = {
-  "I2C": isArduinoBackend
-    ? ["Weather Shield"]
-    : ["SHT40", "AHT20", "BME680", "STS30", "STTS751", "LIS3DH", "VEML7700", "VL53L0X", "LTR390", "Weather Shield", "VCNL4040", "SEN66"],
+  "I2C": ["SHT40", "AHT20", "BME680", "STS30", "STTS751", "LIS3DH", "VEML7700", "VL53L0X", "LTR390", "Weather Shield", "VCNL4040", "SEN66"],
   "RS485": ["Soil Sensor", "Wind Sensor"],
   "RS232": ["Wind Sensor"],
   "SPI": [],
