@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -17,6 +17,7 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      font-family: 'Inter', sans-serif;
     }
     .top-nav {
       position: fixed; top: 0; left: 0; width: 100%;
@@ -35,60 +36,103 @@
     .menu-container {
       margin: 100px auto 40px;
       width: 100%;
-      max-width: 1200px;
-      padding: 0 20px;
+      max-width: 1400px;
+      padding: 0 40px;
     }
     .menu-header {
       text-align: center;
-      margin-bottom: 40px;
+      margin-bottom: 50px;
     }
     .menu-header h1 {
       font-family: var(--font-sans);
-      font-size: 2.5rem;
+      font-size: 2.8rem;
       color: var(--text-bright);
       text-transform: uppercase;
       letter-spacing: 2px;
     }
     .sensor-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 30px;
     }
     .sensor-card-btn {
-      background: var(--panel-bg);
-      border: 1px solid var(--panel-border);
+      background: #18181b;
       border-radius: 12px;
-      padding: 30px 20px;
-      text-align: center;
-      cursor: pointer;
+      overflow: hidden;
       text-decoration: none;
-      transition: all 0.3s ease;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+      border: 1px solid #27272a;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      align-items: stretch;
+      padding: 0;
     }
     .sensor-card-btn:hover {
       transform: translateY(-5px);
-      border-color: #60a5fa;
-      box-shadow: 0 8px 15px rgba(96, 165, 250, 0.2);
+      box-shadow: 0 12px 25px rgba(0,0,0,0.5);
+      border-color: #3f3f46;
     }
-    .sensor-card-btn i {
-      font-size: 3rem;
-      color: #60a5fa;
-      margin-bottom: 15px;
-      transition: all 0.3s ease;
+    .card-img-container {
+      background: #8e959f;
+      height: 240px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
     }
-    .sensor-card-btn:hover i {
-      color: #93c5fd;
-      text-shadow: 0 0 10px rgba(96, 165, 250, 0.5);
+    .card-img-container img {
+      width: auto;
+      height: 160px;
+      object-fit: contain;
+      filter: drop-shadow(0 10px 10px rgba(0,0,0,0.3));
     }
-    .sensor-card-btn span {
-      font-family: var(--font-sans);
-      font-size: 1.2rem;
+    .card-img-container i {
+      font-size: 6rem;
+      color: #fff;
+      opacity: 0.9;
+    }
+    .card-content {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+    }
+    .card-content h3 {
+      font-family: 'Inter', sans-serif;
+      color: #fff;
+      font-size: 1.25rem;
       font-weight: 700;
-      color: var(--text-bright);
+      margin-bottom: 12px;
+      text-align: left;
+    }
+    .card-content p {
+      font-family: 'Inter', sans-serif;
+      color: #a1a1aa;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      margin-bottom: 24px;
+      text-align: left;
+      flex-grow: 1;
+    }
+    .monitor-btn {
+      background: #27272a;
+      color: #e4e4e7;
+      font-family: 'Inter', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      border: 1px solid #3f3f46;
+      border-radius: 6px;
+      padding: 12px 0;
+      width: 100%;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .sensor-card-btn:hover .monitor-btn {
+      background: #93c5fd;
+      color: #1e1e24;
+      border-color: #93c5fd;
     }
   </style>
 </head>
@@ -111,25 +155,25 @@
     </div>
   </div>
 
-    <script>
+  <script>
     const sensors = [
-      { name: "Soil Spectra", protocol: "RS485", sensor: "Soil Sensor", icon: "fa-seedling", img: "images/soil.png" },
-      { name: "Rain Gauge", protocol: "ADC", sensor: "Rain Gauge", icon: "fa-cloud-rain", img: "images/gauge.png" },
-      { name: "Radiation Shield", protocol: "I2C", sensor: "Weather Shield", icon: "fa-shield-halved" },
-      { name: "Ultrasonic (Wind)", protocol: "RS485", sensor: "Wind Sensor", icon: "fa-wind", img: "images/ultrasonic.png" },
-      { name: "AHT20", protocol: "I2C", sensor: "AHT20", icon: "fa-temperature-quarter" },
-      { name: "STTS751", protocol: "I2C", sensor: "STTS751", icon: "fa-temperature-half", img: "images/stts751.png" },
-      { name: "STS30", protocol: "I2C", sensor: "STS30", icon: "fa-temperature-three-quarters", img: "images/sts30.png" },
-      { name: "LIS3DH", protocol: "I2C", sensor: "LIS3DH", icon: "fa-cube", img: "images/lis3dh.png" },
-      { name: "LIS2DH", protocol: "I2C", sensor: "LIS2DH", icon: "fa-cubes" },
-      { name: "Relay", protocol: "GPIO", sensor: "Relay", icon: "fa-toggle-on", img: "images/relay.png" },
-      { name: "Buzzer", protocol: "GPIO", sensor: "Buzzer", icon: "fa-volume-up", img: "images/buzzer.png" },
-      { name: "VCNL4040", protocol: "I2C", sensor: "VCNL4040", icon: "fa-sun", img: "images/luxpressure.png" },
-      { name: "VEML7700", protocol: "I2C", sensor: "VEML7700", icon: "fa-lightbulb" },
-      { name: "Reed Switch", protocol: "GPIO", sensor: "Reed Switch", icon: "fa-magnet" },
-      { name: "Hall Effect", protocol: "Analog", sensor: "Hall Sensor", icon: "fa-magnet", img: "images/halleffect.png" },
-      { name: "IR", protocol: "Analog", sensor: "IR Sensor", icon: "fa-broadcast-tower" },
-      { name: "SEN66", protocol: "I2C", sensor: "SEN66", icon: "fa-smog" }
+      { name: "Soil Spectra", desc: "Soil sensing solution for agricultural parameter monitoring", protocol: "RS485", sensor: "Soil Sensor", icon: "fa-seedling", img: "images/soil.png" },
+      { name: "Rain Gauge", desc: "Tipping Bucket Rain Gauge for precise rainfall measurement", protocol: "ADC", sensor: "Rain Gauge", icon: "fa-cloud-rain", img: "images/gauge.png" },
+      { name: "Radiation Shield", desc: "Weather Shield for accurate outdoor environment sensing", protocol: "I2C", sensor: "Weather Shield", icon: "fa-shield-halved" },
+      { name: "Ultrasonic Anemometer", desc: "Ultrasonic Anemometer for precise wind speed and wind direction", protocol: "RS485", sensor: "Wind Sensor", icon: "fa-wind", img: "images/ultrasonic.png" },
+      { name: "AHT20", desc: "High precision temperature and humidity sensor module", protocol: "I2C", sensor: "AHT20", icon: "fa-temperature-quarter" },
+      { name: "STTS751", desc: "High accuracy digital temperature sensor", protocol: "I2C", sensor: "STTS751", icon: "fa-temperature-half", img: "images/stts751.png" },
+      { name: "STS30", desc: "High accuracy digital temperature sensor", protocol: "I2C", sensor: "STS30", icon: "fa-temperature-three-quarters", img: "images/sts30.png" },
+      { name: "LIS3DH", desc: "3-axis digital output accelerometer for motion detection", protocol: "I2C", sensor: "LIS3DH", icon: "fa-cube", img: "images/lis3dh.png" },
+      { name: "LIS2DH", desc: "Ultra-low-power high-performance 3-axis accelerometer", protocol: "I2C", sensor: "LIS2DH", icon: "fa-cubes" },
+      { name: "Relay", desc: "Electromechanical switch for controlling high power devices", protocol: "GPIO", sensor: "Relay", icon: "fa-toggle-on", img: "images/relay.png" },
+      { name: "Buzzer", desc: "Audio signaling device for alarms and notifications", protocol: "GPIO", sensor: "Buzzer", icon: "fa-volume-up", img: "images/buzzer.png" },
+      { name: "VCNL4040", desc: "Fully integrated proximity and ambient light sensor", protocol: "I2C", sensor: "VCNL4040", icon: "fa-sun", img: "images/luxpressure.png" },
+      { name: "VEML7700", desc: "High accuracy ambient light digital sensor", protocol: "I2C", sensor: "VEML7700", icon: "fa-lightbulb" },
+      { name: "Reed Switch", desc: "Magnetic proximity switch for door and window monitoring", protocol: "GPIO", sensor: "Reed Switch", icon: "fa-magnet" },
+      { name: "Hall Effect", desc: "Magnetic field sensor for position and proximity", protocol: "Analog", sensor: "Hall Sensor", icon: "fa-magnet", img: "images/halleffect.png" },
+      { name: "IR", desc: "Infrared obstacle avoidance and motion detection sensor", protocol: "Analog", sensor: "IR Sensor", icon: "fa-broadcast-tower" },
+      { name: "SEN66", desc: "Advanced particulate matter and environmental node", protocol: "I2C", sensor: "SEN66", icon: "fa-smog" }
     ];
 
     const grid = document.getElementById("sensor-grid");
@@ -138,28 +182,41 @@
       a.className = "sensor-card-btn";
       a.href = "arduino.html?sensor=" + encodeURIComponent(s.sensor) + "&protocol=" + encodeURIComponent(s.protocol);
       
+      const imgContainer = document.createElement("div");
+      imgContainer.className = "card-img-container";
+      
       if (s.img) {
         const img = document.createElement("img");
         img.src = s.img;
-        img.style.width = "64px";
-        img.style.height = "64px";
-        img.style.objectFit = "contain";
-        img.style.marginBottom = "15px";
-        a.appendChild(img);
+        imgContainer.appendChild(img);
       } else {
         const i = document.createElement("i");
         i.className = "fas " + s.icon;
-        a.appendChild(i);
+        imgContainer.appendChild(i);
       }
       
-      const span = document.createElement("span");
-      span.textContent = s.name;
+      const content = document.createElement("div");
+      content.className = "card-content";
       
-      a.appendChild(span);
+      const h3 = document.createElement("h3");
+      h3.textContent = s.name;
+      
+      const p = document.createElement("p");
+      p.textContent = s.desc;
+      
+      const btn = document.createElement("button");
+      btn.className = "monitor-btn";
+      btn.textContent = "MONITOR SENSOR";
+      
+      content.appendChild(h3);
+      content.appendChild(p);
+      content.appendChild(btn);
+      
+      a.appendChild(imgContainer);
+      a.appendChild(content);
+      
       grid.appendChild(a);
     });
   </script>
 </body>
 </html>
-
-
