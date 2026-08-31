@@ -1955,7 +1955,7 @@ if (protocol === "I2C" && selectedSensor === "SEN66") {
   } else {
     // No protocol selected
     sensorDropdown.innerHTML = '<option value="" disabled selected>No protocol selected</option>';
-    sensorDataDiv.innerHTML  = "<p>No sensor data available.</p>";
+    // sensorDataDiv was removed
  
    const hideList = [
     thermometerContainer, humidityContainer, pressureContainer, lightContainer,
@@ -3351,13 +3351,15 @@ window.electronAPI.onSerialData((data) => {
 });
 window.addEventListener("DOMContentLoaded", () => {
   listPorts();
-  updateSensorUI();
- 
-  // Initialize UV card with default value
-  // updateUVCard(0);
 
-    const sensorParam = localStorage.getItem('arduinoSensor');
-  const protocolParam = localStorage.getItem('arduinoProtocol');
+  let sensorParam = localStorage.getItem('arduinoSensor');
+  let protocolParam = localStorage.getItem('arduinoProtocol');
+  
+  if (!sensorParam || !protocolParam) {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('sensor')) sensorParam = urlParams.get('sensor');
+    if (urlParams.get('protocol')) protocolParam = urlParams.get('protocol');
+  }
   
   if (sensorParam && protocolParam) {
     const protocolSelect = document.getElementById("sensor-select");
@@ -3371,10 +3373,11 @@ window.addEventListener("DOMContentLoaded", () => {
       protocolSelect.value = protocolParam;
       selectedSensor = sensorParam;
       autoSelected = true;
-      updateSensorUI();
     }
   }
-  const baudRateInput = document.getElementById("baud-rate");
+
+  updateSensorUI();
+    const baudRateInput = document.getElementById("baud-rate");
   if (baudRateInput) {
     baudRateInput.addEventListener("change", async (event) => {
       const newBaudRate = parseInt(event.target.value);
@@ -3526,6 +3529,10 @@ function updateSensorConnectionStatus() {
 
   console.log('[Status Debug]', { hasRealData, isConnected, currentUV, sensorDataKeys: Object.keys(sensorData.I2C || {}) });
 }
+
+
+
+
 
 
 
