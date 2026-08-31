@@ -3356,16 +3356,16 @@ window.addEventListener("DOMContentLoaded", () => {
   // Initialize UV card with default value
   updateUVCard(0);
 
-  const sensorParam = localStorage.getItem('arduinoSensor');
+    const sensorParam = localStorage.getItem('arduinoSensor');
   const protocolParam = localStorage.getItem('arduinoProtocol');
   
   if (sensorParam && protocolParam) {
     const protocolSelect = document.getElementById("sensor-select");
-    const sensorsSection = document.getElementById("sensors-section");
+    const activeName = document.getElementById("active-sensor-name");
+    const activeProtocol = document.getElementById("active-sensor-protocol");
     
-    if (sensorsSection) {
-      sensorsSection.style.display = "none";
-    }
+    if (activeName) activeName.textContent = sensorParam;
+    if (activeProtocol) activeProtocol.textContent = protocolParam + " PROTOCOL";
     
     if (protocolSelect) {
       protocolSelect.value = protocolParam;
@@ -3373,8 +3373,6 @@ window.addEventListener("DOMContentLoaded", () => {
       autoSelected = true;
       updateSensorUI();
     }
-    
-    
   }
   const baudRateInput = document.getElementById("baud-rate");
   if (baudRateInput) {
@@ -3528,6 +3526,7 @@ function updateSensorConnectionStatus() {
 
   console.log('[Status Debug]', { hasRealData, isConnected, currentUV, sensorDataKeys: Object.keys(sensorData.I2C || {}) });
 }
+
 
 
 

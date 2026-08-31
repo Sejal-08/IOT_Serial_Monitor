@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -180,7 +180,12 @@
     sensors.forEach(s => {
       const a = document.createElement("a");
       a.className = "sensor-card-btn";
-      a.href = "arduino.html?sensor=" + encodeURIComponent(s.sensor) + "&protocol=" + encodeURIComponent(s.protocol);
+      a.href = "javascript:void(0)";
+      a.onclick = () => {
+        localStorage.setItem("arduinoSensor", s.sensor);
+        localStorage.setItem("arduinoProtocol", s.protocol);
+        window.location.href = "arduino.html";
+      };
       
       const imgContainer = document.createElement("div");
       imgContainer.className = "card-img-container";
@@ -220,3 +225,4 @@
   </script>
 </body>
 </html>
+
