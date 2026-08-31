@@ -3374,8 +3374,27 @@ body.dark-mode .left-panel::-webkit-scrollbar-thumb:hover {
     inset 0 1px 3px rgba(255, 255, 255, 0.25);
 }
 
+/* Generic Card Styles (TTP223, Buzzer, Blinky, IR) */
+#ttp223-card, #buzzer-card, #blinky-card, #ir-card {
+  flex: 0 0 240px;
+  max-width: 240px;
+  min-height: 200px;
+  padding: 12px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  background: var(--sensor-bg);
+  border: 1px solid var(--sensor-border);
+  box-shadow: var(--sensor-shadow);
+  transition: all 0.4s ease;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 15px;
+}
 /* VL53L0X Distance Sensor Card */
-#tof-card {
+#tof-card, #ttp223-card, #buzzer-card, #blinky-card, #ir-card {
   flex: 0 0 240px;
   max-width: 240px;
   min-height: 200px;
@@ -3477,14 +3496,14 @@ body:not(.dark-mode) #tof-card h4 {
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-  #tof-card {
+  #tof-card, #ttp223-card, #buzzer-card, #blinky-card, #ir-card {
     max-width: 200px;
     min-height: 180px;
   }
 }
 
 @media (max-width: 480px) {
-  #tof-card {
+  #tof-card, #ttp223-card, #buzzer-card, #blinky-card, #ir-card {
     max-width: 180px;
     min-height: 160px;
   }
@@ -5474,4 +5493,6 @@ body:not(.dark-mode) #soil-thermo-svg rect[fill="none"],
 body:not(.dark-mode) #soil-thermo-svg circle[fill="none"] {
   stroke: #64748b;
 } */
+
+
 
