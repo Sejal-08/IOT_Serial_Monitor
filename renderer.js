@@ -262,7 +262,7 @@ const sensorProtocolMap = {
   "SPI": [],
   "Analog": ["Hall Sensor", "IR Sensor"],
   "ADC": ["Rain Gauge"],
-  "GPIO": isArduinoBackend ? ["Blinky", "Buzzer", "Relay", "HC-SR04"] : ["Blinky", "Buzzer", "Relay"],
+  "GPIO": isArduinoBackend ? ["Blinky", "Buzzer", "Relay", "HC-SR04", "TTP223"] : ["Blinky", "Buzzer", "Relay"],
   "WEATHER": ["Weather Parameters"]
 };
 // Track sensor presence and data
@@ -273,7 +273,7 @@ let sensorStatus = {
   "SPI": {},
   "Analog": { Hall_Sensor: false, IR_Sensor: false },
   "ADC": { "Rain Gauge": false },
-  "GPIO": { "Blinky": false, "Buzzer": false, "Relay": false, "HC-SR04": false },
+  "GPIO": { "Blinky": false, "Buzzer": false, "Relay": false, "HC-SR04": false, "TTP223": false },
   "WEATHER": { "WeatherParameters": true }
 };
 let sensorData = {
@@ -459,6 +459,7 @@ function updateSensorUI() {
   const rainGaugeValue = document.getElementById("rain-gauge-value");
   const blinkyCard = document.getElementById("blinky-card");
   const buzzerCard = document.getElementById("buzzer-card");
+  const ttp223Card = document.getElementById("ttp223-card");
   sensorDropdown.innerHTML = '<option value="" disabled selected>Select a Sensor</option>';
   // Define which sensors support which parameters
   const sensorParameters = {
@@ -474,6 +475,7 @@ function updateSensorUI() {
     "TLV493D": ["X", "Y", "Z"],
     "VL53L0X": ["Distance"],
     "HC-SR04": ["Distance"],
+    "TTP223": ["Touch"],
     "LTR390": ["UV"],
     "IR Sensor": ["Infrared"],
     "Soil Sensor": ["Nitrogen", "Phosphorus", "Potassium", "Moisture", "Temperature", "EC", "pH", "Salinity"],
@@ -556,7 +558,7 @@ const allCards = [
   tlv493dContainer, tofContainer, irContainer,
   windDirectionContainer, windSpeedContainer, windFlowContainer,  // ← add windFlowContainer here
   rainGaugeCard,
-  blinkyCard, buzzerCard,
+  blinkyCard, buzzerCard, ttp223Card,
   vcnlLuxCard,  
   relayCard,
   // SEN66 individual cards
@@ -730,6 +732,9 @@ if (protocol && selectedSensor) {
   }
   if (selectedSensor === "Buzzer" && protocol === "GPIO") {
     if (buzzerCard) buzzerCard.style.display = "flex";
+  }
+  if (selectedSensor === "TTP223" && protocol === "GPIO") {
+    if (ttp223Card) ttp223Card.style.display = "flex";
   }
   if (selectedSensor === "Relay" && protocol === "GPIO") {
     if (relayCard) relayCard.style.display = "flex";
@@ -1343,6 +1348,23 @@ if (protocol === "GPIO" && selectedSensor === "Relay") {
   }
 }
 
+// === TTP223 CARD UPDATE ===
+if (protocol === "GPIO" && selectedSensor === "TTP223") {
+  const ttpValue = document.getElementById("ttp223-value");
+  const ttpIcon = document.getElementById("ttp223-icon");
+  const isTouched = sensorData.GPIO["TTP223 State"] === "Touched";
+
+  if (ttpValue) {
+    ttpValue.textContent = isTouched ? "Touched" : "Not Touched";
+    ttpValue.style.color = isTouched ? "#4ade80" : "#f87171";
+  }
+  if (ttpIcon) {
+    ttpIcon.style.color = isTouched ? "#4ade80" : "#555";
+    ttpIcon.style.transform = isTouched ? "scale(1.2)" : "scale(1)";
+    ttpIcon.style.textShadow = isTouched ? "0 0 15px rgba(74, 222, 128, 0.6)" : "none";
+  }
+}
+
 // === BUZZER CARD UPDATE - ENHANCED ===
 if (protocol === "GPIO" && selectedSensor === "Buzzer") {
   const buzzerValue = document.getElementById("buzzer-value");
@@ -1942,7 +1964,7 @@ if (protocol === "I2C" && selectedSensor === "SEN66") {
     document.getElementById("sen66-voc-card"),
     document.getElementById("sen66-nox-card"),
     document.getElementById("sen66-co2-card"),
-    vcnlLuxCard, relayCard, blinkyCard, buzzerCard,
+    vcnlLuxCard, relayCard, blinkyCard, buzzerCard, ttp223Card,
   ];
     hideList.forEach(el => { if (el) el.style.display = "none"; });
     // Reset all values
@@ -2620,6 +2642,22 @@ function parseSensorData(data) {
             sensorData[protocol]["HC-SR04 Distance"] = distanceCm.toFixed(1) + " cm";
             if (selectedSensor === "HC-SR04") updateTOFAnimation(distanceCm);
             console.log(`[HC-SR04] Parsed: ${distanceCm.toFixed(1)} cm`);
+            dataParsed = true;
+          }
+
+          const ttpMatch = line.match(/Sensor\s+(Not\s+Touched|Touched)/i);
+          if (ttpMatch && protocol === "GPIO") {
+            sensorStatus[protocol]["TTP223"] = true;
+            const state = ttpMatch[1].trim().toLowerCase() === "touched" ? "Touched" : "Not Touched";
+            sensorData[protocol]["TTP223 State"] = state;
+            if (!selectedSensor && !autoSelected) {
+              selectedSensor = "TTP223";
+              autoSelected = true;
+              const dropdown = document.getElementById("sensor-dropdown");
+              if (dropdown) dropdown.value = "TTP223";
+            }
+            if (selectedSensor === "TTP223") updateSensorUI();
+            console.log(`[TTP223] Parsed: ${state}`);
             dataParsed = true;
           }
 
