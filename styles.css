@@ -357,7 +357,7 @@ ul.nav-links {
 .cyber-grid-container {
   display: flex;
   flex-direction: column;
-  min-height: 100%;
+  height: 100%;
   background: var(--panel-bg);
   border: 1px solid var(--panel-border);
   border-radius: 6px;
@@ -4063,17 +4063,16 @@ body:not(.dark-mode) #tlv493d-card h4 {
   width: 100%;
   max-width: 500px;
   min-height: 350px;
-  padding: 20px 20px 30px;
+  padding: 20px 20px 30px;           /* slightly less top padding → more top space feels higher */
   border-radius: 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  background: rgba(30, 41, 59, 0.5);
-  border: 1.5px solid rgba(148, 163, 184, 0.2);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+  justify-content: flex-start;       /* changed from center → content starts higher */
+  background: var(--sensor-bg);
+  border: 1px solid var(--sensor-border);
+  box-shadow: var(--sensor-shadow);
   transition: all 0.4s ease;
-  position: relative;
   text-align: center;
   margin: 0 auto;
   margin-bottom: 50px;
@@ -4193,9 +4192,9 @@ body:not(.dark-mode) #buzzer-card h4 {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: rgba(30, 41, 59, 0.5);
-  border: 1.5px solid rgba(148, 163, 184, 0.2);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+  background: var(--sensor-bg);
+  border: 1px solid var(--sensor-border);
+  box-shadow: var(--sensor-shadow);
   transition: all 0.4s ease;
   text-align: center;
   margin: 0 auto;

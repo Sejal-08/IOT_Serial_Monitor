@@ -181,7 +181,7 @@
     </div>
 
     <div class="right-panel">
-      <div class="container" style="display: flex; flex-direction: column; gap: 16px; min-height: 100%;">
+      <div class="container" style="display: flex; flex-direction: column; gap: 16px; height: 100%;">
         
         <div class="cyber-grid-container" style="flex: 1;">
           <div class="cyber-grid-header">
@@ -1540,290 +1540,33 @@
 
           <!-- IR Sensor Card with Proper Reflection Animation -->
 <div id="ir-card" class="card-container" style="display: none;">
-  <h4><i class="fas fa-broadcast-tower"></i> IR Sensor</h4>
-  <div id="ir-value" class="sensor-value" style="margin-bottom: 16px; font-size: 1.5rem; font-weight: 600; letter-spacing: -1px;">Waiting...</div>
-  
-  <svg width="650" height="280" viewBox="0 0 650 280" style="margin: 20px 0;">
-    <!-- Gradient Definitions for Light Rays -->
-    <defs>
-      <!-- Red ray gradient (IR light going OUT) -->
-      <linearGradient id="redRayGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%" style="stop-color:#8B0000;stop-opacity:0" />
-        <stop offset="30%" style="stop-color:#CD5C5C;stop-opacity:0.7" />
-        <stop offset="100%" style="stop-color:#8B0000;stop-opacity:0.3" />
-      </linearGradient>
-      
-      <!-- Yellow/Orange ray gradient (Reflected light coming BACK) -->
-      <linearGradient id="yellowRayGradient" x1="100%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" style="stop-color:#B8860B;stop-opacity:0.3" />
-        <stop offset="70%" style="stop-color:#DAA520;stop-opacity:0.7" />
-        <stop offset="100%" style="stop-color:#B8860B;stop-opacity:0" />
-      </linearGradient>
-    </defs>
-    
-    <!-- IR Sensor Box (Left) -->
-    <rect x="50" y="95" width="110" height="110" rx="8" fill="rgba(51, 65, 85, 0.5)" stroke="#4a90e2" stroke-width="2.5"/>
-    <text x="105" y="145" text-anchor="middle" fill="#4ade80" font-size="15" font-weight="bold">IR</text>
-    <text x="105" y="165" text-anchor="middle" fill="#4ade80" font-size="15" font-weight="bold">Sensor</text>
-    
-    <!-- IR LED (Top emitter) -->
-    <circle cx="190" cy="120" r="22" fill="rgba(42, 42, 42, 0.8)" stroke="#555" stroke-width="2"/>
-    <circle id="ir-led" cx="190" cy="120" r="14" fill="#cc0000"/>
-    <circle id="ir-led-glow" cx="190" cy="120" r="20" fill="#ff0000" opacity="0"/>
-    <text x="230" y="115" fill="#888" font-size="11">IR LED</text>
-    
-    <!-- Photodiode (Bottom receiver) -->
-    <circle cx="190" cy="180" r="22" fill="rgba(42, 42, 42, 0.8)" stroke="#555" stroke-width="2"/>
-    <circle id="ir-receiver" cx="190" cy="180" r="14" fill="#555"/>
-    <circle id="ir-receiver-glow" cx="190" cy="180" r="20" fill="#ffeb3b" opacity="0"/>
-    <text x="230" y="185" fill="#888" font-size="11">Photo Diode</text>
-    
-    <!-- Connection lines -->
-    <line x1="160" y1="120" x2="168" y2="120" stroke="#4a90e2" stroke-width="2"/>
-    <line x1="160" y1="180" x2="168" y2="180" stroke="#4a90e2" stroke-width="2"/>
-    
-    <!-- IR Light Label (Top) -->
-    <text x="360" y="90" text-anchor="middle" fill="#4ade80" font-size="14" font-weight="bold">IR light</text>
-    
-    <!-- OUTGOING (red) -->
-<polygon id="ray-gradient-out"
-         points="500,170 500,102 500,108 212,123"
-         fill="url(#redRayGradient)" opacity="0"/>
-
-    
-    <!-- Transmitted IR Beam Dots (Red) - Horizontal path -->
-    <g id="ir-beam-out">
-      <circle cx="250" cy="120" r="1" fill="#ff3366" opacity="0"/>
-      <circle cx="320" cy="120" r="2" fill="#ff3366" opacity="0"/>
-      <circle cx="390" cy="120" r="3" fill="#ff3366" opacity="0"/>
-      <circle cx="460" cy="120" r="4" fill="#ff3366" opacity="0"/>
-      <circle cx="500" cy="120" r="3" fill="#ff3366" opacity="0"/>
-    </g>
-    
-    <!-- Reflected IR Light Label (Bottom) -->
-    <text x="360" y="245" text-anchor="middle" fill="#4ade80" font-size="14" font-weight="bold">Reflected IR light</text>
-    
-    <!-- REFLECTED (yellow) -->
-    <polygon id="ray-gradient-reflected"
-         points="500,170 212,170 212,170 500,114"
-         fill="url(#yellowRayGradient)" opacity="0"/>
-    
-    <!-- Reflected Beam Dots (Yellow) - Diagonal path from object to photodiode -->
-    <g id="ir-beam-reflected">
-      <circle cx="500" cy="135" r="2" fill="#ffeb3b" opacity="0"/>
-      <circle cx="430" cy="148" r="2" fill="#ffeb3b" opacity="0"/>
-      <circle cx="360" cy="161" r="3" fill="#ffeb3b" opacity="0"/>
-      <circle cx="290" cy="174" r="4" fill="#ffeb3b" opacity="0"/>
-      <circle cx="220" cy="180" r="3" fill="#ffeb3b" opacity="0"/>
-    </g>
-    
-    <!-- Object Box (Right) - Same size as Sensor box -->
-    <rect id="detected-object" x="490" y="95" width="110" height="110" rx="8" fill="rgba(51, 65, 85, 0.5)" stroke="#4a90e2" stroke-width="2.5" opacity="0"/>
-    <text id="object-label" x="545" y="155" text-anchor="middle" fill="#4ade80" font-size="15" font-weight="bold" opacity="0">Object</text>
-  </svg>
-</div>
+    <h4><i class="fas fa-broadcast-tower"></i> IR Sensor</h4>
+    <div id="ir-value" class="sensor-value" style="font-size: 1.5rem; font-weight: 600;">Waiting...</div>
+    <div id="ir-animation" style="margin-top: 20px; height: 100px; background: #1e1e1e; border-radius: 8px; display: flex; align-items: center; justify-content: center; position: relative;">
+      <!-- Simple CSS animation for IR -->
+      <div id="ir-emitter" style="width: 20px; height: 20px; border-radius: 50%; background: #555; position: absolute; left: 20px;"></div>
+      <div id="ir-beam" style="height: 4px; width: 0%; background: red; position: absolute; left: 40px; transition: width 0.3s ease;"></div>
+      <div id="ir-receiver" style="width: 20px; height: 20px; border-radius: 50%; background: #555; position: absolute; right: 20px;"></div>
+    </div>
+  </div>
 
 <!-- Blinky Card - Fixed Switch -->
 <div id="blinky-card" class="card-container" style="display: none;">
-  <h4><i class="fas fa-lightbulb"></i> Blinky Controller</h4>
-  <div id="blinky-value" class="sensor-value" style="margin-bottom: 16px; font-size: 1.5rem; font-weight: 600; letter-spacing: -1px;">OFF</div>
-  
-  <svg id="blinky-svg" width="500" height="300" viewBox="0 0 500 300" style="margin: 0 auto;">
-    <defs>
-      <!-- Bulb Glow -->
-      <radialGradient id="bulbGlowOn" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stop-color="#FFFF00" stop-opacity="1"/>
-        <stop offset="50%" stop-color="#FFEB3B" stop-opacity="0.8"/>
-        <stop offset="100%" stop-color="#FFC107" stop-opacity="0"/>
-      </radialGradient>
-      
-      <!-- Green Energy Particles -->
-      <radialGradient id="energyParticle" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stop-color="#4CAF50" stop-opacity="1"/>
-        <stop offset="100%" stop-color="#4CAF50" stop-opacity="0"/>
-      </radialGradient>
-    </defs>
-    
-    <!-- === POWER SOURCE (LEFT) === -->
-    <g id="power-source">
-      <circle cx="100" cy="150" r="20" fill="#455A64" stroke="#37474F" stroke-width="2"/>
-      <line x1="100" y1="130" x2="100" y2="170" stroke="#37474F" stroke-width="3"/>
-      <line x1="80" y1="150" x2="120" y2="150" stroke="#37474F" stroke-width="3"/>
-      <text x="100" y="190" text-anchor="middle" fill="#90A4AE" font-size="14" font-weight="600">Power</text>
-    </g>
-    
-    <!-- === RELAY SWITCH (CENTER) === -->
-    <g id="relay-switch-group">
-      <!-- Switch Track -->
-      <rect x="180" y="130" width="120" height="40" rx="20" fill="#ECEFF1" stroke="#B0BEC5" stroke-width="2"/>
-      
-      <!-- Switch Knob (STARTING AT OFF POSITION - LEFT SIDE) -->
-      <circle id="switch-knob" cx="200" cy="150" r="15" 
-              fill="#78909C" stroke="#546E7A" stroke-width="2"/>
-      
-      <!-- ON/OFF Labels -->
-      <text x="195" y="125" text-anchor="middle" fill="#757575" font-size="12" font-weight="600">OFF</text>
-      <text x="285" y="125" text-anchor="middle" fill="#757575" font-size="12" font-weight="600">ON</text>
-      
-      <!-- Switch Glow (CENTERED ON KNOB, NOT VISIBLE BY DEFAULT) -->
-      <circle id="switch-glow" cx="200" cy="150" r="20" 
-              fill="#4CAF50" opacity="0"/>
-      
-      <text x="240" y="190" text-anchor="middle" fill="#90A4AE" font-size="14" font-weight="600">Blinky Switch</text>
-    </g>
-    
-    <!-- === BULB (RIGHT) === -->
-    <g id="relay-bulb">
-      <!-- Bulb Glass -->
-      <circle cx="400" cy="150" r="30" fill="#FAFAFA" stroke="#E0E0E0" stroke-width="2"/>
-      
-      <!-- Bulb Base -->
-      <rect x="385" y="175" width="30" height="15" rx="3" fill="#9E9E9E"/>
-      <rect x="390" y="180" width="20" height="10" rx="2" fill="#757575"/>
-      
-      <!-- Bulb Filament -->
-      <path id="bulb-filament" d="M395 145 Q400 135 405 145" 
-            fill="none" stroke="#FF9800" stroke-width="2" stroke-linecap="round"/>
-      
-      <!-- Bulb Glow Effect -->
-      <circle id="bulb-glow" cx="400" cy="150" r="35" 
-              fill="url(#bulbGlowOn)" opacity="0"/>
-      
-      <!-- Light Rays - CORRECTED with more gap -->
-    <g id="light-rays" opacity="0">
-      <!-- Top -->
-      <line x1="400" y1="120" x2="400" y2="80" stroke="#FFEB3B" stroke-width="3" stroke-linecap="round"/>
-      
-      <!-- Top-Right -->
-      <line x1="420" y1="130" x2="445" y2="110" stroke="#FFEB3B" stroke-width="2" stroke-linecap="round"/>
-      
-      <!-- Top-Left -->
-      <line x1="380" y1="130" x2="355" y2="110" stroke="#FFEB3B" stroke-width="2" stroke-linecap="round"/>
-      
-      <!-- Right -->
-      <line x1="430" y1="150" x2="460" y2="150" stroke="#FFEB3B" stroke-width="2" stroke-linecap="round"/>
-      
-      <!-- Left -->
-      <line x1="380" y1="150" x2="340" y2="150" stroke="#FFEB3B" stroke-width="4" stroke-linecap="round"/>
-    </g>
-      
-      <text x="400" y="205" text-anchor="middle" fill="#90A4AE" font-size="14" font-weight="600">Bulb</text>
-    </g>
-    
-    <!-- === DOTTED CONNECTION LINES === -->
-    <!-- Power to Switch -->
-    <line id="wire-1" x1="120" y1="150" x2="180" y2="150" 
-          stroke="#78909C" stroke-width="3" stroke-dasharray="5,5" stroke-linecap="round"/>
-    
-    <!-- Switch to Bulb -->
-    <line id="wire-2" x1="300" y1="150" x2="370" y2="150" 
-          stroke="#78909C" stroke-width="3" stroke-dasharray="5,5" stroke-linecap="round"/>
-    
-    <!-- === ENERGY FLOW PARTICLES === -->
-    <!-- Energy particles from Power to Switch -->
-    <g id="energy-particles-1" opacity="0">
-      <circle cx="125" cy="150" r="3" fill="#4CAF50"/>
-      <circle cx="145" cy="150" r="2" fill="#4CAF50"/>
-      <circle cx="165" cy="150" r="3" fill="#4CAF50"/>
-    </g>
-    
-    <!-- Energy particles from Switch to Bulb -->
-    <g id="energy-particles-2" opacity="0">
-      <circle cx="305" cy="150" r="3" fill="#4CAF50"/>
-      <circle cx="325" cy="150" r="2" fill="#4CAF50"/>
-      <circle cx="345" cy="150" r="3" fill="#4CAF50"/>
-      <circle cx="365" cy="150" r="2" fill="#4CAF50"/>
-    </g>
-    
-    <!-- Connection Points -->
-    <circle cx="120" cy="150" r="4" fill="#78909C"/>
-    <circle cx="180" cy="150" r="4" fill="#78909C"/>
-    <circle cx="300" cy="150" r="4" fill="#78909C"/>
-    <circle cx="370" cy="150" r="4" fill="#78909C"/>
-  </svg>
-</div>
+    <h4><i class="fas fa-lightbulb"></i> Blinky (LED)</h4>
+    <div id="blinky-value" class="sensor-value" style="font-size: 1.5rem; font-weight: 600;">OFF</div>
+    <div id="blinky-animation" style="margin-top: 20px; height: 100px; background: #1e1e1e; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+      <div id="blinky-indicator" style="width: 40px; height: 40px; border-radius: 50%; background: #333; box-shadow: 0 0 0px #000; transition: all 0.3s ease;"></div>
+    </div>
+  </div>
 
 <!-- Buzzer Card - Enhanced with Sound Wave Animation -->
 <div id="buzzer-card" class="card-container" style="display: none;">
-  <h4><i class="fas fa-volume-up"></i> Buzzer</h4>
-  <div id="buzzer-value" class="sensor-value" style="margin-bottom: 16px; font-size: 1.8rem; font-weight: 700; letter-spacing: -1px;">Inactive</div>
-
-  <div class="buzzer-animation-container" style="width: 220px; height: 220px; margin: 0 auto; position: relative;">
-    <svg width="220" height="220" viewBox="0 0 220 220">
-      <defs>
-        <!-- Gradient for speaker body -->
-        <linearGradient id="speakerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#4b5563"/>
-          <stop offset="100%" stop-color="#1f2937"/>
-        </linearGradient>
-
-        <!-- Pulsing glow when active -->
-        <radialGradient id="buzzerGlow" cx="50%" cy="50%" r="70%">
-          <stop offset="0%" stop-color="#60a5fa" stop-opacity="0.8"/>
-          <stop offset="60%" stop-color="#3b82f6" stop-opacity="0.4"/>
-          <stop offset="100%" stop-color="#2563eb" stop-opacity="0"/>
-        </radialGradient>
-
-        <filter id="buzzerPulseGlow">
-          <feGaussianBlur stdDeviation="8" result="blur"/>
-          <feOffset in="blur" dx="0" dy="0" result="offsetBlur"/>
-          <feFlood flood-color="#60a5fa" flood-opacity="0.6"/>
-          <feComposite in="flood" in2="offsetBlur" operator="in"/>
-          <feMerge>
-            <feMergeNode/>
-            <feMergeNode in="SourceGraphic"/>
-          </feMerge>
-        </filter>
-      </defs>
-
-      <!-- Speaker Body -->
-      <g id="speaker-body">
-        <!-- Outer cone -->
-        <circle cx="110" cy="110" r="80" fill="none" stroke="#374151" stroke-width="12"/>
-        <!-- Inner speaker cone -->
-        <circle cx="110" cy="110" r="65" fill="url(#speakerGradient)"/>
-        <!-- Center magnet -->
-        <circle cx="110" cy="110" r="35" fill="#111827"/>
-        <circle cx="110" cy="110" r="25" fill="#1f2937" stroke="#374151" stroke-width="3"/>
-      </g>
-
-      <!-- Sound Waves (visible only when active) -->
-      <g id="sound-waves" opacity="0">
-        <!-- Wave 1 -->
-        <circle cx="110" cy="110" r="90" fill="none" stroke="#60a5fa" stroke-width="6" opacity="0.8">
-          <animate attributeName="r" values="90;120;90" dur="1.8s" repeatCount="indefinite"/>
-          <animate attributeName="opacity" values="0.8;0;0.8" dur="1.8s" repeatCount="indefinite"/>
-          <animate attributeName="stroke-width" values="6;3;6" dur="1.8s" repeatCount="indefinite"/>
-        </circle>
-        <!-- Wave 2 (offset) -->
-        <circle cx="110" cy="110" r="90" fill="none" stroke="#3b82f6" stroke-width="5" opacity="0.7">
-          <animate attributeName="r" values="90;115;90" dur="1.8s" begin="0.4s" repeatCount="indefinite"/>
-          <animate attributeName="opacity" values="0.7;0;0.7" dur="1.8s" begin="0.4s" repeatCount="indefinite"/>
-        </circle>
-        <!-- Wave 3 (smaller, faster) -->
-        <circle cx="110" cy="110" r="90" fill="none" stroke="#2563eb" stroke-width="4" opacity="0.6">
-          <animate attributeName="r" values="90;110;90" dur="1.4s" begin="0.8s" repeatCount="indefinite"/>
-          <animate attributeName="opacity" values="0.6;0;0.6" dur="1.4s" begin="0.8s" repeatCount="indefinite"/>
-        </circle>
-      </g>
-
-      <!-- Pulsing Glow Overlay (when active) -->
-      <circle id="buzzer-glow-ring" cx="110" cy="110" r="85" fill="none" stroke="url(#buzzerGlow)" stroke-width="8" opacity="0" filter="url(#buzzerPulseGlow)">
-        <animate attributeName="opacity" values="0;0.6;0" dur="1.5s" repeatCount="indefinite"/>
-      </circle>
-
-      <!-- Small vibration lines (random subtle shake when active) -->
-      <g id="vibration-lines" opacity="0">
-        <line x1="30" y1="110" x2="190" y2="110" stroke="#60a5fa" stroke-width="2" opacity="0.5">
-          <animateTransform attributeName="transform" type="translate" values="0,0; 2,2; -2,-2; 0,0" dur="0.3s" repeatCount="indefinite"/>
-        </line>
-        <line x1="110" y1="30" x2="110" y2="190" stroke="#60a5fa" stroke-width="2" opacity="0.5">
-          <animateTransform attributeName="transform" type="translate" values="0,0; -2,-2; 2,2; 0,0" dur="0.4s" repeatCount="indefinite"/>
-        </line>
-      </g>
-    </svg>
+    <h4><i class="fas fa-volume-up"></i> Buzzer</h4>
+    <div id="buzzer-value" class="sensor-value" style="font-size: 1.5rem; font-weight: 600;">Inactive</div>
+    <div id="buzzer-animation" style="margin-top: 20px; height: 100px; background: #1e1e1e; border-radius: 8px; display: flex; align-items: center; justify-content: center; position: relative;">
+      <i id="buzzer-icon" class="fas fa-volume-mute" style="font-size: 3rem; color: #555; transition: all 0.2s ease;"></i>
+    </div>
   </div>
-</div>
         
           </div>
         </div> <!-- End of cyber-grid-main -->

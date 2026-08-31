@@ -262,7 +262,7 @@ const sensorProtocolMap = {
   "SPI": [],
   "Analog": ["Hall Sensor", "IR Sensor"],
   "ADC": ["Rain Gauge"],
-  "GPIO": ["Blinky", "Buzzer", "Relay"],
+  "GPIO": ["Blinky", "Buzzer", "Relay", "HC-SR04"],
   "WEATHER": ["Weather Parameters"]
 };
 // Track sensor presence and data
@@ -273,7 +273,7 @@ let sensorStatus = {
   "SPI": {},
   "Analog": { Hall_Sensor: false, IR_Sensor: false },
   "ADC": { "Rain Gauge": false },
-  "GPIO": { "Blinky": false, "Buzzer": false },
+  "GPIO": { "Blinky": false, "Buzzer": false, "Relay": false, "HC-SR04": false },
   "WEATHER": { "WeatherParameters": true }
 };
 let sensorData = {
@@ -473,6 +473,7 @@ function updateSensorUI() {
     "Hall Sensor": ["MagneticField"],
     "TLV493D": ["X", "Y", "Z"],
     "VL53L0X": ["Distance"],
+    "HC-SR04": ["Distance"],
     "LTR390": ["UV"],
     "IR Sensor": ["Infrared"],
     "Soil Sensor": ["Nitrogen", "Phosphorus", "Potassium", "Moisture", "Temperature", "EC", "pH", "Salinity"],
@@ -680,8 +681,8 @@ if (protocol && selectedSensor) {
   if (selectedSensor === "TLV493D" && protocol === "I2C") {
     if (tlv493dContainer) tlv493dContainer.style.display = "flex";
   }
- // TOF Distance
-  if (selectedSensor === "VL53L0X" && protocol === "I2C") {
+  // TOF Distance
+  if ((selectedSensor === "VL53L0X" && protocol === "I2C") || (selectedSensor === "HC-SR04" && protocol === "GPIO")) {
     if (tofContainer) {
       tofContainer.style.display = "flex";
       tofContainer.classList.add("show");
@@ -2464,7 +2465,7 @@ function parseSensorData(data) {
 
     try {
       // BME680
-      const bme680Match = line.match(/Temperature:\s*([+-]?\d+\.?\d*)\s*[°]?C\s*,\s*Humidity:\s*(\d+\.?\d*)\s*%RH\s*,\s*Pressure:\s*(\d+\.?\d*)\s*(?:kPa|hPa)/i);
+      const bme680Match = line.match(/Temperature:\s*([+-]?\d+\.?\d*)\s*[°]?C\s*,\s*Humidity:\s*(\d+\.?\d*)\s*%RH\s*,\s*Pressure:\s*(\d+\.?\d*)\s*kPa/i);
       if (bme680Match && protocol === "I2C") {
         const temp = parseFloat(bme680Match[1]);
         const humidity = parseFloat(bme680Match[2]);
@@ -2481,7 +2482,7 @@ function parseSensorData(data) {
         sensorData[protocol]["BME680 Pressure"] = pressure.toFixed(2);
         currentTemperature = temp;
         currentHumidity = humidity;
-        currentPressure = pressure;
+        currentPressure = pressure * 10;
         console.log('BME680 parsed:', { temp, humidity, pressure });
         if (selectedSensor === "BME680") updateSensorUI();
         dataParsed = true;
@@ -2602,7 +2603,27 @@ function parseSensorData(data) {
           dataParsed = true;
         }
         
-        const buzzerMatch = line.match(/Buzzer[\s:]*\s*(ACTIVE|INACTIVE|1|0)/i);
+        const hcMatch = line.match(/(?:HC-SR04|Distance)[\s:]*\s*([\d.]+)\s*(cm|m)?/i);
+          if (hcMatch && protocol === "GPIO") {
+            sensorStatus[protocol]["HC-SR04"] = true;
+            let distanceCm = parseFloat(hcMatch[1]);
+            let unit = hcMatch[2] || "cm";
+            if (unit.toLowerCase() === "m") distanceCm *= 100;
+            
+            if (!selectedSensor && !autoSelected) {
+              selectedSensor = "HC-SR04";
+              autoSelected = true;
+              const dropdown = document.getElementById("sensor-dropdown");
+              if (dropdown) dropdown.value = "HC-SR04";
+            }
+            currentDistance = distanceCm;
+            sensorData[protocol]["HC-SR04 Distance"] = distanceCm.toFixed(1) + " cm";
+            if (selectedSensor === "HC-SR04") updateTOFAnimation(distanceCm);
+            console.log(`[HC-SR04] Parsed: ${distanceCm.toFixed(1)} cm`);
+            dataParsed = true;
+          }
+
+          const buzzerMatch = line.match(/Buzzer[\s:]*\s*(ACTIVE|INACTIVE|1|0)/i);
         if (buzzerMatch) {
           sensorStatus[protocol]["Buzzer"] = true;
           const captured = buzzerMatch[1].toUpperCase();
