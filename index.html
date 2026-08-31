@@ -1574,7 +1574,15 @@
   </div>
         
           </div>
-        </div> <!-- End of sensor-cards-container -->
+        <!-- Reed Switch Card -->
+<div id="reed-card" class="sensor-card" style="display: none;">
+    <h4><i class="fas fa-magnet"></i> Reed Switch</h4>
+    <div id="reed-value" class="sensor-value" style="font-size: 1.5rem; font-weight: 600;">Open</div>
+    <div id="reed-animation" style="margin-top: 20px; height: 100px; background: transparent; width: 100%; display: flex; align-items: center; justify-content: center; position: relative;">
+      <i id="reed-icon" class="fas fa-door-open" style="font-size: 3rem; color: #555; transition: all 0.2s ease;"></i>
+    </div>
+</div>
+          </div> <!-- End of sensor-cards-container -->
         </div> <!-- End of cyber-grid-main -->
         </div> <!-- End of cyber-grid-container -->
 
@@ -1886,6 +1894,7 @@ function updateSensorVisualizationVisibility() {
 </script>
 </body>
 </html>
+
 
 
 

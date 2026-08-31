@@ -256,18 +256,18 @@ let isPythonBackend = selectedBackend === 'python';
 
 const isArduinoBackend = selectedBackend === 'arduino';
 const sensorProtocolMap = {
-  "I2C": ["SHT40", "AHT20", "BME680", "STS30", "STTS751", "LIS3DH", "VEML7700", "VL53L0X", "LTR390", "Weather Shield", "VCNL4040", "SEN66"],
+  "I2C": ["SHT40", "AHT20", "BME680", "STS30", "STTS751", "LIS3DH", "LIS2DH", "VEML7700", "VL53L0X", "LTR390", "Weather Shield", "VCNL4040", "SEN66"],
   "RS485": ["Soil Sensor", "Wind Sensor"],
   "RS232": ["Wind Sensor"],
   "SPI": [],
   "Analog": ["Hall Sensor", "IR Sensor"],
   "ADC": ["Rain Gauge"],
-  "GPIO": isArduinoBackend ? ["Blinky", "Buzzer", "Relay", "HC-SR04", "TTP223"] : ["Blinky", "Buzzer", "Relay"],
+  "GPIO": isArduinoBackend ? ["Blinky", "Buzzer", "Relay", "HC-SR04", "TTP223", "Reed Switch"] : ["Blinky", "Buzzer", "Relay"],
   "WEATHER": ["Weather Parameters"]
 };
 // Track sensor presence and data
 let sensorStatus = {
-  "I2C": { SHT40: false, AHT20: false, BME680: false, STS30: false, STTS751: false, LIS3DH: false, VEML7700: false, TLV493D: false, VL53L0X: false, LTR390: false, WeatherShield: false, SEN66: false },
+  "I2C": { SHT40: false, AHT20: false, BME680: false, STS30: false, STTS751: false, LIS3DH: false, LIS2DH: false, VEML7700: false, TLV493D: false, VL53L0X: false, LTR390: false, WeatherShield: false, SEN66: false },
   "RS485": { "Soil Sensor": false, "Wind Sensor": false },
   "RS232": { WindSensor: false },
   "SPI": {},
@@ -460,6 +460,7 @@ function updateSensorUI() {
   const blinkyCard = document.getElementById("blinky-card");
   const buzzerCard = document.getElementById("buzzer-card");
   const ttp223Card = document.getElementById("ttp223-card");
+  const reedCard = document.getElementById("reed-card");
   sensorDropdown.innerHTML = '<option value="" disabled selected>Select a Sensor</option>';
   // Define which sensors support which parameters
   const sensorParameters = {
@@ -470,7 +471,7 @@ function updateSensorUI() {
     "STTS751": ["Temperature"],
     "VEML7700": ["Lux"],
     "STS30": ["Temperature"],
-    "LIS3DH": ["AccelerationX", "AccelerationY", "AccelerationZ"],
+    "LIS3DH": ["AccelerationX", "AccelerationY", "AccelerationZ"], "LIS2DH": ["AccelerationX", "AccelerationY", "AccelerationZ"],
     "Hall Sensor": ["MagneticField"],
     "TLV493D": ["X", "Y", "Z"],
     "VL53L0X": ["Distance"],
@@ -558,7 +559,7 @@ const allCards = [
   tlv493dContainer, tofContainer, irContainer,
   windDirectionContainer, windSpeedContainer, windFlowContainer,  // ← add windFlowContainer here
   rainGaugeCard,
-  blinkyCard, buzzerCard, ttp223Card,
+  blinkyCard, buzzerCard, ttp223Card, reedCard,
   vcnlLuxCard,  
   relayCard,
   // SEN66 individual cards
@@ -672,7 +673,7 @@ if (protocol && selectedSensor) {
     }
   }
   // Acceleration
-  if (selectedSensor === "LIS3DH" && protocol === "I2C") {
+  if ((selectedSensor === "LIS3DH" || selectedSensor === "LIS2DH") && protocol === "I2C") {
     if (lis3dhContainer) lis3dhContainer.style.display = "flex";
   }
   // Hall Sensor (Analog)
@@ -735,6 +736,9 @@ if (protocol && selectedSensor) {
   }
   if (selectedSensor === "TTP223" && protocol === "GPIO") {
     if (ttp223Card) ttp223Card.style.display = "flex";
+  }
+  if (selectedSensor === "Reed Switch" && protocol === "GPIO") {
+    if (reedCard) reedCard.style.display = "flex";
   }
   if (selectedSensor === "Relay" && protocol === "GPIO") {
     if (relayCard) relayCard.style.display = "flex";
@@ -1800,7 +1804,7 @@ if (protocol === "I2C" && selectedSensor === "TLV493D") {
 
 
 // === LIS3DH ACCELERATION VALUES + BALL UPDATE ===
-if (protocol === "I2C" && selectedSensor === "LIS3DH") {
+if (protocol === "I2C" && (selectedSensor === "LIS3DH" || selectedSensor === "LIS2DH")) {
   const ball = document.getElementById("accel-ball");
 
   if (currentAccelX !== null && currentAccelY !== null && currentAccelZ !== null) {
@@ -1964,7 +1968,7 @@ if (protocol === "I2C" && selectedSensor === "SEN66") {
     document.getElementById("sen66-voc-card"),
     document.getElementById("sen66-nox-card"),
     document.getElementById("sen66-co2-card"),
-    vcnlLuxCard, relayCard, blinkyCard, buzzerCard, ttp223Card,
+    vcnlLuxCard, relayCard, blinkyCard, buzzerCard, ttp223Card, reedCard,
   ];
     hideList.forEach(el => { if (el) el.style.display = "none"; });
     // Reset all values
@@ -2561,7 +2565,7 @@ function parseSensorData(data) {
 
       // SEN66
       // Ignore lines that explicitly belong to other known I2C sensors to prevent false positives for SEN66
-      if (protocol === "I2C" && !dataParsed && !/STTS751|BME680|SHT40|AHT20|STS30|LIS3DH|VEML7700/i.test(line)) {
+      if (protocol === "I2C" && !dataParsed && !/STTS751|BME680|SHT40|AHT20|STS30|LIS3DH|LIS2DH|VEML7700/i.test(line)) {
         let sen66Matched = false;
         const pm1Match = line.match(/PM1\.0\s*:\s*([\d.]+)/i);
         const pm25Match = line.match(/PM2\.5\s*:\s*([\d.]+)/i);
@@ -2818,7 +2822,7 @@ function parseSensorData(data) {
         const accelZ = parseFloat(zStr);
         if (!isNaN(accelX) && !isNaN(accelY) && !isNaN(accelZ)) {
           sensorStatus[protocol] = sensorStatus[protocol] || {};
-          sensorStatus[protocol]["LIS3DH"] = true;
+          sensorStatus[protocol][selectedSensor === "LIS2DH" ? "LIS2DH" : "LIS3DH"] = true;
           sensorData[protocol] = sensorData[protocol] || {};
           sensorData[protocol]["LIS3DH X"] = accelX.toFixed(2);
           sensorData[protocol]["LIS3DH Y"] = accelY.toFixed(2);
@@ -3133,7 +3137,7 @@ _resetSEN66();
     "Analog": {},
   };
   sensorStatus = {
-    "I2C": { SHT40: false, AHT20: false, BME680: false, STS30: false, STTS751: false, SEN66: false, LIS3DH: false, VEML7700: false, TLV493D: false, VL53L0X: false, LTR390: false },
+    "I2C": { SHT40: false, AHT20: false, BME680: false, STS30: false, STTS751: false, SEN66: false, LIS3DH: false, LIS2DH: false, VEML7700: false, TLV493D: false, VL53L0X: false, LTR390: false },
     "RS485": { "Soil Sensor": false, "Wind Sensor": false },
     "RS232": { WindSensor: false },
     "WEATHER": { "WeatherParameters": true },
@@ -3351,6 +3355,31 @@ window.addEventListener("DOMContentLoaded", () => {
  
   // Initialize UV card with default value
   updateUVCard(0);
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const sensorParam = urlParams.get('sensor');
+  const protocolParam = urlParams.get('protocol');
+  
+  if (sensorParam && protocolParam) {
+    const protocolSelect = document.getElementById("sensor-select");
+    const sensorsSection = document.getElementById("sensors-section");
+    
+    if (sensorsSection) {
+      sensorsSection.style.display = "none";
+    }
+    
+    if (protocolSelect) {
+      protocolSelect.value = protocolParam;
+      selectedSensor = sensorParam;
+      autoSelected = true;
+      updateSensorUI();
+    }
+    
+    const backBtn = document.querySelector(".nav-btn");
+    if (backBtn) {
+      backBtn.setAttribute("onclick", "window.location.href='arduino_menu.html'");
+    }
+  }
   const baudRateInput = document.getElementById("baud-rate");
   if (baudRateInput) {
     baudRateInput.addEventListener("change", async (event) => {
@@ -3503,3 +3532,11 @@ function updateSensorConnectionStatus() {
 
   console.log('[Status Debug]', { hasRealData, isConnected, currentUV, sensorDataKeys: Object.keys(sensorData.I2C || {}) });
 }
+
+
+
+
+
+
+
+
