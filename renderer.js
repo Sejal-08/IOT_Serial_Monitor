@@ -3352,27 +3352,29 @@ window.electronAPI.onSerialData((data) => {
 window.addEventListener("DOMContentLoaded", () => {
   listPorts();
 
-  let sensorParam = localStorage.getItem('arduinoSensor');
-  let protocolParam = localStorage.getItem('arduinoProtocol');
-  
-  if (!sensorParam || !protocolParam) {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('sensor')) sensorParam = urlParams.get('sensor');
-    if (urlParams.get('protocol')) protocolParam = urlParams.get('protocol');
-  }
-  
-  if (sensorParam && protocolParam) {
-    const protocolSelect = document.getElementById("sensor-select");
-    const activeName = document.getElementById("active-sensor-name");
-    const activeProtocol = document.getElementById("active-sensor-protocol");
+  if (isArduinoBackend) {
+    let sensorParam = localStorage.getItem('arduinoSensor');
+    let protocolParam = localStorage.getItem('arduinoProtocol');
     
-    if (activeName) activeName.textContent = sensorParam;
-    if (activeProtocol) activeProtocol.textContent = "PROTOCOL: " + protocolParam;
+    if (!sensorParam || !protocolParam) {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('sensor')) sensorParam = urlParams.get('sensor');
+      if (urlParams.get('protocol')) protocolParam = urlParams.get('protocol');
+    }
     
-    if (protocolSelect) {
-      protocolSelect.value = protocolParam;
-      selectedSensor = sensorParam;
-      autoSelected = true;
+    if (sensorParam && protocolParam) {
+      const protocolSelect = document.getElementById("sensor-select");
+      const activeName = document.getElementById("active-sensor-name");
+      const activeProtocol = document.getElementById("active-sensor-protocol");
+      
+      if (activeName) activeName.textContent = sensorParam;
+      if (activeProtocol) activeProtocol.textContent = "PROTOCOL: " + protocolParam;
+      
+      if (protocolSelect) {
+        protocolSelect.value = protocolParam;
+        selectedSensor = sensorParam;
+        autoSelected = true;
+      }
     }
   }
 
@@ -3529,6 +3531,7 @@ function updateSensorConnectionStatus() {
 
   console.log('[Status Debug]', { hasRealData, isConnected, currentUV, sensorDataKeys: Object.keys(sensorData.I2C || {}) });
 }
+
 
 
 
