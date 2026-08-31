@@ -3374,10 +3374,7 @@ window.addEventListener("DOMContentLoaded", () => {
       updateSensorUI();
     }
     
-    const backBtn = document.querySelector(".nav-btn");
-    if (backBtn) {
-      backBtn.setAttribute("onclick", "window.location.href='arduino_menu.html'");
-    }
+    
   }
   const baudRateInput = document.getElementById("baud-rate");
   if (baudRateInput) {
@@ -3531,6 +3528,7 @@ function updateSensorConnectionStatus() {
 
   console.log('[Status Debug]', { hasRealData, isConnected, currentUV, sensorDataKeys: Object.keys(sensorData.I2C || {}) });
 }
+
 
 
 
