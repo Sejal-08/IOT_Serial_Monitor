@@ -627,7 +627,7 @@ if (protocol && selectedSensor) {
     
     // Trigger gauge updates if we have data
     if (currentPressure !== null) updatePressureCard(currentPressure / 10);
-    if (currentUV !== null) updateUVCard(currentUV);
+    // if (currentUV !== null) updateUVCard(currentUV);
     if (currentWindDirection !== null) updateWindFlowCard(currentWindDirection);
   }
 
@@ -3354,7 +3354,7 @@ window.addEventListener("DOMContentLoaded", () => {
   updateSensorUI();
  
   // Initialize UV card with default value
-  updateUVCard(0);
+  // updateUVCard(0);
 
     const sensorParam = localStorage.getItem('arduinoSensor');
   const protocolParam = localStorage.getItem('arduinoProtocol');
@@ -3365,7 +3365,7 @@ window.addEventListener("DOMContentLoaded", () => {
     const activeProtocol = document.getElementById("active-sensor-protocol");
     
     if (activeName) activeName.textContent = sensorParam;
-    if (activeProtocol) activeProtocol.textContent = protocolParam + " PROTOCOL";
+    if (activeProtocol) activeProtocol.textContent = "PROTOCOL: " + protocolParam;
     
     if (protocolSelect) {
       protocolSelect.value = protocolParam;
@@ -3526,6 +3526,8 @@ function updateSensorConnectionStatus() {
 
   console.log('[Status Debug]', { hasRealData, isConnected, currentUV, sensorDataKeys: Object.keys(sensorData.I2C || {}) });
 }
+
+
 
 
 
