@@ -3356,9 +3356,8 @@ window.addEventListener("DOMContentLoaded", () => {
   // Initialize UV card with default value
   updateUVCard(0);
 
-  const urlParams = new URLSearchParams(window.location.search);
-  const sensorParam = urlParams.get('sensor');
-  const protocolParam = urlParams.get('protocol');
+  const sensorParam = localStorage.getItem('arduinoSensor');
+  const protocolParam = localStorage.getItem('arduinoProtocol');
   
   if (sensorParam && protocolParam) {
     const protocolSelect = document.getElementById("sensor-select");
@@ -3532,6 +3531,7 @@ function updateSensorConnectionStatus() {
 
   console.log('[Status Debug]', { hasRealData, isConnected, currentUV, sensorDataKeys: Object.keys(sensorData.I2C || {}) });
 }
+
 
 
 

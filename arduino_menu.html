@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -136,7 +136,7 @@
     sensors.forEach(s => {
       const a = document.createElement("a");
       a.className = "sensor-card-btn";
-      a.href = "arduino.html?sensor=" + encodeURIComponent(s.sensor) + "&protocol=" + encodeURIComponent(s.protocol);
+      a.href = "arduino.html"; a.addEventListener("click", () => { localStorage.setItem("arduinoSensor", s.sensor); localStorage.setItem("arduinoProtocol", s.protocol); });
       
       const i = document.createElement("i");
       i.className = "fas " + s.icon;
@@ -151,3 +151,4 @@
   </script>
 </body>
 </html>
+
