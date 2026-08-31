@@ -135,16 +135,59 @@
       color: #1e1e24;
       border-color: #93c5fd;
     }
+      /* Light Mode Overrides */
+    body.light-mode .sensor-card-btn {
+      background: #ffffff;
+      border-color: #cdd6e5;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    body.light-mode .sensor-card-btn:hover {
+      box-shadow: 0 12px 25px rgba(0,0,0,0.1);
+      border-color: #0096ff;
+    }
+    body.light-mode .card-img-container {
+      background: #e2e8f0;
+    }
+    body.light-mode .card-img-container i {
+      color: #64748b;
+    }
+    body.light-mode .card-content h3 {
+      color: #1e293b;
+    }
+    body.light-mode .card-content p {
+      color: #475569;
+    }
+    body.light-mode .monitor-btn {
+      background: #f1f5f9;
+      color: #334155;
+      border-color: #cbd5e1;
+    }
+    body.light-mode .sensor-card-btn:hover .monitor-btn {
+      background: #3b82f6;
+      color: #ffffff;
+      border-color: #3b82f6;
+    }
+    body.light-mode .menu-header h1 {
+      color: #1e293b;
+    }
+    
+    .theme-btn {
+      background: none; border: none; color: var(--text-dim);
+      font-size: 1.2rem; cursor: pointer; transition: color 0.3s;
+    }
+    .theme-btn:hover { color: var(--accent-cyan); }
   </style>
 </head>
 <body>
   <!-- Top Nav -->
   <div class="top-nav">
     <a href="login.html" class="back-btn"><i class="fas fa-arrow-left"></i> BACK</a>
-    <div style="font-family: var(--font-sans); font-weight: 700; color: #fff; letter-spacing: 1px;">
+    <div style="font-family: var(--font-sans); font-weight: 700; color: var(--text-bright); letter-spacing: 1px;">
       ARDUINO SENSORS
     </div>
-    <div style="width: 60px;"></div> <!-- Spacer -->
+    <div style="width: 60px; text-align: right;">
+      <button class="theme-btn" onclick="toggleTheme()"><i class="fas fa-sun"></i></button>
+    </div>
   </div>
 
   <div class="menu-container">
@@ -157,6 +200,20 @@
   </div>
 
   <script>
+        function toggleTheme() {
+      document.body.classList.toggle('light-mode');
+      const isLight = document.body.classList.contains('light-mode');
+      localStorage.setItem('appTheme', isLight ? 'light' : 'dark');
+      const icon = document.querySelector('.theme-btn i');
+      icon.className = isLight ? 'fas fa-moon' : 'fas fa-sun';
+    }
+    
+    // Apply saved theme on page load
+    if (localStorage.getItem('appTheme') === 'light') {
+      document.body.classList.add('light-mode');
+      document.querySelector('.theme-btn i').className = 'fas fa-moon';
+    }
+
     const sensors = [
       { name: "Soil Spectra", desc: "Soil sensing solution for agricultural parameter monitoring", protocol: "RS485", sensor: "Soil Sensor", icon: "fa-seedling", img: "images/soil.png" },
       { name: "Rain Gauge", desc: "Tipping Bucket Rain Gauge for precise rainfall measurement", protocol: "ADC", sensor: "Rain Gauge", icon: "fa-cloud-rain", img: "images/gauge.png" },
@@ -226,6 +283,8 @@
   </script>
 </body>
 </html>
+
+
 
 
 
