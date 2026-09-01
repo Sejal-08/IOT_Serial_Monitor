@@ -140,9 +140,9 @@
         </button>
       </section>
 
-            <!-- ACTIVE SENSOR DISPLAY -->
+            <!-- \u00B0CTIVE SENSOR DISPLAY -->
       <section class="control-section cyber-section" id="active-sensor-section" style="margin-bottom: 4px;">
-        <h3><i class="fas fa-microchip"></i> ACTIVE SENSOR</h3>
+        <h3><i class="fas fa-microchip"></i> \u00B0CTIVE SENSOR</h3>
         <div style="background: #0f172a; padding: 15px; border-radius: 8px; border: 1px solid #334155; display: flex; align-items: center; gap: 15px;">
           <div style="background: #1e293b; padding: 10px; border-radius: 8px;">
             <i id="active-sensor-icon" class="fas fa-satellite-dish" style="font-size: 2rem; color: #60a5fa;"></i>
@@ -154,7 +154,7 @@
         </div>
       </section>
 
-      <!-- HIDDEN DROPDOWNS FOR BACKWARD COMPATIBILITY -->
+      <!-- HIDDEN DROPDOWNS FOR B\u00B0CKWARD COMPATIBILITY -->
       <div id="sensors-section" style="display: none;">
         <select id="sensor-select" class="input-field cyber-input" onchange="updateSensorUI()">
           <option value="" disabled selected>Select a Sensor Protocol</option>
@@ -214,7 +214,7 @@
 
             <!-- Existing Sensor Cards (Hidden initially or overlaid) -->
             <div class="sensor-cards" id="sensor-cards-container" style="display: none; width: 100%; padding: 20px; overflow-y: auto; z-index: 20;">
-<!-- TEMPERATURE (CELSIUS) – FINAL FIXED: NO CUT-OFF, PERFECT °C -->
+<!-- TEMPERATURE (CELSIUS) – FINAL FIXED: NO CUT-OFF, PERFECT &deg;C -->
 <div id="thermometer-container" class="thermometer-container">
   <h4><i class="fas fa-temperature-half"></i> Temperature</h4>
   <div id="thermometer-value" class="sensor-value" style="margin-bottom: 16px; font-size: 1.5rem; font-weight: 600; letter-spacing: -1px;"></div>
@@ -244,37 +244,37 @@
       <line x1="145" y1="60"  x2="165" y2="60"  stroke="#94a3b8" stroke-width="4"/>
       <text x="180" y="70" font-size="28" font-weight="800" fill="#a0d8ff">
         <tspan>50</tspan>
-        <tspan dx="12" font-size="22" fill="#7bb3ff">°C</tspan>
+        <tspan dx="12" font-size="22" fill="#7bb3ff">&deg;C</tspan>
       </text>
 
       <line x1="145" y1="120" x2="160" y2="120" stroke="#94a3b8" stroke-width="2.5"/>
       <text x="180" y="130" font-size="28" font-weight="800" fill="#a0d8ff">
         <tspan>40</tspan>
-        <tspan dx="12" font-size="22" fill="#7bb3ff">°C</tspan>
+        <tspan dx="12" font-size="22" fill="#7bb3ff">&deg;C</tspan>
       </text>
 
       <line x1="145" y1="180" x2="160" y2="180" stroke="#94a3b8" stroke-width="2.5"/>
       <text x="180" y="190" font-size="28" font-weight="800" fill="#a0d8ff">
         <tspan>30</tspan>
-        <tspan dx="12" font-size="22" fill="#7bb3ff">°C</tspan>
+        <tspan dx="12" font-size="22" fill="#7bb3ff">&deg;C</tspan>
       </text>
 
       <line x1="145" y1="240" x2="160" y2="240" stroke="#94a3b8" stroke-width="2.5"/>
       <text x="180" y="250" font-size="28" font-weight="800" fill="#a0d8ff">
         <tspan>20</tspan>
-        <tspan dx="12" font-size="22" fill="#7bb3ff">°C</tspan>
+        <tspan dx="12" font-size="22" fill="#7bb3ff">&deg;C</tspan>
       </text>
 
       <line x1="145" y1="300" x2="160" y2="300" stroke="#94a3b8" stroke-width="2.5"/>
       <text x="180" y="310" font-size="28" font-weight="800" fill="#a0d8ff">
         <tspan>10</tspan>
-        <tspan dx="12" font-size="22" fill="#7bb3ff">°C</tspan>
+        <tspan dx="12" font-size="22" fill="#7bb3ff">&deg;C</tspan>
       </text>
 
       <line x1="145" y1="360" x2="165" y2="360" stroke="#94a3b8" stroke-width="4"/>
       <text x="180" y="370" font-size="28" font-weight="800" fill="#a0d8ff">
         <tspan>0</tspan>
-        <tspan dx="12" font-size="22" fill="#7bb3ff">°C</tspan>
+        <tspan dx="12" font-size="22" fill="#7bb3ff">&deg;C</tspan>
       </text>
     </g>
   </svg>
@@ -283,7 +283,7 @@
 
 <!-- TEMPERATURE (FAHRENHEIT) – UPDATED TO MATCH CELSIUS STYLING -->
 <div id="thermometer-f-container" class="thermometer-container" style="display: none;">
-  <h4><i class="fas fa-temperature-half"></i> Temperature (°F)</h4>
+  <h4><i class="fas fa-temperature-half"></i> Temperature (&deg;F)</h4>
   <div id="thermometer-f-value" class="sensor-value" style="margin-bottom: 16px; font-size: 1.5rem; font-weight: 600; letter-spacing: -1px;"></div>
 
   <svg width="280" height="460" viewBox="0 0 280 460" class="thermometer">
@@ -311,37 +311,37 @@
       <line x1="145" y1="60"  x2="165" y2="60"  stroke="#94a3b8" stroke-width="4"/>
       <text x="180" y="70" font-size="28" font-weight="800" fill="#a0d8ff">
         <tspan>122</tspan>
-        <tspan dx="12" font-size="22" fill="#7bb3ff">°F</tspan>
+        <tspan dx="12" font-size="22" fill="#7bb3ff">&deg;F</tspan>
       </text>
 
       <line x1="145" y1="120" x2="160" y2="120" stroke="#94a3b8" stroke-width="2.5"/>
       <text x="180" y="130" font-size="28" font-weight="800" fill="#a0d8ff">
         <tspan>104</tspan>
-        <tspan dx="12" font-size="22" fill="#7bb3ff">°F</tspan>
+        <tspan dx="12" font-size="22" fill="#7bb3ff">&deg;F</tspan>
       </text>
 
       <line x1="145" y1="180" x2="160" y2="180" stroke="#94a3b8" stroke-width="2.5"/>
       <text x="180" y="190" font-size="28" font-weight="800" fill="#a0d8ff">
         <tspan>86</tspan>
-        <tspan dx="12" font-size="22" fill="#7bb3ff">°F</tspan>
+        <tspan dx="12" font-size="22" fill="#7bb3ff">&deg;F</tspan>
       </text>
 
       <line x1="145" y1="240" x2="160" y2="240" stroke="#94a3b8" stroke-width="2.5"/>
       <text x="180" y="250" font-size="28" font-weight="800" fill="#a0d8ff">
         <tspan>68</tspan>
-        <tspan dx="12" font-size="22" fill="#7bb3ff">°F</tspan>
+        <tspan dx="12" font-size="22" fill="#7bb3ff">&deg;F</tspan>
       </text>
 
       <line x1="145" y1="300" x2="160" y2="300" stroke="#94a3b8" stroke-width="2.5"/>
       <text x="180" y="310" font-size="28" font-weight="800" fill="#a0d8ff">
         <tspan>50</tspan>
-        <tspan dx="12" font-size="22" fill="#7bb3ff">°F</tspan>
+        <tspan dx="12" font-size="22" fill="#7bb3ff">&deg;F</tspan>
       </text>
 
       <line x1="145" y1="360" x2="165" y2="360" stroke="#94a3b8" stroke-width="4"/>
       <text x="180" y="370" font-size="28" font-weight="800" fill="#a0d8ff">
         <tspan>32</tspan>
-        <tspan dx="12" font-size="22" fill="#7bb3ff">°F</tspan>
+        <tspan dx="12" font-size="22" fill="#7bb3ff">&deg;F</tspan>
       </text>
     </g>
   </svg>
@@ -603,44 +603,44 @@
           <animate attributeName="opacity" values="0.35;0.6;0.35" dur="5s" repeatCount="indefinite"/>
         </circle>
 
-       <!-- 16 RAYS – every 22.5°, longer & staggered -->
+       <!-- 16 RAYS – every 22.5&deg;, longer & staggered -->
         <g id="sun-rays">
-          <!-- Ray 0° (North) -->
+          <!-- Ray 0&deg; (North) -->
           <line x1="0" y1="-80" x2="0" y2="-140" stroke="#fef08a" stroke-width="8" opacity="0">
             <animate attributeName="opacity" values="0;1;0" dur="5.5s" repeatCount="indefinite"/>
           </line>
 
-          <!-- Ray 45° -->
+          <!-- Ray 45&deg; -->
           <line x1="0" y1="-80" x2="0" y2="-140" stroke="#fbbf24" stroke-width="7" opacity="0" transform="rotate(45)">
             <animate attributeName="opacity" values="0;1;0" dur="5.5s" begin="0.68s" repeatCount="indefinite"/>
           </line>
           
-          <!-- Ray 90° (East) -->
+          <!-- Ray 90&deg; (East) -->
           <line x1="0" y1="-80" x2="0" y2="-140" stroke="#fcd34d" stroke-width="8" opacity="0" transform="rotate(90)">
             <animate attributeName="opacity" values="0;1;0" dur="5.5s" begin="1.37s" repeatCount="indefinite"/>
           </line>
          
-          <!-- Ray 135° -->
+          <!-- Ray 135&deg; -->
           <line x1="0" y1="-80" x2="0" y2="-140" stroke="#fef08a" stroke-width="7" opacity="0" transform="rotate(135)">
             <animate attributeName="opacity" values="0;1;0" dur="5.5s" begin="2.06s" repeatCount="indefinite"/>
           </line>
 
-          <!-- Ray 180° (South) -->
+          <!-- Ray 180&deg; (South) -->
           <line x1="0" y1="-80" x2="0" y2="-140" stroke="#fbbf24" stroke-width="8" opacity="0" transform="rotate(180)">
             <animate attributeName="opacity" values="0;1;0" dur="5.5s" begin="2.74s" repeatCount="indefinite"/>
           </line>
 
-          <!-- Ray 225° -->
+          <!-- Ray 225&deg; -->
           <line x1="0" y1="-80" x2="0" y2="-140" stroke="#fcd34d" stroke-width="7" opacity="0" transform="rotate(225)">
             <animate attributeName="opacity" values="0;1;0" dur="5.5s" begin="3.43s" repeatCount="indefinite"/>
           </line>
 
-          <!-- Ray 270° (West) -->
+          <!-- Ray 270&deg; (West) -->
           <line x1="0" y1="-80" x2="0" y2="-140" stroke="#fef08a" stroke-width="8" opacity="0" transform="rotate(270)">
             <animate attributeName="opacity" values="0;1;0" dur="5.5s" begin="4.11s" repeatCount="indefinite"/>
           </line>
 
-          <!-- Ray 315° -->
+          <!-- Ray 315&deg; -->
           <line x1="0" y1="-80" x2="0" y2="-140" stroke="#fbbf24" stroke-width="7" opacity="0" transform="rotate(315)">
             <animate attributeName="opacity" values="0;1;0" dur="5.5s" begin="4.80s" repeatCount="indefinite"/>
           </line>
@@ -717,8 +717,8 @@
     <!-- POWER SOURCE (LEFT) -->
     <g id="power-source">
       <rect x="80" y="120" width="40" height="60" rx="5" fill="#424242" stroke="#616161" stroke-width="2"/>
-      <rect x="85" y="125" width="30" height="50" rx="3" fill="#4CAF50" opacity="0.4"/>
-      <circle cx="100" cy="145" r="8" fill="#4CAF50" opacity="0.6"/>
+      <rect x="85" y="125" width="30" height="50" rx="3" fill="#4C\u00B0F50" opacity="0.4"/>
+      <circle cx="100" cy="145" r="8" fill="#4C\u00B0F50" opacity="0.6"/>
       <line x1="95" y1="140" x2="105" y2="140" stroke="#E8F5E9" stroke-width="3" stroke-linecap="round"/>
       <line x1="100" y1="135" x2="100" y2="145" stroke="#E8F5E9" stroke-width="3" stroke-linecap="round"/>
       <line x1="95" y1="160" x2="105" y2="160" stroke="#FFCDD2" stroke-width="3" stroke-linecap="round"/>
@@ -770,7 +770,7 @@
     
     <!-- BULB (RIGHT) -->
     <g id="relay-bulb">
-      <circle cx="400" cy="150" r="32" fill="#FAFAFA" stroke="#E0E0E0" stroke-width="2.5"/>
+      <circle cx="400" cy="150" r="32" fill="#F\u00B0F\u00B0FA" stroke="#E0E0E0" stroke-width="2.5"/>
       <rect x="383" y="177" width="34" height="18" rx="4" fill="#9E9E9E" stroke="#757575" stroke-width="1.5"/>
       <rect x="388" y="182" width="24" height="13" rx="2" fill="#616161"/>
       
@@ -805,14 +805,14 @@
     
     <!-- ENERGY FLOW PARTICLES -->
     <g id="energy-particles-1" opacity="0">
-      <circle cx="125" cy="150" r="3" fill="#4CAF50"/>
+      <circle cx="125" cy="150" r="3" fill="#4C\u00B0F50"/>
       <circle cx="132" cy="150" r="2.5" fill="#66BB6A"/>
     </g>
     
     <g id="energy-particles-2" opacity="0">
-      <circle cx="310" cy="125" r="3" fill="#4CAF50"/>
+      <circle cx="310" cy="125" r="3" fill="#4C\u00B0F50"/>
       <circle cx="330" cy="132" r="2.5" fill="#66BB6A"/>
-      <circle cx="350" cy="142" r="3" fill="#4CAF50"/>
+      <circle cx="350" cy="142" r="3" fill="#4C\u00B0F50"/>
     </g>
     
     <!-- CONNECTION POINTS -->
@@ -825,7 +825,7 @@
   </svg>
 </div>
 
-<!-- LIS3DH ACCELERATION CARD -->
+<!-- LIS3DH \u00B0CCELERATION CARD -->
 <div id="lis3dh-card" class="card-container" style="display: none; min-width: 300px;">
 
   <h4><i class="fas fa-cube"></i> Acceleration (LIS3DH)</h4>
@@ -1074,7 +1074,7 @@
 <!-- ── Temperature ── -->
 <div id="soil-temp-card" class="card-container sen66-param-card" style="display:none;">
   <h4><i class="fas fa-thermometer-half" style="color: #f87171;"></i> Temperature</h4>
-  <div class="sen66-param-value" id="soil-temp-val">0 °C</div>
+  <div class="sen66-param-value" id="soil-temp-val">0 &deg;C</div>
   <!-- Mini thermometer: tube + bulb matching the main thermometer style -->
   <div class="soil-thermo-wrap">
     <svg id="soil-thermo-svg" viewBox="0 0 160 320" width="100" height="260">
@@ -1107,24 +1107,24 @@
 
       <!-- Scale tick marks + labels -->
       <g font-family="system-ui,sans-serif" font-size="13" fill="#a0d8ff" font-weight="700">
-        <!-- 50°C -->
+        <!-- 50&deg;C -->
         <line x1="83" y1="20"  x2="96" y2="20"  stroke="#94a3b8" stroke-width="2.5"/>
-        <text x="100" y="25">50°C</text>
-        <!-- 40°C -->
+        <text x="100" y="25">50&deg;C</text>
+        <!-- 40&deg;C -->
         <line x1="83" y1="62"  x2="92" y2="62"  stroke="#94a3b8" stroke-width="1.8"/>
-        <text x="96"  y="67">40°C</text>
-        <!-- 30°C -->
+        <text x="96"  y="67">40&deg;C</text>
+        <!-- 30&deg;C -->
         <line x1="83" y1="104" x2="92" y2="104" stroke="#94a3b8" stroke-width="1.8"/>
-        <text x="96"  y="109">30°C</text>
-        <!-- 20°C -->
+        <text x="96"  y="109">30&deg;C</text>
+        <!-- 20&deg;C -->
         <line x1="83" y1="146" x2="92" y2="146" stroke="#94a3b8" stroke-width="1.8"/>
-        <text x="96"  y="151">20°C</text>
-        <!-- 10°C -->
+        <text x="96"  y="151">20&deg;C</text>
+        <!-- 10&deg;C -->
         <line x1="83" y1="188" x2="92" y2="188" stroke="#94a3b8" stroke-width="1.8"/>
-        <text x="96"  y="193">10°C</text>
-        <!-- 0°C -->
+        <text x="96"  y="193">10&deg;C</text>
+        <!-- 0&deg;C -->
         <line x1="83" y1="230" x2="96" y2="230" stroke="#94a3b8" stroke-width="2.5"/>
-        <text x="100" y="235">0°C</text>
+        <text x="100" y="235">0&deg;C</text>
       </g>
     </svg>
   </div>
@@ -1376,7 +1376,7 @@
      <!-- Wind Direction Card -->
 <div id="wind-direction-card" class="card-container" style="display: none;">
   <h4><i class="fas fa-location-arrow"></i> Wind Direction</h4>
-  <div id="wind-direction-value">0°</div>
+  <div id="wind-direction-value">0&deg;</div>
   <div class="wind-compass">
     <div class="outer-ring"></div>
     <div class="inner-ring"></div>
@@ -1450,7 +1450,7 @@
   <circle cx="65" cy="65" r="4" fill="#60a5fa" opacity="0.95"/>
   <circle cx="65" cy="65" r="2" fill="#fff" opacity="0.9"/>
 </svg>
-  <div class="flow-degree" id="flow-degree">—°</div>
+  <div class="flow-degree" id="flow-degree">—&deg;</div>
   <div class="flow-desc" id="flow-desc">Moving toward —</div>
 </div>
         
@@ -1721,7 +1721,7 @@ function resetAllSensorDisplays() {
   const tempEl = document.querySelector(".temperature-value");
   const humEl = document.querySelector(".humidity-value");
   const pressEl = document.querySelector(".pressure-value");
-  if (tempEl) tempEl.textContent = "--.-°C";
+  if (tempEl) tempEl.textContent = "--.-&deg;C";
   if (humEl) humEl.textContent = "--.-%";
   if (pressEl) pressEl.textContent = "----.- hPa";
 
@@ -1742,7 +1742,7 @@ function resetAllSensorDisplays() {
     const val = document.getElementById(`thermometer${suffix}-value`);
     const fill = document.getElementById(`thermometer${suffix}-fill`);
     const bulb = document.getElementById(`thermometer${suffix}-bulb`);
-    if (val) val.textContent = suffix ? "32.0°F" : "0.0°C";
+    if (val) val.textContent = suffix ? "32.0&deg;F" : "0.0&deg;C";
     if (fill) { fill.setAttribute("height", "0"); fill.setAttribute("y", "376"); }
     if (bulb) bulb.style.filter = "drop-shadow(0 0 0px #ffa500)";
   });
@@ -1802,7 +1802,7 @@ function resetAllSensorDisplays() {
 
   const windDirVal = document.getElementById("wind-direction-value");
   const windDirArrow = document.getElementById("wind-direction-arrow");
-  if (windDirVal) windDirVal.textContent = "0°";
+  if (windDirVal) windDirVal.textContent = "0&deg;";
   if (windDirArrow) windDirArrow.style.transform = "rotate(0deg)";
 
   const windSpeedVal = document.getElementById("wind-speed-value");
@@ -1904,7 +1904,7 @@ document.addEventListener('keydown', function(e) {
 });
 
   // Function to check if any sensor has data and update visibility
- // Update sensor visualization visibility - FIXED & SAFE
+ // Update sensor visualization visibility - FIXED & S\u00B0FE
 function updateSensorVisualizationVisibility() {
   const visualizationSection = document.getElementById('sensor-visualization-section');
   if (!visualizationSection) return;

@@ -145,7 +145,7 @@ function updateWindFlowCard(deg) {
   document.getElementById('flow-from').textContent = from;
   document.getElementById('flow-to').textContent   = to;
   document.getElementById('flow-label').textContent = `WIND BLOWING FROM ${from}`;
-  document.getElementById('flow-degree').textContent = `${deg.toFixed(0)}°`;
+  document.getElementById('flow-degree').textContent = `${deg.toFixed(0)}&deg;`;
   document.getElementById('flow-desc').textContent   = `Moving toward ${to}`;
 
   _wfFromDeg = deg;
@@ -833,7 +833,7 @@ if ((protocol === "I2C" || protocol === "RS485" || isWeatherMode) && (isWeatherM
   thermometerFill.setAttribute("height", fillHeight);
   thermometerFill.setAttribute("fill", fillColor);
   thermometerBulb.setAttribute("fill", fillColor);
-  thermometerValue.textContent = `${temp.toFixed(2)}�\u00B0C`;
+  thermometerValue.textContent = `${temp.toFixed(2)}\u00B0C`;
  
   // Update Fahrenheit thermometer for STTS751 - FIXED VARIABLE NAMES
   if (selectedSensor === "STTS751") {
@@ -843,7 +843,7 @@ if ((protocol === "I2C" || protocol === "RS485" || isWeatherMode) && (isWeatherM
     const thermometerFBulb = document.getElementById("thermometer-f-bulb");
    
     if (thermometerFValue && thermometerFFill && thermometerFBulb) {
-      thermometerFValue.textContent = `${tempF.toFixed(2)}°F`;
+      thermometerFValue.textContent = `${tempF.toFixed(2)}&deg;F`;
      
       // Use DIFFERENT variable names to avoid conflict
       const maxTempF = 122;
@@ -875,7 +875,7 @@ if ((protocol === "I2C" || protocol === "RS485" || isWeatherMode) && (isWeatherM
   thermometerFill.setAttribute("height", 0);
   thermometerFill.setAttribute("fill", "#ffeb3b");
   thermometerBulb.setAttribute("fill", "#ffeb3b");
-  thermometerValue.textContent = "0.00�\u00B0C";
+  thermometerValue.textContent = "0.00\u00B0C";
  
   // Reset Fahrenheit thermometer too
   const thermometerFFill = document.getElementById("thermometer-f-fill");
@@ -1759,7 +1759,7 @@ if (protocol === "I2C" && selectedSensor === "TLV493D") {
     line.setAttribute("x2", tx);
     line.setAttribute("y2", ty);
    
-    // Calculate angle from X-axis (0° = right, 90° = down, 180° = left, 270° = up)
+    // Calculate angle from X-axis (0&deg; = right, 90&deg; = down, 180&deg; = left, 270&deg; = up)
     const angleRad = Math.atan2(y, x); // Using y directly (no negative)
     const angleDeg = angleRad * 180 / Math.PI;
    
@@ -1799,7 +1799,7 @@ if (protocol === "I2C" && selectedSensor === "TLV493D") {
     // Debug output
     console.log(`Vector: X=${x.toFixed(2)}, Y=${y.toFixed(2)}`);
     console.log(`End point: (${tx.toFixed(1)}, ${ty.toFixed(1)})`);
-    console.log(`Angle: ${angleDeg.toFixed(1)}°`);
+    console.log(`Angle: ${angleDeg.toFixed(1)}&deg;`);
    
   } else {
     // No data – reset
@@ -1872,7 +1872,7 @@ if (protocol === "I2C" && (selectedSensor === "LIS3DH" || selectedSensor === "LI
 
             // Make value larger when wind is strong (like in your first picture)
             if (windDirectionValue) {
-              windDirectionValue.textContent = `${direction.toFixed(0)}°`;
+              windDirectionValue.textContent = `${direction.toFixed(0)}&deg;`;
               windDirectionValue.style.fontSize = currentWindSpeed > 5 ? '2.8em' : '2.4em';
             }
           }
@@ -1966,7 +1966,7 @@ if ((protocol === "RS232" || protocol === "RS485" || isWeatherMode) && (isWeathe
 if (protocol === "I2C" && selectedSensor === "SEN66") {
   _updateSEN66Card();
 } else {
-  _sen66StopParticles(); // Stop particles if SEN66 is NOT selected
+   // Stop particles if SEN66 is NOT selected
 }
     updateSensorVisualizationVisibility();
   } else {
@@ -2003,9 +2003,9 @@ if (protocol === "I2C" && selectedSensor === "SEN66") {
     if (tofValue) tofValue.textContent = "";
     if (uvValue) uvValue.textContent = "UV: 0.00";
     if (irValue) irValue.textContent = "";
-    if (windDirectionValue) windDirectionValue.textContent = "0°";
+    if (windDirectionValue) windDirectionValue.textContent = "0&deg;";
     if (windSpeedValue) windSpeedValue.textContent = "0.0 m/s";
-     _sen66StopParticles();
+     
    
     updateSensorVisualizationVisibility();
   }
@@ -2143,15 +2143,15 @@ function updatePressureCard(hpa) {
       if (el) el.textContent = text;
     }
 
-    if (currentSEN66_PM1 !== null) setVal("orbit-pm1-val", currentSEN66_PM1.toFixed(1) + " �g");
-    if (currentSEN66_PM25 !== null) setVal("orbit-pm25-val", currentSEN66_PM25.toFixed(1) + " �g");
-    if (currentSEN66_PM4 !== null) setVal("orbit-pm4-val", currentSEN66_PM4.toFixed(1) + " �g");
-    if (currentSEN66_PM10 !== null) setVal("orbit-pm10-val", currentSEN66_PM10.toFixed(1) + " �g");
+    if (currentSEN66_PM1 !== null) setVal("orbit-pm1-val", currentSEN66_PM1.toFixed(1) + " g");
+    if (currentSEN66_PM25 !== null) setVal("orbit-pm25-val", currentSEN66_PM25.toFixed(1) + " g");
+    if (currentSEN66_PM4 !== null) setVal("orbit-pm4-val", currentSEN66_PM4.toFixed(1) + " g");
+    if (currentSEN66_PM10 !== null) setVal("orbit-pm10-val", currentSEN66_PM10.toFixed(1) + " g");
     
     if (currentSEN66_Temp !== null) {
-      setVal("orbit-temp-val", currentSEN66_Temp.toFixed(1) + " �C");
+      setVal("orbit-temp-val", currentSEN66_Temp.toFixed(1) + " C");
     } else if (currentTemperature !== null) {
-      setVal("orbit-temp-val", currentTemperature.toFixed(1) + " �C");
+      setVal("orbit-temp-val", currentTemperature.toFixed(1) + " C");
     }
 
     if (currentSEN66_Hum !== null) {
@@ -2194,11 +2194,11 @@ function updatePressureCard(hpa) {
     currentSEN66_CO2 = null;
    
     const resetMap = [
-      ["orbit-pm1-val", "-- �g"],
-      ["orbit-pm25-val", "-- �g"],
-      ["orbit-pm4-val", "-- �g"],
-      ["orbit-pm10-val", "-- �g"],
-      ["orbit-temp-val", "-- �C"],
+      ["orbit-pm1-val", "-- g"],
+      ["orbit-pm25-val", "-- g"],
+      ["orbit-pm4-val", "-- g"],
+      ["orbit-pm10-val", "-- g"],
+      ["orbit-temp-val", "-- C"],
       ["orbit-hum-val", "-- %"],
       ["orbit-co2-val", "-- ppm"],
       ["orbit-voc-val", "-- Idx"],
@@ -2352,7 +2352,7 @@ function parseSensorData(data) {
 
   lines.forEach(line => {
     // STS30 format
-    const sts30Match = line.match(/Temp:\s*([\d.]+)\s*°?C/i);
+    const sts30Match = line.match(/Temp:\s*([\d.]+)\s*.*?C/i);
     if (sts30Match && protocol === "I2C") {
       const temp = parseFloat(sts30Match[1]);
       sensorStatus[protocol]["STS30"] = true;
@@ -2371,7 +2371,7 @@ function parseSensorData(data) {
 
     try {
       // BME680
-      const bme680Match = line.match(/Temperature:\s*([+-]?\d+\.?\d*)\s*[°]?C\s*,\s*Humidity:\s*(\d+\.?\d*)\s*%RH\s*,\s*Pressure:\s*(\d+\.?\d*)\s*kPa/i);
+      const bme680Match = line.match(/Temperature:\s*([+-]?\d+\.?\d*)\s*.*?C\s*,\s*Humidity:\s*(\d+\.?\d*)\s*%RH\s*,\s*Pressure:\s*(\d+\.?\d*)\s*kPa/i);
       if (bme680Match && protocol === "I2C") {
         const temp = parseFloat(bme680Match[1]);
         const humidity = parseFloat(bme680Match[2]);
@@ -2395,7 +2395,7 @@ function parseSensorData(data) {
       }
       
       // SHT40
-      const SHTMatch = line.match(/SHT40:\s*Temperature:\s*([\d.]+)°?C\s*,\s*Humidity:\s*([\d.]+)%/i);
+      const SHTMatch = line.match(/SHT40:\s*Temperature:\s*([\d.]+).*?C\s*,\s*Humidity:\s*([\d.]+)%/i);
       if (SHTMatch && protocol === "I2C") {
         const [, tempStr, humStr] = SHTMatch;
         const temp = parseFloat(tempStr);
@@ -2419,8 +2419,8 @@ function parseSensorData(data) {
         }
       }
 
-      // AHT20 — format: "AHT20 Sensor: Temperature = XX.XX C, Humidity = XX.XX %" or "AHT20: Temperature: XX.XX�\u00B0C..."
-      const aht20Match = line.match(/AHT20(?:\s*Sensor)?\s*:\s*Temperature\s*[:=]\s*([\d.]+)\s*°?C\s*,\s*Humidity\s*[:=]\s*([\d.]+)\s*%/i);
+      // AHT20 — format: "AHT20 Sensor: Temperature = XX.XX C, Humidity = XX.XX %" or "AHT20: Temperature: XX.XX\u00B0C..."
+      const aht20Match = line.match(/AHT20(?:\s*Sensor)?\s*:\s*Temperature\s*[:=]\s*([\d.]+)\s*.*?C\s*,\s*Humidity\s*[:=]\s*([\d.]+)\s*%/i);
       if (aht20Match && protocol === "I2C") {
         const temp = parseFloat(aht20Match[1]);
         const humidity = parseFloat(aht20Match[2]);
@@ -2452,16 +2452,16 @@ function parseSensorData(data) {
         const pm4Match = line.match(/PM4\s*:\s*([\d.]+)/i);
         const pm10Match = line.match(/PM10\s*:\s*([\d.]+)/i);
         const sen66HumMatch = line.match(/Relative\s*Humidity\s*:\s*([\d.]+)/i);
-        const sen66TempMatch = line.match(/Temperature\s*:\s*([\d.-]+)\s*°?C/i);
+        const sen66TempMatch = line.match(/Temperature\s*:\s*([\d.-]+)\s*.*?C/i);
         const vocMatch = line.match(/VOC\s*:\s*([\d.]+)/i);
         const noxMatch = line.match(/NOx\s*:\s*([\d.]+)/i);
         const co2Match = line.match(/CO2\s*:\s*([\d.]+)/i);
         const upMatch = line.match(/UPtime\s*:\s*([\d.]+)/i);
 
-        if (pm1Match) { currentSEN66_PM1 = parseFloat(pm1Match[1]); sensorData[protocol]["SEN66 PM1.0"] = currentSEN66_PM1.toFixed(1) + " �\u00B5g/m³"; sen66Matched = true; }
-        if (pm25Match) { currentSEN66_PM25 = parseFloat(pm25Match[1]); sensorData[protocol]["SEN66 PM2.5"] = currentSEN66_PM25.toFixed(1) + " �\u00B5g/m³"; sen66Matched = true; }
-        if (pm4Match) { currentSEN66_PM4 = parseFloat(pm4Match[1]); sensorData[protocol]["SEN66 PM4"] = currentSEN66_PM4.toFixed(1) + " �\u00B5g/m³"; sen66Matched = true; }
-        if (pm10Match) { currentSEN66_PM10 = parseFloat(pm10Match[1]); sensorData[protocol]["SEN66 PM10"] = currentSEN66_PM10.toFixed(1) + " �\u00B5g/m³"; sen66Matched = true; }
+        if (pm1Match) { currentSEN66_PM1 = parseFloat(pm1Match[1]); sensorData[protocol]["SEN66 PM1.0"] = currentSEN66_PM1.toFixed(1) + " \u00B5g/m³"; sen66Matched = true; }
+        if (pm25Match) { currentSEN66_PM25 = parseFloat(pm25Match[1]); sensorData[protocol]["SEN66 PM2.5"] = currentSEN66_PM25.toFixed(1) + " \u00B5g/m³"; sen66Matched = true; }
+        if (pm4Match) { currentSEN66_PM4 = parseFloat(pm4Match[1]); sensorData[protocol]["SEN66 PM4"] = currentSEN66_PM4.toFixed(1) + " \u00B5g/m³"; sen66Matched = true; }
+        if (pm10Match) { currentSEN66_PM10 = parseFloat(pm10Match[1]); sensorData[protocol]["SEN66 PM10"] = currentSEN66_PM10.toFixed(1) + " \u00B5g/m³"; sen66Matched = true; }
         if (sen66HumMatch) {
           currentSEN66_Hum = parseFloat(sen66HumMatch[1]);
           currentHumidity = currentSEN66_Hum;
@@ -2471,7 +2471,7 @@ function parseSensorData(data) {
         if (sen66TempMatch) {
           currentSEN66_Temp = parseFloat(sen66TempMatch[1]);
           currentTemperature = currentSEN66_Temp;
-          sensorData[protocol]["SEN66 Temperature"] = currentSEN66_Temp.toFixed(2) + " �\u00B0C";
+          sensorData[protocol]["SEN66 Temperature"] = currentSEN66_Temp.toFixed(2) + " \u00B0C";
           sen66Matched = true;
         }
         if (vocMatch) { currentSEN66_VOC = parseFloat(vocMatch[1]); sensorData[protocol]["SEN66 VOC"] = currentSEN66_VOC.toString(); sen66Matched = true; }
@@ -2723,7 +2723,7 @@ function parseSensorData(data) {
       }
 
       // STTS751
-      const stts751Match = line.match(/STTS751\s*:\s*Temperature\s*:\s*([\d.-]+)\s*°?C\s*\|\s*([\d.-]+)\s*°?F/i);
+      const stts751Match = line.match(/STTS751\s*:\s*Temperature\s*:\s*([\d.-]+)\s*.*?C\s*\|\s*([\d.-]+)\s*.*?F/i);
       if (stts751Match && protocol === "I2C") {
         const tempC = parseFloat(stts751Match[1]);
         const tempF = parseFloat(stts751Match[2]);
@@ -2735,8 +2735,8 @@ function parseSensorData(data) {
           if (dropdown) dropdown.value = "STTS751";
         }
         currentTemperature = tempC;
-        sensorData[protocol]["STTS751 Temperature"] = tempC.toFixed(2) + " �\u00B0C";
-        sensorData[protocol]["STTS751 Temperature (Fahrenheit)"] = tempF.toFixed(2) + " °F";
+        sensorData[protocol]["STTS751 Temperature"] = tempC.toFixed(2) + " \u00B0C";
+        sensorData[protocol]["STTS751 Temperature (Fahrenheit)"] = tempF.toFixed(2) + " &deg;F";
         console.log("STTS751 parsed:", { celsius: tempC, fahrenheit: tempF });
         if (selectedSensor === "STTS751") updateSensorUI();
         dataParsed = true;
@@ -2857,7 +2857,7 @@ function parseSensorData(data) {
         sensorData[protocol]["Soil Sensor Phosphorus"] = currentSoilP.toFixed(0) + " mg/kg";
         sensorData[protocol]["Soil Sensor Potassium"] = currentSoilK.toFixed(0) + " mg/kg";
         sensorData[protocol]["Soil Sensor Moisture"] = currentSoilMoist.toFixed(1) + " %";
-        sensorData[protocol]["Soil Sensor Temperature"] = currentSoilTemp.toFixed(1) + " �\u00B0C";
+        sensorData[protocol]["Soil Sensor Temperature"] = currentSoilTemp.toFixed(1) + " \u00B0C";
         sensorData[protocol]["Soil Sensor EC"] = currentSoilEC.toFixed(1) + " mS/cm";
         sensorData[protocol]["Soil Sensor pH"] = currentSoilPH.toFixed(1);
         sensorData[protocol]["Soil Sensor Salinity"] = currentSoilSal.toFixed(0);
@@ -2875,11 +2875,11 @@ function parseSensorData(data) {
           updateValue("soil-p-val", currentSoilP.toFixed(0) + " mg/kg");
           updateValue("soil-k-val", currentSoilK.toFixed(0) + " mg/kg");
           updateValue("soil-moist-val", currentSoilMoist.toFixed(1) + " %");
-          updateValue("soil-temp-val", currentSoilTemp.toFixed(1) + " �\u00B0C");
+          updateValue("soil-temp-val", currentSoilTemp.toFixed(1) + " \u00B0C");
           updateValue("soil-ec-val", currentSoilEC.toFixed(1) + " mS/cm");
           updateValue("soil-ph-val", currentSoilPH.toFixed(1));
           updateValue("soil-sal-val", currentSoilSal.toFixed(0));
-          // Animate mini soil thermometer (tube: y=20 at 50�\u00B0C, y=230 at 0�\u00B0C, height=210)
+          // Animate mini soil thermometer (tube: y=20 at 50\u00B0C, y=230 at 0\u00B0C, height=210)
           const soilThermoFill = document.getElementById("soil-thermo-fill");
           const soilThermoBulb = document.getElementById("soil-thermo-bulb");
           if (soilThermoFill && soilThermoBulb) {
@@ -3417,6 +3417,13 @@ function updateSensorConnectionStatus() {
 
   console.log('[Status Debug]', { hasRealData, isConnected, currentUV, sensorDataKeys: Object.keys(sensorData.I2C || {}) });
 }
+
+
+
+
+
+
+
 
 
 
