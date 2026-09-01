@@ -713,11 +713,10 @@ if (protocol && selectedSensor) {
   if ((selectedSensor === "LIS3DH" || selectedSensor === "LIS2DH") && protocol === "I2C") {
     if (lis3dhContainer) lis3dhContainer.style.display = "flex";
   }
-  // Hall Sensor (Analog)
-  if (selectedSensor === "Hall Sensor" && protocol === "Analog") {
-    if (hallContainer) hallContainer.style.display = "flex";
-  }
-  // TLV493D
+      // Hall Sensor
+    if (selectedSensor === "Hall Sensor" && protocol === "Analog") {
+      if (hallContainer) hallContainer.style.display = "flex";
+    }    // TLV493D
   if (selectedSensor === "TLV493D" && protocol === "I2C") {
     if (tlv493dContainer) tlv493dContainer.style.display = "flex";
   }
@@ -1464,7 +1463,7 @@ if (protocol === "Analog" && selectedSensor === "Hall Sensor") {
     const field = parseInt(currentMagneticField);
    
     // Update text display
-    hallValue.textContent = field === 1 ? "High (Detected)" : "Low (Not Detected)";
+    hallValue.textContent = field === 1 ? "Detected" : "Not Detected";
     hallValue.style.color = field === 1 ? "#f87171" : "#6ee7b7";
    
     // Update status dot
@@ -2575,13 +2574,20 @@ function parseSensorData(data) {
 
       // Hall Sensor
       const hallOutputMatch = line.match(/Hall Sensor Output:\s*(\d+)/);
-      if (hallOutputMatch) {
-        const value = parseInt(hallOutputMatch[1]);
-        currentMagneticField = value;
+      const hallDetectMatch = line.match(/(No magnet detected|Magnet detected)/i);
+      
+      if ((hallOutputMatch || hallDetectMatch) && protocol === "Analog") {
+        if (hallOutputMatch) {
+          currentMagneticField = parseInt(hallOutputMatch[1]);
+        } else {
+          currentMagneticField = hallDetectMatch[0].toLowerCase().includes("no") ? 0 : 1;
+        }
+        
         sensorStatus["Analog"]["Hall_Sensor"] = true;
         if (!selectedSensor) {
           selectedSensor = "Hall Sensor";
-          document.getElementById("sensor-dropdown").value = "Hall Sensor";
+          const dropdown = document.getElementById("sensor-dropdown");
+          if(dropdown) dropdown.value = "Hall Sensor";
         }
         updateSensorUI();
         dataParsed = true;
