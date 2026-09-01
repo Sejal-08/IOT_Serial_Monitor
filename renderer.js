@@ -412,6 +412,7 @@ function updateSensorUI() {
  const windDirectionContainer = document.getElementById("wind-direction-card");
   const windSpeedContainer = document.getElementById("wind-speed-card");
   const windFlowContainer = document.getElementById("wind-flow-card");
+    const wind3dModelContainer = document.getElementById("wind-3d-model-card");
   const windDirectionValue = document.getElementById("wind-direction-value");
   const windDirectionArrow = document.getElementById("wind-direction-arrow");
   const windSpeedValue = document.getElementById("wind-speed-value");
@@ -575,7 +576,7 @@ const allCards = [
   thermometerContainer, thermometerFContainer, humidityContainer, pressureContainer,
   lightContainer, uvltrContainer, lis3dhContainer, hallContainer,
   tlv493dContainer, tofContainer, irContainer,
-  windDirectionContainer, windSpeedContainer, windFlowContainer,  // ← add windFlowContainer here
+  windDirectionContainer, windSpeedContainer, wind3dModelContainer, windFlowContainer, windFlowContainer,  // ← add windFlowContainer here
   rainGaugeCard,
   blinkyCard, buzzerCard, ttp223Card, reedCard,
   vcnlLuxCard,  
@@ -649,7 +650,7 @@ if (protocol && selectedSensor) {
     // Show ALL 8 Weather Cards
     const weatherCards = [
       thermometerContainer, humidityContainer, pressureContainer, lightContainer,
-      rainGaugeCard, windDirectionContainer, windSpeedContainer, windFlowContainer
+      rainGaugeCard, windDirectionContainer, windSpeedContainer, wind3dModelContainer, windFlowContainer, windFlowContainer
     ];
     weatherCards.forEach(card => {
       if (card) {
@@ -756,6 +757,7 @@ if (protocol && selectedSensor) {
     if (windDirectionContainer) windDirectionContainer.style.display = "block";
     if (windSpeedContainer) windSpeedContainer.style.display = "flex";
     if (windFlowContainer) windFlowContainer.style.display = "flex";
+      if (wind3dModelContainer) wind3dModelContainer.style.display = "flex";
   }
   // Rain Gauge
   if (selectedSensor === "Rain Gauge" && (protocol === "ADC" || isWeatherMode)) {
@@ -1851,32 +1853,7 @@ if (protocol === "I2C" && (selectedSensor === "LIS3DH" || selectedSensor === "LI
 }
 
        // Updated Wind Direction rotation code (now centered perfectly with new needle size)
-        if ((protocol === "RS232" || protocol === "RS485" || isWeatherMode) && (isWeatherMode || selectedSensor === "Wind Sensor") && currentWindDirection !== null) {
-          const direction = parseFloat(currentWindDirection);
-          const windDirectionArrow = document.getElementById('wind-direction-arrow');
-          const windDirectionValue = document.getElementById('wind-direction-value');
-          if (windDirectionArrow) {
-            let currentRotation = 0;
-            const currentTransform = windDirectionArrow.style.transform || '';
-            const match = currentTransform.match(/rotate\(([-\d.]+)deg\)/);
-            if (match) currentRotation = parseFloat(match[1]);
-            let diff = direction - currentRotation;
-            if (diff > 180) diff -= 360;
-            if (diff < -180) diff += 360;
-            const target = currentRotation + diff;
-            windDirectionArrow.style.transition = 'transform 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-            windDirectionArrow.style.transform = `rotate(${target}deg)`;
-
-            // add this:
-            updateWindFlowCard(direction);
-
-            // Make value larger when wind is strong (like in your first picture)
-            if (windDirectionValue) {
-              windDirectionValue.textContent = `${direction.toFixed(0)}&deg;`;
-              windDirectionValue.style.fontSize = currentWindSpeed > 5 ? '2.8em' : '2.4em';
-            }
-          }
-        }
+        /* OLD WIND DIRECTION LOGIC REMOVED */
 
 // === WIND SPEED UPDATE ===
 if ((protocol === "RS232" || protocol === "RS485" || isWeatherMode) && (isWeatherMode || selectedSensor === "Wind Sensor") && currentWindSpeed !== null) {
@@ -1977,7 +1954,7 @@ if (protocol === "I2C" && selectedSensor === "SEN66") {
    const hideList = [
     thermometerContainer, humidityContainer, pressureContainer, lightContainer,
     lis3dhContainer, hallContainer, tlv493dContainer, tofContainer, uvltrContainer,
-    irContainer, rainGaugeCard, windDirectionContainer, windSpeedContainer,
+    irContainer, rainGaugeCard, windDirectionContainer, windSpeedContainer, wind3dModelContainer, windFlowContainer,
     
     
     
@@ -3230,6 +3207,7 @@ window.electronAPI.onSerialData((data) => {
   }
 });
 window.addEventListener("DOMContentLoaded", () => {
+  if(typeof init3DSensorModel === "function") setTimeout(init3DSensorModel, 500);
   listPorts();
 
   if (isArduinoBackend) {
@@ -3450,4 +3428,222 @@ function updateSensorConnectionStatus() {
 
 
 
+
+
+function parseData(dataStr) {
+      if (!dataStr) return;
+
+      logBox.innerHTML += `<span style="color: #38bdf8;">RX > ${dataStr}</span><br>`;
+      logBox.scrollTop = logBox.scrollHeight;
+
+      // Check for garbled noise framing error
+      if (isGarbledString(dataStr)) {
+        if (isVerifyingBaud || isConnected) {
+          triggerBaudMismatchError(connectedBaudRate, `Corrupted serial data received at ${connectedBaudRate} baud. Baud rate mismatch detected.`);
+        }
+        return;
+      }
+
+      let speed = null;
+      let direction = null;
+
+      const trimmed = String(dataStr).trim();
+
+      // Check explicit PROTOCOL:<proto> telemetry from sensor
+      const protoMatch = trimmed.match(/\b(?:protocol|proto)\b\s*[:=]\s*([^;\s\n\r]+)/i);
+      if (protoMatch) {
+        const hardwareProto = protoMatch[1].trim();
+        const selectedProto = protocolSelect ? protocolSelect.value : '';
+
+        if (hardwareProto.toUpperCase().includes('RS485') && !selectedProto.toUpperCase().includes('RS485')) {
+          triggerConfigMismatchError('Protocol', 'UART / RS485', selectedProto, 'RS485');
+          return;
+        } else if (hardwareProto.toUpperCase().includes('RS232') && !selectedProto.toUpperCase().includes('RS232')) {
+          triggerConfigMismatchError('Protocol', 'UART / RS232', selectedProto, 'RS232');
+          return;
+        }
+      }
+
+      // Check explicit SENSOR:<model> telemetry from sensor
+      const sensorMatch = trimmed.match(/\b(?:sensor|sensor_mod|model)\b\s*[:=]\s*([^;\n\r]+)/i);
+      if (sensorMatch) {
+        const hardwareSensor = sensorMatch[1].trim();
+        const selectedSensor = sensorSelect ? sensorSelect.value : '';
+        const normHW = hardwareSensor.toUpperCase().includes('RS485') ? 'RS485' : (hardwareSensor.toUpperCase().includes('RS232') ? 'RS232' : hardwareSensor);
+        const normSel = selectedSensor.toUpperCase().includes('RS485') ? 'RS485' : (selectedSensor.toUpperCase().includes('RS232') ? 'RS232' : selectedSensor);
+
+        if (normHW !== normSel) {
+          triggerConfigMismatchError('Sensor Model', hardwareSensor, selectedSensor, normHW);
+          return;
+        }
+      }
+
+      // Check explicit BAUD:<rate> telemetry from sensor
+      const baudMatch = trimmed.match(/\b(?:baud|baudrate|baud_rate)\b\s*[:=]\s*(\d+)/i);
+      if (baudMatch) {
+        const sensorBaud = parseInt(baudMatch[1], 10);
+        if (!isNaN(sensorBaud)) {
+          if (sensorBaud !== connectedBaudRate) {
+            triggerBaudMismatchError(connectedBaudRate, `Sensor is operating at ${sensorBaud} baud, but Dashboard selected ${connectedBaudRate} baud.`, sensorBaud);
+            return;
+          } else {
+            hasReceivedValidTelemetry = true;
+            if (isVerifyingBaud) {
+              completeConnectionSuccess(connectedBaudRate);
+            }
+          }
+        }
+      }
+
+      // 1. Try JSON Format (e.g. {"speed": 4.5, "direction": 180} or {"spd": 4.5, "dir": 180})
+      if (trimmed.includes('{') && trimmed.includes('}')) {
+        try {
+          const cleanJson = trimmed.substring(trimmed.indexOf('{'), trimmed.lastIndexOf('}') + 1);
+          const json = JSON.parse(cleanJson);
+
+          const rawSpeed = json.speed ?? json.wind_speed ?? json.spd ?? json.ws ?? json.v;
+          const rawDir = json.direction ?? json.wind_direction ?? json.dir ?? json.wd ?? json.d;
+
+          if (rawSpeed !== undefined && !isNaN(parseFloat(rawSpeed))) speed = parseFloat(rawSpeed);
+          if (rawDir !== undefined && !isNaN(parseFloat(rawDir))) direction = parseFloat(rawDir);
+        } catch (e) { }
+      }
+
+      // 2. Try NMEA 0183 Anemometer Format (e.g. $MWV,180.0,R,4.5,M,A)
+      if (speed === null && direction === null && trimmed.startsWith('$') && trimmed.includes('MWV')) {
+        const parts = trimmed.split(',');
+        if (parts.length >= 5) {
+          const dirVal = parseFloat(parts[1]);
+          const spdVal = parseFloat(parts[3]);
+          const unit = parts[4]; // M = m/s, K = km/h, N = knots
+          if (!isNaN(spdVal)) {
+            speed = unit === 'K' ? spdVal / 3.6 : (unit === 'N' ? spdVal * 0.514444 : spdVal);
+          }
+          if (!isNaN(dirVal)) direction = dirVal;
+        }
+      }
+
+      // 3. Try Key-Value Format (e.g. "Wind Speed: 4.5", "Wind Direction: 180", "SPEED=4.5 DIR=180", "S:4.5 D:180")
+      if (speed === null && direction === null) {
+        const speedMatch = trimmed.match(/\b(?:speed|spd|ws|s)\b\s*[:=]\s*([\d.]+)/i);
+        const dirMatch = trimmed.match(/\b(?:direction|dir|heading|wd|d)\b\s*[:=]\s*([\d.]+)/i);
+        if (speedMatch) speed = parseFloat(speedMatch[1]);
+        if (dirMatch) direction = parseFloat(dirMatch[1]);
+      }
+
+      // 4. Try CSV / Plain Numbers (e.g. "4.5, 180" or "4.5 180") ONLY if line consists purely of plain numbers/CSV
+      if (speed === null && direction === null && /^[\d.\s,\/;:\-]+$/.test(trimmed)) {
+        const nums = trimmed.split(/[\s,:\/]+/).map(n => parseFloat(n)).filter(n => !isNaN(n));
+        if (nums.length >= 2) {
+          speed = nums[0];
+          direction = nums[1];
+        } else if (nums.length === 1) {
+          speed = nums[0];
+        }
+      }
+
+      // 5. Parse Interval settings/confirmations from sensor telemetry
+      const intervalMatch = trimmed.match(/\b(?:interval|sample_rate|period|delay)\b\s*[:=]\s*(\d+)/i);
+      if (intervalMatch) {
+        const parsedInterval = parseInt(intervalMatch[1], 10);
+        if (!isNaN(parsedInterval) && intervalInput && document.activeElement !== intervalInput) {
+          intervalInput.value = parsedInterval;
+        }
+      }
+
+      // Confirm valid telemetry received
+      if (trimmed.includes('Wind Speed') || trimmed.includes('Wind Direction') || trimmed.includes('Query command') || trimmed.includes('Raw response') || speed !== null || direction !== null) {
+        hasReceivedValidTelemetry = true;
+        if (isVerifyingBaud) {
+          completeConnectionSuccess(connectedBaudRate);
+        }
+      }
+
+      // Update Speed UI & localStorage if valid numerical speed is parsed
+      if (speed !== null && !isNaN(speed)) {
+        try {
+          localStorage.setItem('liveWindSpeed', speed);
+        } catch (e) { }
+
+        const speedEl = document.getElementById('speedVal');
+        if (speedEl) speedEl.innerText = speed.toFixed(2);
+
+        const turbineHead = document.getElementById('rotorHead');
+        if (turbineHead) {
+          const spinDuration = Math.max(0.1, 3.0 - (speed * 0.35));
+          turbineHead.style.animationDuration = `${spinDuration}s`;
+        }
+      }
+
+      // Update Direction UI & localStorage if valid numerical direction is parsed
+      if (direction !== null && !isNaN(direction)) {
+        try {
+          localStorage.setItem('liveWindDirection', direction);
+        } catch (e) { }
+
+        const cardinal = getCardinal(direction);
+        const flowPath = getFlowPath(direction);
+
+        const dirEl = document.getElementById('dirVal');
+        if (dirEl) dirEl.innerText = Math.round(direction);
+
+        const needleEl = document.getElementById('compassNeedle');
+        if (needleEl) needleEl.style.transform = `rotate(${direction}deg)`;
+
+        const textEl = document.getElementById('dirCardinalText');
+        if (textEl) textEl.innerText = `Heading: ${cardinal}`;
+
+        const vecLabelEl = document.getElementById('flowVectorLabel');
+        if (vecLabelEl) vecLabelEl.innerText = flowPath;
+
+        const streamBox = document.getElementById('streamlineBox');
+        if (streamBox) streamBox.style.transform = `rotate(${direction + 180}deg)`;
+      }
+
+      // Always update Flow Intensity Status label based on effective speed
+      const effectiveSpeed = (speed !== null && !isNaN(speed))
+        ? speed
+        : parseFloat(localStorage.getItem('liveWindSpeed') || '0');
+
+      let flowText = "CALM";
+      let lineSpeed = 2.0;
+
+      if (effectiveSpeed <= 0.5) { flowText = "CALM"; lineSpeed = 3.0; }
+      else if (effectiveSpeed <= 1.5) { flowText = "LIGHT AIR"; lineSpeed = 2.0; }
+      else if (effectiveSpeed <= 3.3) { flowText = "LIGHT BREEZE"; lineSpeed = 1.4; }
+      else if (effectiveSpeed <= 5.5) { flowText = "GENTLE BREEZE"; lineSpeed = 1.0; }
+      else if (effectiveSpeed <= 7.9) { flowText = "MODERATE BREEZE"; lineSpeed = 0.7; }
+      else if (effectiveSpeed <= 10.7) { flowText = "FRESH BREEZE"; lineSpeed = 0.5; }
+      else if (effectiveSpeed <= 13.8) { flowText = "STRONG BREEZE"; lineSpeed = 0.3; }
+      else { flowText = "HIGH WIND / GALE"; lineSpeed = 0.15; }
+
+      const flowLabelEl = document.getElementById('flowLabel');
+      if (flowLabelEl) flowLabelEl.innerText = flowText;
+
+      document.querySelectorAll('.stream-vector').forEach(vec => {
+        vec.style.animationDuration = `${lineSpeed}s`;
+      });
+    }
+
+    function getCardinal(deg) {
+      const dirs = ['North', 'North-East', 'East', 'South-East', 'South', 'South-West', 'West', 'North-West'];
+      return dirs[Math.round(deg / 45) % 8];
+    }
+
+    function getFlowPath(deg) {
+      const paths = [
+        'N → S',
+        'NE → SW',
+        'E → W',
+        'SE → NW',
+        'S → N',
+        'SW → NE',
+        'W → E',
+        'NW → SE'
+      ];
+      return paths[Math.round(deg / 45) % 8];
+    }
+
+    /* --- 3D INTERACTIVE WEBGLE ULTRASONIC WIND SENSOR MODEL (ULTRA FAST NO-LAG) --- */
+    
 
