@@ -3647,3 +3647,357 @@ function parseData(dataStr) {
     /* --- 3D INTERACTIVE WEBGLE ULTRASONIC WIND SENSOR MODEL (ULTRA FAST NO-LAG) --- */
     
 
+
+
+function init3DSensorModel() {
+      const container = document.getElementById('deviceInteractiveArea');
+      const canvas = document.getElementById('device3dCanvas');
+
+      if (!container || !canvas || typeof THREE === 'undefined') return;
+
+      // 1. Scene, Camera, Renderer (High Performance Fast Shading)
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(40, (container.clientWidth || 300) / (container.clientHeight || 300), 0.1, 100);
+      camera.position.set(0, 1.2, 14.5);
+      camera.lookAt(0, 0.9, 0);
+
+      const renderer = new THREE.WebGLRenderer({
+        canvas: canvas,
+        antialias: true,
+        alpha: true,
+        precision: 'mediump',
+        powerPreference: 'high-performance'
+      });
+      renderer.setPixelRatio(1); // Set 1:1 pixel ratio for maximum speed
+      renderer.setSize(container.clientWidth || 300, container.clientHeight || 300);
+
+      // Fix for display: none initializing to 0x0
+      const resizeObserver = new ResizeObserver(() => {
+        if (container.clientWidth > 0 && container.clientHeight > 0) {
+          camera.aspect = container.clientWidth / container.clientHeight;
+          camera.updateProjectionMatrix();
+          renderer.setSize(container.clientWidth, container.clientHeight);
+        }
+      });
+      resizeObserver.observe(container);
+
+
+      // 2. Optimized Blinn-Phong Lighting
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
+      scene.add(ambientLight);
+
+      const mainLight = new THREE.DirectionalLight(0x38bdf8, 1.4);
+      mainLight.position.set(6, 12, 8);
+      scene.add(mainLight);
+
+      const fillLight = new THREE.DirectionalLight(0x60a5fa, 0.6);
+      fillLight.position.set(-6, -4, -6);
+      scene.add(fillLight);
+
+      // 3. Sensor Model Master Group (Shifted further upward for optimal framing)
+      const sensorGroup = new THREE.Group();
+      sensorGroup.position.y = 1.7;
+      scene.add(sensorGroup);
+
+      // High-speed MeshPhongMaterial matching original dashboard theme
+      const matteBodyMat = new THREE.MeshPhongMaterial({
+        color: 0x1e293b,
+        shininess: 30,
+        specular: 0x475569
+      });
+
+      const cyanMetallicMat = new THREE.MeshPhongMaterial({
+        color: 0x38bdf8,
+        shininess: 80,
+        specular: 0xffffff
+      });
+
+      const pillarMat = new THREE.MeshPhongMaterial({
+        color: 0x475569,
+        shininess: 50,
+        specular: 0x94a3b8
+      });
+
+      const probeMat = new THREE.MeshPhongMaterial({
+        color: 0x0f172a,
+        shininess: 40,
+        specular: 0x38bdf8
+      });
+
+      const brassMat = new THREE.MeshPhongMaterial({
+        color: 0xf59e0b,
+        shininess: 90,
+        specular: 0xfef08a
+      });
+
+      const greyCableMat = new THREE.MeshPhongMaterial({
+        color: 0x94a3b8,
+        shininess: 20,
+        specular: 0xcbd5e1
+      });
+
+      // --- A. TOP CANOPY DISK & 3 TRAPEZOIDAL WEDGES ---
+      const topDiskGeo = new THREE.CylinderGeometry(3.6, 3.6, 0.22, 24);
+      const topDisk = new THREE.Mesh(topDiskGeo, matteBodyMat);
+      topDisk.position.y = 2.2;
+      sensorGroup.add(topDisk);
+
+      for (let i = 0; i < 3; i++) {
+        const angle = (i * 120 * Math.PI) / 180;
+        const wedgeGeo = new THREE.BoxGeometry(0.7, 0.12, 1.0);
+        const wedge = new THREE.Mesh(wedgeGeo, matteBodyMat);
+        wedge.position.set(Math.sin(angle) * 1.9, 2.34, Math.cos(angle) * 1.9);
+        wedge.rotation.y = angle;
+        sensorGroup.add(wedge);
+      }
+
+      // --- B. 4 VERTICAL SUPPORT PILLARS & SCREWS ---
+      const pillarRadius = 2.7;
+      for (let i = 0; i < 4; i++) {
+        const angle = (i * 90 * Math.PI) / 180 + Math.PI / 4;
+        const pillarGeo = new THREE.CylinderGeometry(0.09, 0.09, 2.3, 12);
+        const pillar = new THREE.Mesh(pillarGeo, pillarMat);
+        const px = Math.sin(angle) * pillarRadius;
+        const pz = Math.cos(angle) * pillarRadius;
+        pillar.position.set(px, 1.05, pz);
+        sensorGroup.add(pillar);
+
+        const screwGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.06, 10);
+        const screw = new THREE.Mesh(screwGeo, cyanMetallicMat);
+        screw.position.set(px, 2.33, pz);
+        sensorGroup.add(screw);
+      }
+
+      // --- C. 4 ULTRASONIC TRANSDUCER PROBE HEADS ---
+      const probeRadius = 1.8;
+
+      for (let i = 0; i < 4; i++) {
+        const angle = (i * 90 * Math.PI) / 180;
+        const probeGroup = new THREE.Group();
+
+        const probeCylGeo = new THREE.CylinderGeometry(0.38, 0.38, 0.7, 16);
+        const probeCyl = new THREE.Mesh(probeCylGeo, probeMat);
+        probeCyl.position.y = 0.35;
+        probeGroup.add(probeCyl);
+
+        const domeGeo = new THREE.SphereGeometry(0.38, 16, 10, 0, Math.PI * 2, 0, Math.PI / 2);
+        const dome = new THREE.Mesh(domeGeo, probeMat);
+        dome.position.y = 0.7;
+        probeGroup.add(dome);
+
+        const faceGeo = new THREE.CylinderGeometry(0.24, 0.24, 0.05, 16);
+        const face = new THREE.Mesh(faceGeo, cyanMetallicMat);
+        face.position.set(0, 0.65, 0);
+        face.rotation.z = Math.PI / 6;
+        face.rotation.y = Math.PI;
+        probeGroup.add(face);
+
+        const px = Math.sin(angle) * probeRadius;
+        const pz = Math.cos(angle) * probeRadius;
+        probeGroup.position.set(px, -0.1, pz);
+        probeGroup.rotation.y = angle + Math.PI;
+        sensorGroup.add(probeGroup);
+      }
+
+      // --- D. LOWER HOUSING BASE DISK & FLARED NECK BODY ---
+      const baseDiskGeo = new THREE.CylinderGeometry(3.6, 3.65, 0.28, 24);
+      const baseDisk = new THREE.Mesh(baseDiskGeo, matteBodyMat);
+      baseDisk.position.y = -0.28;
+      sensorGroup.add(baseDisk);
+
+      const seamGeo = new THREE.CylinderGeometry(3.7, 3.7, 0.08, 24);
+      const seam = new THREE.Mesh(seamGeo, cyanMetallicMat);
+      seam.position.y = -0.44;
+      sensorGroup.add(seam);
+
+      const bottomDiskGeo = new THREE.CylinderGeometry(3.65, 3.2, 0.32, 24);
+      const bottomDisk = new THREE.Mesh(bottomDiskGeo, matteBodyMat);
+      bottomDisk.position.y = -0.64;
+      sensorGroup.add(bottomDisk);
+
+      // Smooth Flared Funnel Neck (Upper Neck)
+      const funnelPoints = [];
+      funnelPoints.push(new THREE.Vector2(3.2, -0.65));
+      funnelPoints.push(new THREE.Vector2(2.4, -1.0));
+      funnelPoints.push(new THREE.Vector2(1.7, -1.35));
+      funnelPoints.push(new THREE.Vector2(1.35, -1.65));
+      const funnelGeo = new THREE.LatheGeometry(funnelPoints, 24);
+      const funnel = new THREE.Mesh(funnelGeo, matteBodyMat);
+      sensorGroup.add(funnel);
+
+      // --- STRAIGHT CYLINDRICAL MOUNTING POLE STEM ---
+      const stemPoleGeo = new THREE.CylinderGeometry(1.35, 1.35, 2.0, 24);
+      const stemPole = new THREE.Mesh(stemPoleGeo, matteBodyMat);
+      stemPole.position.y = -2.65;
+      sensorGroup.add(stemPole);
+
+      // Lower Pole Mounting Rim Flange
+      const stemRimGeo = new THREE.CylinderGeometry(1.48, 1.48, 0.15, 24);
+      const stemRim = new THREE.Mesh(stemRimGeo, cyanMetallicMat);
+      stemRim.position.y = -3.65;
+      sensorGroup.add(stemRim);
+
+      // Side Set-Screw Mounting Hole Pin
+      const pinGeo = new THREE.CylinderGeometry(0.14, 0.14, 0.5, 12);
+      const pin = new THREE.Mesh(pinGeo, cyanMetallicMat);
+      pin.rotation.x = Math.PI / 2;
+      pin.position.set(0, -2.6, 1.3);
+      sensorGroup.add(pin);
+
+      // Brass Hex Cable Gland
+      const glandGeo = new THREE.CylinderGeometry(0.45, 0.45, 0.35, 6);
+      const gland = new THREE.Mesh(glandGeo, brassMat);
+      gland.position.y = -3.9;
+      sensorGroup.add(gland);
+
+      const glandCollarGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.2, 16);
+      const glandCollar = new THREE.Mesh(glandCollarGeo, matteBodyMat);
+      glandCollar.position.y = -4.15;
+      sensorGroup.add(glandCollar);
+
+      // --- E. COILED GREY DATA CABLE BUNDLE ---
+      const cableCurvePoints = [];
+      const coilTurns = 2.8;
+      for (let t = 0; t <= 1; t += 0.04) {
+        const angle = t * Math.PI * 2 * coilTurns;
+        const radius = 1.55 + Math.sin(t * Math.PI * 3) * 0.3;
+        const x = Math.sin(angle) * radius;
+        const z = Math.cos(angle) * radius * 0.65;
+        const y = -4.25 - (t * 1.8) + Math.sin(t * Math.PI * 4) * 0.2;
+        cableCurvePoints.push(new THREE.Vector3(x, y, z));
+      }
+      const cableCurve = new THREE.CatmullRomCurve3(cableCurvePoints);
+      const cableGeo = new THREE.TubeGeometry(cableCurve, 30, 0.16, 8, false);
+      const cableMesh = new THREE.Mesh(cableGeo, greyCableMat);
+      sensorGroup.add(cableMesh);
+
+      // --- F. REAL V-SHAPED ACOUSTIC RADIATION PATHS (Probe -> Top Canopy Reflection Plate -> Diagonal Probe) ---
+      const vBeamGroup = new THREE.Group();
+      sensorGroup.add(vBeamGroup);
+
+      const vBeamMat = new THREE.MeshBasicMaterial({
+        color: 0x38bdf8,
+        transparent: true,
+        opacity: 0.55
+      });
+
+      // Helper function to create 3D beam cylinder between 2 points
+      function createBeamCylinder(p1, p2, radius = 0.035) {
+        const distance = p1.distanceTo(p2);
+        const geo = new THREE.CylinderGeometry(radius, radius, distance, 6);
+        const mesh = new THREE.Mesh(geo, vBeamMat);
+
+        const midpoint = new THREE.Vector3().addVectors(p1, p2).multiplyScalar(0.5);
+        mesh.position.copy(midpoint);
+
+        mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), p2.clone().sub(p1).normalize());
+        return mesh;
+      }
+
+      // Top Canopy Reflection Point
+      const reflectPoint = new THREE.Vector3(0, 2.15, 0);
+
+      // 4 Probe Points (North, South, East, West)
+      const pNorth = new THREE.Vector3(0, 0.55, 1.8);
+      const pSouth = new THREE.Vector3(0, 0.55, -1.8);
+      const pEast = new THREE.Vector3(1.8, 0.55, 0);
+      const pWest = new THREE.Vector3(-1.8, 0.55, 0);
+
+      // V-Path 1 (North Probe -> Top Canopy -> South Probe)
+      const beamN = createBeamCylinder(pNorth, reflectPoint);
+      const beamS = createBeamCylinder(reflectPoint, pSouth);
+
+      // V-Path 2 (East Probe -> Top Canopy -> West Probe)
+      const beamE = createBeamCylinder(pEast, reflectPoint);
+      const beamW = createBeamCylinder(reflectPoint, pWest);
+
+      vBeamGroup.add(beamN, beamS, beamE, beamW);
+
+      // Glowing Pulse Spheres Traveling along V-paths
+      const pulseGeo = new THREE.SphereGeometry(0.1, 10, 10);
+      const pulseMat = new THREE.MeshBasicMaterial({ color: 0x60a5fa });
+
+      const pulse1 = new THREE.Mesh(pulseGeo, pulseMat);
+      const pulse2 = new THREE.Mesh(pulseGeo, pulseMat);
+      vBeamGroup.add(pulse1, pulse2);
+
+      // 4. Smooth 360° Mouse Drag & Scroll Zoom Orbit Controls
+      let isDragging = false;
+      let previousMousePosition = { x: 0, y: 0 };
+      let targetRotationY = 0;
+      let targetRotationX = 0.2;
+
+      canvas.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        previousMousePosition = { x: e.clientX, y: e.clientY };
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+          const deltaX = e.clientX - previousMousePosition.x;
+          const deltaY = e.clientY - previousMousePosition.y;
+
+          targetRotationY += deltaX * 0.015;
+          targetRotationX += deltaY * 0.012;
+
+          previousMousePosition = { x: e.clientX, y: e.clientY };
+        }
+      });
+
+      window.addEventListener('mouseup', () => {
+        isDragging = false;
+      });
+
+      canvas.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        camera.position.z = Math.max(7, Math.min(22, camera.position.z + e.deltaY * 0.01));
+      }, { passive: false });
+
+      window.addEventListener('resize', () => {
+        if (!container || !renderer) return;
+        camera.aspect = container.clientWidth / container.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(container.clientWidth, container.clientHeight);
+      });
+
+      // 5. Ultra Lightweight Render Loop (Locked 30 FPS for Maximum Performance)
+      let lastRenderTime = 0;
+      function animate(time) {
+        requestAnimationFrame(animate);
+
+        const now = time || 0;
+        if (now - lastRenderTime < 30) return; // 30 FPS lock eliminates GPU lag
+        lastRenderTime = now;
+
+        const elapsedTime = now * 0.001;
+
+        if (!isDragging) {
+          targetRotationY += 0.003;
+        }
+
+        sensorGroup.rotation.y += (targetRotationY - sensorGroup.rotation.y) * 0.1;
+        sensorGroup.rotation.x += (targetRotationX - sensorGroup.rotation.x) * 0.1;
+
+        // Animate V-Shaped Acoustic Wave Pulses (Probe -> Reflection Point -> Diagonal Probe)
+        const speedMultiplier = 1.2;
+
+        // Path 1: North -> Top -> South
+        const progress1 = (elapsedTime * speedMultiplier) % 1.0;
+        if (progress1 < 0.5) {
+          pulse1.position.lerpVectors(pNorth, reflectPoint, progress1 * 2);
+        } else {
+          pulse1.position.lerpVectors(reflectPoint, pSouth, (progress1 - 0.5) * 2);
+        }
+
+        // Path 2: East -> Top -> West
+        const progress2 = ((elapsedTime * speedMultiplier) + 0.5) % 1.0;
+        if (progress2 < 0.5) {
+          pulse2.position.lerpVectors(pEast, reflectPoint, progress2 * 2);
+        } else {
+          pulse2.position.lerpVectors(reflectPoint, pWest, (progress2 - 0.5) * 2);
+        }
+
+        renderer.render(scene, camera);
+      }
+      requestAnimationFrame(animate);
+    }
