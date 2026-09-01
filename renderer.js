@@ -145,7 +145,7 @@ function updateWindFlowCard(deg) {
   document.getElementById('flow-from').textContent = from;
   document.getElementById('flow-to').textContent   = to;
   document.getElementById('flow-label').textContent = `WIND BLOWING FROM ${from}`;
-  document.getElementById('flow-degree').textContent = `${deg.toFixed(0)}&deg;`;
+  document.getElementById('flow-degree').textContent = `${deg.toFixed(0)}\u00B0`;
   document.getElementById('flow-desc').textContent   = `Moving toward ${to}`;
 
   _wfFromDeg = deg;
@@ -845,7 +845,7 @@ if ((protocol === "I2C" || protocol === "RS485" || isWeatherMode) && (isWeatherM
     const thermometerFBulb = document.getElementById("thermometer-f-bulb");
    
     if (thermometerFValue && thermometerFFill && thermometerFBulb) {
-      thermometerFValue.textContent = `${tempF.toFixed(2)}&deg;F`;
+      thermometerFValue.textContent = `${tempF.toFixed(2)}\u00B0F`;
      
       // Use DIFFERENT variable names to avoid conflict
       const maxTempF = 122;
@@ -1761,7 +1761,7 @@ if (protocol === "I2C" && selectedSensor === "TLV493D") {
     line.setAttribute("x2", tx);
     line.setAttribute("y2", ty);
    
-    // Calculate angle from X-axis (0&deg; = right, 90&deg; = down, 180&deg; = left, 270&deg; = up)
+    // Calculate angle from X-axis (0\u00B0 = right, 90\u00B0 = down, 180\u00B0 = left, 270\u00B0 = up)
     const angleRad = Math.atan2(y, x); // Using y directly (no negative)
     const angleDeg = angleRad * 180 / Math.PI;
    
@@ -1801,7 +1801,7 @@ if (protocol === "I2C" && selectedSensor === "TLV493D") {
     // Debug output
     console.log(`Vector: X=${x.toFixed(2)}, Y=${y.toFixed(2)}`);
     console.log(`End point: (${tx.toFixed(1)}, ${ty.toFixed(1)})`);
-    console.log(`Angle: ${angleDeg.toFixed(1)}&deg;`);
+    console.log(`Angle: ${angleDeg.toFixed(1)}\u00B0`);
    
   } else {
     // No data – reset
@@ -1980,7 +1980,7 @@ if (protocol === "I2C" && selectedSensor === "SEN66") {
     if (tofValue) tofValue.textContent = "";
     if (uvValue) uvValue.textContent = "UV: 0.00";
     if (irValue) irValue.textContent = "";
-    if (windDirectionValue) windDirectionValue.textContent = "0&deg;";
+    if (windDirectionValue) windDirectionValue.textContent = "0\u00B0";
     if (windSpeedValue) windSpeedValue.textContent = "0.0 m/s";
      
    
@@ -2713,7 +2713,7 @@ function parseSensorData(data) {
         }
         currentTemperature = tempC;
         sensorData[protocol]["STTS751 Temperature"] = tempC.toFixed(2) + " \u00B0C";
-        sensorData[protocol]["STTS751 Temperature (Fahrenheit)"] = tempF.toFixed(2) + " &deg;F";
+        sensorData[protocol]["STTS751 Temperature (Fahrenheit)"] = tempF.toFixed(2) + " \u00B0F";
         console.log("STTS751 parsed:", { celsius: tempC, fahrenheit: tempF });
         if (selectedSensor === "STTS751") updateSensorUI();
         dataParsed = true;
