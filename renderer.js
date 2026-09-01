@@ -280,7 +280,7 @@ const sensorProtocolMap = {
   "SPI": [],
   "Analog": ["Hall Sensor", "IR Sensor"],
   "ADC": ["Rain Gauge"],
-  "GPIO": isArduinoBackend ? ["Blinky", "Buzzer", "Relay", "HC-SR04", "TTP223", "Reed Switch"] : ["Blinky", "Buzzer", "Relay"],
+  "GPIO": isArduinoBackend ? ["Blinky", "HC-SR04", "TTP223"] : ["Blinky", "Buzzer", "Relay", "Reed Switch"],
   "WEATHER": ["Weather Parameters"]
 };
 // Track sensor presence and data
