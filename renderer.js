@@ -1,3 +1,21 @@
+const sensorImages = {
+  "Soil Sensor": "images/soil.png",
+  "Rain Gauge": "images/gauge.png",
+  "Weather Shield": "images/luxpressure.png",
+  "Wind Sensor": "images/ultrasonic.png",
+  "AHT20": "images/AHT20.png",
+  "STTS751": "images/stts751.png",
+  "STS30": "images/sts30.png",
+  "LIS3DH": "images/lis3dh.png",
+  "Relay": "images/relay.png",
+  "Buzzer": "images/buzzer.png",
+  "VCNL4040": "images/VCNL4040.png",
+  "Reed Switch": "images/ReedSwitch.png",
+  "Hall Sensor": "images/halleffect.png",
+  "IR Sensor": "images/ir_sensor.png",
+  "SEN66": "images/SEN66.png"
+};
+
 let selectedSensor = null;
 let hallLightningInterval = null;  
 let _wfParticles = [];
@@ -563,13 +581,13 @@ const allCards = [
   vcnlLuxCard,  
   relayCard,
   // SEN66 individual cards
-      document.getElementById("sen66-pm1-card"),
-      document.getElementById("sen66-pm25-card"),
-      document.getElementById("sen66-pm4-card"),
-      document.getElementById("sen66-pm10-card"),
-      document.getElementById("sen66-voc-card"),
-      document.getElementById("sen66-nox-card"),
-      document.getElementById("sen66-co2-card"),
+      
+      
+      
+      
+      
+      
+      document.getElementById("sen66-orbit-card"),
       // Soil Sensor cards
       soilNContainer, soilPContainer, soilKContainer, soilMoistContainer, 
       soilTempContainer, soilECContainer, soilPHContainer, soilSalContainer,
@@ -586,7 +604,25 @@ allCards.forEach(card => {
     if (selectedSensor !== "SEN66") {
       // nothing to stop
     }
-const sensorCards = document.querySelector('.sensor-cards');
+  const sensorGrid = document.getElementById("sensor-cards-container");
+  const sen66Stage = document.getElementById("sen66-spatial-stage");
+  
+  if (selectedSensor === "SEN66") {
+    if (sensorGrid) sensorGrid.style.display = "grid";
+    // hide all other cards
+    Array.from(sensorGrid.children).forEach(child => {
+      if(child.id !== 'sen66-orbit-card') {
+         child.style.display = 'none';
+      } else {
+         child.style.display = 'flex';
+      }
+    });
+  } else {
+    if (sensorGrid) sensorGrid.style.display = "grid";
+    if (document.getElementById('sen66-orbit-card')) document.getElementById('sen66-orbit-card').style.display = 'none';
+  }
+
+  const sensorCards = document.querySelector('.sensor-cards');
 if (sensorCards) {
   sensorCards.classList.remove('weather-shield-grid');
   sensorCards.classList.remove('sen66-layout');
@@ -745,27 +781,8 @@ if (protocol && selectedSensor) {
   }
 
  // ── SEN66 – show all 7 individual param cards + temp + humidity ──
-      if (selectedSensor === "SEN66" && protocol === "I2C") {
-        // Add SEN66 layout class to reorder cards
-        if (sensorCards) sensorCards.classList.add('sen66-layout');
-        
-        // Thermometer (same as SHT40)
-        if (thermometerContainer) {
-          thermometerContainer.style.display = "flex";
-          thermometerContainer.classList.add('sensor-card');
-        }
-        // Humidity wave (same as SHT40)
-        if (humidityContainer) {
-          humidityContainer.style.display = "flex";
-          humidityContainer.classList.add('sensor-card');
-        }
-        // 7 individual PM / gas cards
-        ["sen66-pm1-card","sen66-pm25-card","sen66-pm4-card","sen66-pm10-card",
-         "sen66-voc-card","sen66-nox-card","sen66-co2-card"].forEach(id => {
-          const el = document.getElementById(id);
-          if (el) { el.style.display = "flex"; el.classList.add('sensor-card'); }
-        });
-      }
+      
+
 
   // ── Soil Sensor ──
   if (selectedSensor === "Soil Sensor" && protocol === "RS485") {
@@ -816,7 +833,7 @@ if ((protocol === "I2C" || protocol === "RS485" || isWeatherMode) && (isWeatherM
   thermometerFill.setAttribute("height", fillHeight);
   thermometerFill.setAttribute("fill", fillColor);
   thermometerBulb.setAttribute("fill", fillColor);
-  thermometerValue.textContent = `${temp.toFixed(2)}°C`;
+  thermometerValue.textContent = `${temp.toFixed(2)}�\u00B0C`;
  
   // Update Fahrenheit thermometer for STTS751 - FIXED VARIABLE NAMES
   if (selectedSensor === "STTS751") {
@@ -858,7 +875,7 @@ if ((protocol === "I2C" || protocol === "RS485" || isWeatherMode) && (isWeatherM
   thermometerFill.setAttribute("height", 0);
   thermometerFill.setAttribute("fill", "#ffeb3b");
   thermometerBulb.setAttribute("fill", "#ffeb3b");
-  thermometerValue.textContent = "0.00°C";
+  thermometerValue.textContent = "0.00�\u00B0C";
  
   // Reset Fahrenheit thermometer too
   const thermometerFFill = document.getElementById("thermometer-f-fill");
@@ -1961,13 +1978,13 @@ if (protocol === "I2C" && selectedSensor === "SEN66") {
     thermometerContainer, humidityContainer, pressureContainer, lightContainer,
     lis3dhContainer, hallContainer, tlv493dContainer, tofContainer, uvltrContainer,
     irContainer, rainGaugeCard, windDirectionContainer, windSpeedContainer,
-    document.getElementById("sen66-pm1-card"),
-    document.getElementById("sen66-pm25-card"),
-    document.getElementById("sen66-pm4-card"),
-    document.getElementById("sen66-pm10-card"),
-    document.getElementById("sen66-voc-card"),
-    document.getElementById("sen66-nox-card"),
-    document.getElementById("sen66-co2-card"),
+    
+    
+    
+    
+    
+    
+    document.getElementById("sen66-orbit-card"),
     vcnlLuxCard, relayCard, blinkyCard, buzzerCard, ttp223Card, reedCard,
   ];
     hideList.forEach(el => { if (el) el.style.display = "none"; });
@@ -2118,220 +2135,83 @@ function updatePressureCard(hpa) {
 // In renderer.js, find and REPLACE the entire _updateSEN66Card function
 // with this version.
 // ─────────────────────────────────────────────────────────────────────────────
-function _updateSEN66Card() {
-  if (selectedSensor !== "SEN66") {
-    ["sen66-pm1-card","sen66-pm25-card","sen66-pm4-card","sen66-pm10-card",
-     "sen66-voc-card","sen66-nox-card","sen66-co2-card"].forEach(id => {
+    function _updateSEN66Card() {
+    if (selectedSensor !== "SEN66") return;
+
+    function setVal(id, text) {
       const el = document.getElementById(id);
-      if (el) el.style.display = "none";
-    });
-    return;
-  }
-  // ── Update shared card titles ──
-  const thermoTitle = document.querySelector("#thermometer-container h4");
-  if (thermoTitle) thermoTitle.innerHTML = '<i class="fas fa-temperature-half"></i> Temperature';
-  const humTitle = document.querySelector("#humidity-card h4");
-  if (humTitle) humTitle.innerHTML = '<i class="fas fa-droplet"></i> Humidity';
+      if (el) el.textContent = text;
+    }
 
-  function setArc(arcId, value, maxVal) {
-  const el = document.getElementById(arcId);
-  if (!el) return;
-  const C      = 314.16;                          // 2π × r=50
-  const ratio  = Math.min(Math.max(value / maxVal, 0), 1);
-  const filled = +(ratio * C).toFixed(2);
-  const empty  = +(C - filled).toFixed(2);
-  // dasharray controls how much is drawn
-  // dashoffset = C/4 = 78.54 shifts start point to 12 o'clock
-  el.style.strokeDasharray  = `${filled} ${empty}`;
-  el.style.strokeDashoffset = "78.54";            // ← never changes
-}
-
-  // ── Helper: update text element ──
-  function setVal(id, text) {
-    const el = document.getElementById(id);
-    if (el) el.textContent = text;
-  }
-
-  function pulseCard(id) {
-    // const el = document.getElementById(id);
-    // if (!el) return;
-    // el.classList.remove("updated");
-    // void el.offsetWidth; // force reflow to restart animation
-    // el.classList.add("updated");
-  }
-
-  // ── PM1.0 ──
-  if (currentSEN66_PM1 !== null) {
-    setVal("sen66-pm1-val", `${currentSEN66_PM1.toFixed(1)} µg/m³`);
-    setVal("sen66-pm1-big", currentSEN66_PM1.toFixed(1));
-    setArc("sen66-pm1-arc", currentSEN66_PM1, 50);
-   
-    pulseCard("sen66-pm1-card");
-  }
-
-  // ── PM2.5 ──
-  if (currentSEN66_PM25 !== null) {
-    setVal("sen66-pm25-val", `${currentSEN66_PM25.toFixed(1)} µg/m³`);
-    setVal("sen66-pm25-big", currentSEN66_PM25.toFixed(1));
-    setArc("sen66-pm25-arc", currentSEN66_PM25, 50);
+    if (currentSEN66_PM1 !== null) setVal("orbit-pm1-val", currentSEN66_PM1.toFixed(1) + " �g");
+    if (currentSEN66_PM25 !== null) setVal("orbit-pm25-val", currentSEN66_PM25.toFixed(1) + " �g");
+    if (currentSEN66_PM4 !== null) setVal("orbit-pm4-val", currentSEN66_PM4.toFixed(1) + " �g");
+    if (currentSEN66_PM10 !== null) setVal("orbit-pm10-val", currentSEN66_PM10.toFixed(1) + " �g");
     
-    pulseCard("sen66-pm25-card");
-  }
+    if (currentSEN66_Temp !== null) {
+      setVal("orbit-temp-val", currentSEN66_Temp.toFixed(1) + " �C");
+    } else if (currentTemperature !== null) {
+      setVal("orbit-temp-val", currentTemperature.toFixed(1) + " �C");
+    }
 
-  // ── PM4 ──
-  if (currentSEN66_PM4 !== null) {
-    setVal("sen66-pm4-val", `${currentSEN66_PM4.toFixed(1)} µg/m³`);
-    setVal("sen66-pm4-big", currentSEN66_PM4.toFixed(1));
-    setArc("sen66-pm4-arc", currentSEN66_PM4, 75);
-   
-    pulseCard("sen66-pm4-card");
-  }
+    if (currentSEN66_Hum !== null) {
+      setVal("orbit-hum-val", currentSEN66_Hum.toFixed(1) + " %");
+    } else if (currentHumidity !== null) {
+      setVal("orbit-hum-val", currentHumidity.toFixed(1) + " %");
+    }
 
-  // ── PM10 ──
-  if (currentSEN66_PM10 !== null) {
-    setVal("sen66-pm10-val", `${currentSEN66_PM10.toFixed(1)} µg/m³`);
-    setVal("sen66-pm10-big", currentSEN66_PM10.toFixed(1));
-    setArc("sen66-pm10-arc", currentSEN66_PM10, 100);
-  
-    pulseCard("sen66-pm10-card");
-  }
+    if (currentSEN66_VOC !== null) setVal("orbit-voc-val", currentSEN66_VOC.toFixed(0) + " Idx");
+    if (currentSEN66_NOx !== null) setVal("orbit-nox-val", currentSEN66_NOx.toFixed(0) + " Idx");
+    if (currentSEN66_CO2 !== null) setVal("orbit-co2-val", currentSEN66_CO2.toFixed(0) + " ppm");
 
-  // ── VOC ──
-  if (currentSEN66_VOC !== null) {
-    setVal("sen66-voc-val", currentSEN66_VOC.toFixed(0));
-    setVal("sen66-voc-big", currentSEN66_VOC.toFixed(0));
-    setArc("sen66-voc-arc", currentSEN66_VOC, 500);
-  
-    pulseCard("sen66-voc-card");
-  }
-
-  // ── NOx ──
-  if (currentSEN66_NOx !== null) {
-    setVal("sen66-nox-val", currentSEN66_NOx.toFixed(0));
-    setVal("sen66-nox-big", currentSEN66_NOx.toFixed(0));
-    setArc("sen66-nox-arc", currentSEN66_NOx, 500);
-   
-    pulseCard("sen66-nox-card");
-  }
-
-  // ── CO2 ──
-  if (currentSEN66_CO2 !== null) {
-    setVal("sen66-co2-val", `${currentSEN66_CO2.toFixed(0)} ppm`);
-    setVal("sen66-co2-big", currentSEN66_CO2.toFixed(0));
-    setArc("sen66-co2-arc", currentSEN66_CO2, 2000);
-   
-    pulseCard("sen66-co2-card");
-  }
-}
-// ─────────────────────────────────────────────────────────────────────────────
-// SEN66 – PARTICLE CANVAS
-// ─────────────────────────────────────────────────────────────────────────────
-function _sen66StartParticles() {
-  // Only start if SEN66 is actually selected and I2C protocol is active
-  const protocol = document.getElementById("sensor-select")?.value;
-  if (protocol !== "I2C" || selectedSensor !== "SEN66") {
-    return;
-  }
-  if (_sen66AnimFrame) return; // already running
-  _sen66Canvas = document.getElementById("sen66-canvas");
-  if (!_sen66Canvas) return;
-  _sen66Ctx = _sen66Canvas.getContext("2d");
-  _sen66SeedParticles();
-  _sen66AnimFrame = requestAnimationFrame(_sen66AnimLoop);
-}
- 
-function _sen66SeedParticles() {
-  const count = Math.min(Math.max(Math.floor(_sen66PM25Level * 1.6 + 5), 5), 80);
-  _sen66Particles = [];
-  for (let i = 0; i < count; i++) _sen66Particles.push(_sen66NewParticle());
-}
- 
-function _sen66NewParticle() {
-  const pm = _sen66PM25Level;
-  let color;
-  if      (pm <= 12) color = "rgba(52,211,153,";
-  else if (pm <= 35) color = "rgba(251,191,36,";
-  else if (pm <= 55) color = "rgba(249,115,22,";
-  else               color = "rgba(239,68,68,";
-  const radius = 0.8 + Math.random() * 2.2;
-  return {
-    x:     Math.random() * 340,
-    y:     Math.random() * 130,
-    vx:    (Math.random() - 0.5) * 0.5,
-    vy:    -0.2 - Math.random() * 0.5,
-    r:     radius,
-    alpha: 0.25 + Math.random() * 0.55,
-    color: color,
-    life:  60 + Math.random() * 120,
-    age:   0,
-  };
-}
- 
-function _sen66AnimLoop() {
-  if (!_sen66Canvas || !_sen66Ctx) return;
-  const w = _sen66Canvas.width;
-  const h = _sen66Canvas.height;
-  _sen66Ctx.clearRect(0, 0, w, h);
- 
-  const targetCount = Math.min(Math.max(Math.floor(_sen66PM25Level * 1.6 + 5), 5), 80);
-  while (_sen66Particles.length < targetCount) _sen66Particles.push(_sen66NewParticle());
-  if (_sen66Particles.length > targetCount + 10)
-    _sen66Particles.splice(0, _sen66Particles.length - targetCount);
- 
-  for (let i = _sen66Particles.length - 1; i >= 0; i--) {
-    const p = _sen66Particles[i];
-    p.x += p.vx; p.y += p.vy; p.age += 1;
-    const lifeRatio = p.age / p.life;
-    const alpha = lifeRatio < 0.15
-      ? (lifeRatio / 0.15) * p.alpha
-      : lifeRatio > 0.75
-        ? ((1 - lifeRatio) / 0.25) * p.alpha
-        : p.alpha;
-    _sen66Ctx.beginPath();
-    _sen66Ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-    _sen66Ctx.fillStyle = p.color + alpha + ")";
-    _sen66Ctx.fill();
-    if (p.age >= p.life || p.y < -5 || p.x < -5 || p.x > w + 5) {
-      _sen66Particles[i] = _sen66NewParticle();
-      _sen66Particles[i].y = h + 5;
+    // AQI Calculation
+    const aqiScoreVal = document.getElementById("orbit-aqi-val");
+    const aqiStatusTag = document.getElementById("orbit-aqi-status");
+    const aqiCore = document.querySelector(".orbit-core");
+    
+    if (aqiScoreVal && currentSEN66_PM25 !== null) {
+        let maxPm = Math.max(currentSEN66_PM25, (currentSEN66_PM10 || 0) * 0.6);
+        let pmPenalty = Math.min(50, (maxPm / 35.0) * 50);
+        let vocPenalty = currentSEN66_VOC !== null ? Math.min(20, Math.max(0, (currentSEN66_VOC - 100) / 300) * 20) : 0;
+        let score = Math.max(0, Math.round(100 - (pmPenalty + vocPenalty)));
+        aqiScoreVal.textContent = score;
+        
+        if (score > 80) {
+          aqiStatusTag.innerHTML = "<i class='fas fa-check-circle'></i> EXCELLENT";
+          if(aqiCore) { aqiCore.classList.remove("core-moderate", "core-poor"); aqiCore.classList.add("core-good"); }
+        } else if (score > 40) {
+          aqiStatusTag.innerHTML = "<i class='fas fa-exclamation-triangle'></i> MODERATE";
+          if(aqiCore) { aqiCore.classList.remove("core-good", "core-poor"); aqiCore.classList.add("core-moderate"); }
+        } else {
+          aqiStatusTag.innerHTML = "<i class='fas fa-skull-crossbones'></i> POOR";
+          if(aqiCore) { aqiCore.classList.remove("core-good", "core-moderate"); aqiCore.classList.add("core-poor"); }
+        }
     }
   }
-  _sen66AnimFrame = requestAnimationFrame(_sen66AnimLoop);
-}
- 
-function _sen66StopParticles() {
-  if (_sen66AnimFrame) { cancelAnimationFrame(_sen66AnimFrame); _sen66AnimFrame = null; }
-  if (_sen66Ctx && _sen66Canvas) _sen66Ctx.clearRect(0, 0, _sen66Canvas.width, _sen66Canvas.height);
-  _sen66Particles = [];
-}
- 
-function _resetSEN66() {
-  currentSEN66_PM1 = currentSEN66_PM25 = currentSEN66_PM4 = currentSEN66_PM10 = null;
-  currentSEN66_Hum = currentSEN66_Temp = currentSEN66_VOC = currentSEN66_NOx  = null;
-  currentSEN66_CO2 = currentSEN66_Up   = null;
-  _sen66PM25Level = 0;
- 
-  // Reset all 7 individual cards
-  const resetMap = [
-    ["sen66-pm1-val","— µg/m³"],["sen66-pm25-val","— µg/m³"],
-    ["sen66-pm4-val","— µg/m³"],["sen66-pm10-val","— µg/m³"],
-    ["sen66-voc-val","—"],["sen66-nox-val","—"],["sen66-co2-val","— ppm"],
-    ["sen66-pm1-big","—"],["sen66-pm25-big","—"],["sen66-pm4-big","—"],
-    ["sen66-pm10-big","—"],["sen66-voc-big","—"],["sen66-nox-big","—"],["sen66-co2-big","—"],
-  ];
-  resetMap.forEach(([id, txt]) => { const el = document.getElementById(id); if (el) el.textContent = txt; });
- 
-  // Reset arcs
-  ["sen66-pm1-arc","sen66-pm25-arc","sen66-pm4-arc","sen66-pm10-arc",
-   "sen66-voc-arc","sen66-nox-arc","sen66-co2-arc"].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.style.strokeDasharray = "0 314.16";
-  });
- 
- 
-}
- 
-/* ------------------------------------------------------------------ */
+  function _resetSEN66() {
+    currentSEN66_PM1 = currentSEN66_PM25 = currentSEN66_PM4 = currentSEN66_PM10 = null;
+    currentSEN66_Hum = currentSEN66_Temp = currentSEN66_VOC = currentSEN66_NOx  = null;
+    currentSEN66_CO2 = null;
+   
+    const resetMap = [
+      ["orbit-pm1-val", "-- �g"],
+      ["orbit-pm25-val", "-- �g"],
+      ["orbit-pm4-val", "-- �g"],
+      ["orbit-pm10-val", "-- �g"],
+      ["orbit-temp-val", "-- �C"],
+      ["orbit-hum-val", "-- %"],
+      ["orbit-co2-val", "-- ppm"],
+      ["orbit-voc-val", "-- Idx"],
+      ["orbit-nox-val", "-- Idx"],
+      ["orbit-aqi-val", "--"]
+    ];
+    resetMap.forEach(([id, txt]) => { const el = document.getElementById(id); if (el) el.textContent = txt; });
+    const status = document.getElementById("orbit-aqi-status");
+    if(status) status.innerHTML = "<i class='fas fa-check-circle'></i> WAITING";
+    const core = document.querySelector(".orbit-core");
+    if(core) { core.classList.remove("core-good", "core-moderate", "core-poor"); }
+  }
+   /* ------------------------------------------------------------------ */
 /* INTERVAL INPUT HANDLING */
 /* ------------------------------------------------------------------ */
 const intervalInput = document.getElementById('interval');
@@ -2539,7 +2419,7 @@ function parseSensorData(data) {
         }
       }
 
-      // AHT20 — format: "AHT20 Sensor: Temperature = XX.XX C, Humidity = XX.XX %" or "AHT20: Temperature: XX.XX°C..."
+      // AHT20 — format: "AHT20 Sensor: Temperature = XX.XX C, Humidity = XX.XX %" or "AHT20: Temperature: XX.XX�\u00B0C..."
       const aht20Match = line.match(/AHT20(?:\s*Sensor)?\s*:\s*Temperature\s*[:=]\s*([\d.]+)\s*°?C\s*,\s*Humidity\s*[:=]\s*([\d.]+)\s*%/i);
       if (aht20Match && protocol === "I2C") {
         const temp = parseFloat(aht20Match[1]);
@@ -2578,10 +2458,10 @@ function parseSensorData(data) {
         const co2Match = line.match(/CO2\s*:\s*([\d.]+)/i);
         const upMatch = line.match(/UPtime\s*:\s*([\d.]+)/i);
 
-        if (pm1Match) { currentSEN66_PM1 = parseFloat(pm1Match[1]); sensorData[protocol]["SEN66 PM1.0"] = currentSEN66_PM1.toFixed(1) + " µg/m³"; sen66Matched = true; }
-        if (pm25Match) { currentSEN66_PM25 = parseFloat(pm25Match[1]); sensorData[protocol]["SEN66 PM2.5"] = currentSEN66_PM25.toFixed(1) + " µg/m³"; sen66Matched = true; }
-        if (pm4Match) { currentSEN66_PM4 = parseFloat(pm4Match[1]); sensorData[protocol]["SEN66 PM4"] = currentSEN66_PM4.toFixed(1) + " µg/m³"; sen66Matched = true; }
-        if (pm10Match) { currentSEN66_PM10 = parseFloat(pm10Match[1]); sensorData[protocol]["SEN66 PM10"] = currentSEN66_PM10.toFixed(1) + " µg/m³"; sen66Matched = true; }
+        if (pm1Match) { currentSEN66_PM1 = parseFloat(pm1Match[1]); sensorData[protocol]["SEN66 PM1.0"] = currentSEN66_PM1.toFixed(1) + " �\u00B5g/m³"; sen66Matched = true; }
+        if (pm25Match) { currentSEN66_PM25 = parseFloat(pm25Match[1]); sensorData[protocol]["SEN66 PM2.5"] = currentSEN66_PM25.toFixed(1) + " �\u00B5g/m³"; sen66Matched = true; }
+        if (pm4Match) { currentSEN66_PM4 = parseFloat(pm4Match[1]); sensorData[protocol]["SEN66 PM4"] = currentSEN66_PM4.toFixed(1) + " �\u00B5g/m³"; sen66Matched = true; }
+        if (pm10Match) { currentSEN66_PM10 = parseFloat(pm10Match[1]); sensorData[protocol]["SEN66 PM10"] = currentSEN66_PM10.toFixed(1) + " �\u00B5g/m³"; sen66Matched = true; }
         if (sen66HumMatch) {
           currentSEN66_Hum = parseFloat(sen66HumMatch[1]);
           currentHumidity = currentSEN66_Hum;
@@ -2591,7 +2471,7 @@ function parseSensorData(data) {
         if (sen66TempMatch) {
           currentSEN66_Temp = parseFloat(sen66TempMatch[1]);
           currentTemperature = currentSEN66_Temp;
-          sensorData[protocol]["SEN66 Temperature"] = currentSEN66_Temp.toFixed(2) + " °C";
+          sensorData[protocol]["SEN66 Temperature"] = currentSEN66_Temp.toFixed(2) + " �\u00B0C";
           sen66Matched = true;
         }
         if (vocMatch) { currentSEN66_VOC = parseFloat(vocMatch[1]); sensorData[protocol]["SEN66 VOC"] = currentSEN66_VOC.toString(); sen66Matched = true; }
@@ -2855,7 +2735,7 @@ function parseSensorData(data) {
           if (dropdown) dropdown.value = "STTS751";
         }
         currentTemperature = tempC;
-        sensorData[protocol]["STTS751 Temperature"] = tempC.toFixed(2) + " °C";
+        sensorData[protocol]["STTS751 Temperature"] = tempC.toFixed(2) + " �\u00B0C";
         sensorData[protocol]["STTS751 Temperature (Fahrenheit)"] = tempF.toFixed(2) + " °F";
         console.log("STTS751 parsed:", { celsius: tempC, fahrenheit: tempF });
         if (selectedSensor === "STTS751") updateSensorUI();
@@ -2863,7 +2743,7 @@ function parseSensorData(data) {
       }
 
       // === STANDALONE VEML7700 PARSER ===
-      const vemlMatch = line.match(/VEML7700\s*(?:->|-&gt;)\s*Light:\s*([\d.]+)\s*lux/i);
+      const vemlMatch = line.match(/(?:VEML7700\s*(?:->|-&gt;)\s*)?Light:\s*([\d.]+)\s*lux/i);
       if (vemlMatch && protocol === "I2C") {
         const lux = parseFloat(vemlMatch[1]);
         currentLight = lux;
@@ -2977,7 +2857,7 @@ function parseSensorData(data) {
         sensorData[protocol]["Soil Sensor Phosphorus"] = currentSoilP.toFixed(0) + " mg/kg";
         sensorData[protocol]["Soil Sensor Potassium"] = currentSoilK.toFixed(0) + " mg/kg";
         sensorData[protocol]["Soil Sensor Moisture"] = currentSoilMoist.toFixed(1) + " %";
-        sensorData[protocol]["Soil Sensor Temperature"] = currentSoilTemp.toFixed(1) + " °C";
+        sensorData[protocol]["Soil Sensor Temperature"] = currentSoilTemp.toFixed(1) + " �\u00B0C";
         sensorData[protocol]["Soil Sensor EC"] = currentSoilEC.toFixed(1) + " mS/cm";
         sensorData[protocol]["Soil Sensor pH"] = currentSoilPH.toFixed(1);
         sensorData[protocol]["Soil Sensor Salinity"] = currentSoilSal.toFixed(0);
@@ -2995,11 +2875,11 @@ function parseSensorData(data) {
           updateValue("soil-p-val", currentSoilP.toFixed(0) + " mg/kg");
           updateValue("soil-k-val", currentSoilK.toFixed(0) + " mg/kg");
           updateValue("soil-moist-val", currentSoilMoist.toFixed(1) + " %");
-          updateValue("soil-temp-val", currentSoilTemp.toFixed(1) + " °C");
+          updateValue("soil-temp-val", currentSoilTemp.toFixed(1) + " �\u00B0C");
           updateValue("soil-ec-val", currentSoilEC.toFixed(1) + " mS/cm");
           updateValue("soil-ph-val", currentSoilPH.toFixed(1));
           updateValue("soil-sal-val", currentSoilSal.toFixed(0));
-          // Animate mini soil thermometer (tube: y=20 at 50°C, y=230 at 0°C, height=210)
+          // Animate mini soil thermometer (tube: y=20 at 50�\u00B0C, y=230 at 0�\u00B0C, height=210)
           const soilThermoFill = document.getElementById("soil-thermo-fill");
           const soilThermoBulb = document.getElementById("soil-thermo-bulb");
           if (soilThermoFill && soilThermoBulb) {
@@ -3362,15 +3242,21 @@ window.addEventListener("DOMContentLoaded", () => {
       if (urlParams.get('protocol')) protocolParam = urlParams.get('protocol');
     }
     
-    if (sensorParam && protocolParam) {
-      const protocolSelect = document.getElementById("sensor-select");
-      const activeName = document.getElementById("active-sensor-name");
-      const activeProtocol = document.getElementById("active-sensor-protocol");
-      
-      if (activeName) activeName.textContent = sensorParam;
-      if (activeProtocol) activeProtocol.textContent = "PROTOCOL: " + protocolParam;
-      
-      if (protocolSelect) {
+    
+      if (sensorParam && protocolParam) {
+        const protocolSelect = document.getElementById("sensor-select");
+        const activeName = document.getElementById("active-sensor-name");
+        const activeProtocol = document.getElementById("active-sensor-protocol");
+        
+        if (activeName) activeName.textContent = sensorParam;
+        if (activeProtocol) activeProtocol.textContent = "PROTOCOL: " + protocolParam;
+        
+        const activeIconContainer = document.querySelector("#active-sensor-icon")?.parentElement;
+        if (activeIconContainer && typeof sensorImages !== 'undefined' && sensorImages[sensorParam]) {
+          activeIconContainer.innerHTML = `<img src="${sensorImages[sensorParam]}" style="width: 45px; height: 45px; object-fit: contain;">`;
+        }
+
+        if (protocolSelect) {
         protocolSelect.value = protocolParam;
         selectedSensor = sensorParam;
         autoSelected = true;
@@ -3531,6 +3417,15 @@ function updateSensorConnectionStatus() {
 
   console.log('[Status Debug]', { hasRealData, isConnected, currentUV, sensorDataKeys: Object.keys(sensorData.I2C || {}) });
 }
+
+
+
+
+
+
+
+
+
 
 
 
