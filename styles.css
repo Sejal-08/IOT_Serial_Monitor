@@ -7236,13 +7236,7 @@ body.light-mode {
     --rain-scale: 1.0; /* Smaller for grid view */
 }
 
-/* Desktop Scroll Lock */
-@media (min-width: 1201px) {
-  body {
-    height: 100vh;
-    overflow: hidden;
-  }
-}
+
 
 /* =========================================
    HOLY GRAIL FLEXBOX SCROLL FIX
