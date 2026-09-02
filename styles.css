@@ -7007,8 +7007,7 @@ body.light-mode .node-pill { background: #e2e8f0; color: #334155; border-color: 
     justify-content: flex-start !important;
     padding-top: 25px !important;
     padding-bottom: 25px !important;
-    max-height: none !important;
-    height: 100% !important;
+
 }
 
 .sensor-cards:not(.sen66-layout) #thermometer-container h4,
@@ -7029,4 +7028,31 @@ body.light-mode .node-pill { background: #e2e8f0; color: #334155; border-color: 
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
+}
+
+/* =========================================
+   FORCE EXPLICIT HEIGHTS SO ALL CARDS ARE IDENTICAL
+   ========================================= */
+.weather-combined-grid #thermometer-container,
+.weather-combined-grid #thermometer-f-container,
+.weather-combined-grid #humidity-card,
+.weather-combined-grid #pressure-card,
+.weather-combined-grid #light-card,
+.weather-combined-grid #rain-gauge-card,
+.weather-combined-grid #wind-direction-card,
+.weather-combined-grid #wind-speed-card,
+.weather-combined-grid #wind-flow-card {
+    min-height: 400px !important;
+    max-height: 400px !important;
+    height: 400px !important;
+}
+
+.weather-shield-grid #thermometer-container,
+.weather-shield-grid #thermometer-f-container,
+.weather-shield-grid #humidity-card,
+.weather-shield-grid #pressure-card,
+.weather-shield-grid #light-card {
+    min-height: 380px !important;
+    max-height: 380px !important;
+    height: 380px !important;
 }
