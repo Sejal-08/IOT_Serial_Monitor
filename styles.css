@@ -2365,11 +2365,11 @@ body:not(.dark-mode) #rain-gauge-card h4 {
 
 /* Massive water animation */
 .water-container {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 50px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: calc(50px * var(--rain-scale, 2.5));
   background: transparent;
   overflow: hidden;
   z-index: 1;
@@ -2409,9 +2409,11 @@ body:not(.dark-mode) #rain-gauge-card h4 {
 }
 
 .seesaw {
-  width: 120px;
-  height: 80px;
-  position: relative;
+    width: 120px;
+    height: 80px;
+    position: relative;
+    transform: scale(var(--rain-scale, 2.5));
+    transform-origin: bottom center;
 }
 
 /* Ground base - beefy */
@@ -7221,4 +7223,13 @@ body.light-mode .gauge-svg line[stroke="#64748b"] {
 /* Rain Shape Light Mode Override */
 body.light-mode {
     --rain-shape: #334155;
+}
+
+/* Responsive Rain Gauge Scaling */
+#rain-gauge-card {
+    --rain-scale: 2.5; /* Default large for solo/default view */
+}
+.weather-combined-grid #rain-gauge-card,
+.weather-shield-grid #rain-gauge-card {
+    --rain-scale: 1.0; /* Smaller for grid view */
 }
