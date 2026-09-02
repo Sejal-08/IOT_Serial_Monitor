@@ -407,6 +407,8 @@ ul.nav-links {
 
 .cyber-grid-main {
   flex: 1;
+  min-height: 0; /* Crucial for scrolling */
+  overflow-y: auto; /* Scroll ONLY the grid area */
   position: relative;
   background-color: var(--bg-color);
   background-image: 
@@ -547,10 +549,10 @@ ul.nav-links {
 .main-container {
   display: flex;
   flex: 1;
-  min-height: calc(100vh - 4.5rem - 40px); /* Use min-height instead of height */
+  min-height: 0;
   gap: 20px;
   padding: 20px;
-  flex-direction: row; /* Default for larger screens */
+  flex-direction: row;
 }
 
 .left-panel, .right-panel {
@@ -569,7 +571,7 @@ ul.nav-links {
 
 .right-panel {
   flex: 1;
-  min-height: 100%; /* Allow it to grow */
+  min-height: 0; /* Allow shrinking */ /* Allow it to grow */
   display: flex;
   flex-direction: column;
   overflow: hidden; /* Prevent right-panel from overflowing horizontally */
@@ -7232,4 +7234,34 @@ body.light-mode {
 .weather-combined-grid #rain-gauge-card,
 .weather-shield-grid #rain-gauge-card {
     --rain-scale: 1.0; /* Smaller for grid view */
+}
+
+/* Desktop Scroll Lock */
+@media (min-width: 1201px) {
+  body {
+    height: 100vh;
+    overflow: hidden;
+  }
+}
+
+/* =========================================
+   HOLY GRAIL FLEXBOX SCROLL FIX
+   Forces intermediate containers to shrink, enabling inner scrolling
+   ========================================= */
+@media (min-width: 1201px) {
+  .right-panel .container,
+  .cyber-grid-container {
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+  
+  .cyber-grid-main {
+    min-height: 0 !important;
+    overflow-y: auto !important;
+  }
+  
+  .left-panel {
+    min-height: 0 !important;
+    overflow-y: auto !important;
+  }
 }
