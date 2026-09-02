@@ -1009,9 +1009,9 @@ body:not(.dark-mode) #thermometer-container h4,
 }
 
 .humidity-card-container h4 {
-  font-size: 2rem !important;
-  font-weight: 800 !important;
-  margin-bottom: 20px !important;
+  font-size: 1.3rem !important;
+  font-weight: 700 !important;
+  margin: 0 0 12px 0 !important;
   background: linear-gradient(90deg, #60a5fa, #93c5fd);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -6810,4 +6810,223 @@ body.light-mode .node-pill { background: #e2e8f0; color: #334155; border-color: 
 /* Explicitly center the graphics in the wind cards */
 .compass-dial, .turbine-wrapper, .streamline-box {
   margin: 0 auto !important;
+}
+
+/* =========================================
+   FORCE UNIFORM HEADING ALIGNMENT FOR GRID
+   ========================================= */
+.weather-shield-grid .sensor-card,
+.weather-shield-grid .card-container,
+.weather-shield-grid .humidity-card-container,
+.weather-shield-grid .thermometer-container {
+    justify-content: flex-start !important;
+    padding-top: 25px !important; 
+}
+
+.weather-shield-grid h4 {
+    margin-top: 0 !important;
+    margin-bottom: 12px !important;
+}
+
+/* =========================================
+   FORCE EXACT SAME HEIGHT AND TOP ALIGNMENT
+   ========================================= */
+.weather-shield-grid {
+    align-items: stretch !important; /* Force stretch */
+}
+
+.weather-shield-grid .sensor-card,
+.weather-shield-grid .card-container,
+.weather-shield-grid .humidity-card-container,
+.weather-shield-grid .thermometer-container,
+.weather-shield-grid #thermometer-container,
+.weather-shield-grid #humidity-card,
+.weather-shield-grid #pressure-card,
+.weather-shield-grid #light-card {
+    max-height: none !important; /* Remove max-height so they can stretch equally */
+    height: 100% !important; /* Force them to be full height of the grid row */
+    margin: 0 !important;
+}
+
+.weather-shield-grid h4 {
+    line-height: 1.5 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* =========================================
+   ABSOLUTE OVERRIDE FOR ALL ID SELECTORS
+   ========================================= */
+.weather-shield-grid #thermometer-container,
+.weather-shield-grid #thermometer-f-container,
+.weather-shield-grid #humidity-card,
+.weather-shield-grid #pressure-card,
+.weather-shield-grid #light-card {
+    justify-content: flex-start !important;
+    padding-top: 25px !important;
+    padding-bottom: 25px !important;
+    padding-left: 15px !important;
+    padding-right: 15px !important;
+}
+
+.weather-shield-grid #thermometer-container h4,
+.weather-shield-grid #thermometer-f-container h4,
+.weather-shield-grid #humidity-card h4,
+.weather-shield-grid #pressure-card h4,
+.weather-shield-grid #light-card h4 {
+    margin-top: 0 !important;
+    margin-bottom: 15px !important;
+    padding: 0 !important;
+    line-height: 1.2 !important;
+    height: 30px !important;
+}
+
+/* =========================================
+   ABSOLUTE OVERRIDE FOR ALL CARDS IN BOTH GRIDS
+   ========================================= */
+.weather-shield-grid #thermometer-container,
+.weather-shield-grid #thermometer-f-container,
+.weather-shield-grid #humidity-card,
+.weather-shield-grid #pressure-card,
+.weather-shield-grid #light-card,
+.weather-combined-grid #thermometer-container,
+.weather-combined-grid #thermometer-f-container,
+.weather-combined-grid #humidity-card,
+.weather-combined-grid #pressure-card,
+.weather-combined-grid #light-card,
+.weather-combined-grid #rain-gauge-card,
+.weather-combined-grid #wind-direction-card,
+.weather-combined-grid #wind-speed-card,
+.weather-combined-grid #wind-flow-card {
+    justify-content: flex-start !important;
+    padding-top: 25px !important;
+    padding-bottom: 25px !important;
+    padding-left: 15px !important;
+    padding-right: 15px !important;
+}
+
+.weather-shield-grid #thermometer-container h4,
+.weather-shield-grid #thermometer-f-container h4,
+.weather-shield-grid #humidity-card h4,
+.weather-shield-grid #pressure-card h4,
+.weather-shield-grid #light-card h4,
+.weather-combined-grid #thermometer-container h4,
+.weather-combined-grid #thermometer-f-container h4,
+.weather-combined-grid #humidity-card h4,
+.weather-combined-grid #pressure-card h4,
+.weather-combined-grid #light-card h4,
+.weather-combined-grid #rain-gauge-card h4,
+.weather-combined-grid #wind-direction-card h4,
+.weather-combined-grid #wind-speed-card h4,
+.weather-combined-grid #wind-flow-card h4 {
+    margin-top: 0 !important;
+    margin-bottom: 15px !important;
+    padding: 0 !important;
+    line-height: 1.2 !important;
+    height: 30px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.weather-combined-grid {
+    align-items: stretch !important;
+}
+
+.weather-combined-grid .sensor-card,
+.weather-combined-grid #thermometer-container,
+.weather-combined-grid #thermometer-f-container,
+.weather-combined-grid #humidity-card,
+.weather-combined-grid #pressure-card,
+.weather-combined-grid #light-card,
+.weather-combined-grid #rain-gauge-card,
+.weather-combined-grid #wind-direction-card,
+.weather-combined-grid #wind-speed-card,
+.weather-combined-grid #wind-flow-card {
+    max-height: none !important; 
+    height: auto !important; /* allow natural height, flex stretch will handle it if flex-wrap allows */
+    margin: 0 !important;
+}
+
+/* =========================================
+   FORCE WIND/RAIN CARD HEADERS TO MATCH H4
+   ========================================= */
+.weather-combined-grid #rain-gauge-card .card-header,
+.weather-combined-grid #wind-direction-card .card-header,
+.weather-combined-grid #wind-speed-card .card-header,
+.weather-combined-grid #wind-flow-card .card-header {
+    margin-top: 0 !important;
+    margin-bottom: 15px !important;
+    padding: 0 !important;
+    height: 30px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+}
+
+.weather-combined-grid #rain-gauge-card .card-header .card-title,
+.weather-combined-grid #wind-direction-card .card-header .card-title,
+.weather-combined-grid #wind-speed-card .card-header .card-title,
+.weather-combined-grid #wind-flow-card .card-header .card-title {
+    font-size: 1.3rem !important;
+    font-weight: 700 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1.2 !important;
+    text-align: center !important;
+    width: 100% !important;
+    background: linear-gradient(90deg, #60a5fa, #93c5fd) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    text-transform: capitalize !important;
+}
+
+.weather-combined-grid #rain-gauge-card .live-dot,
+.weather-combined-grid #wind-direction-card .live-dot,
+.weather-combined-grid #wind-speed-card .live-dot,
+.weather-combined-grid #wind-flow-card .live-dot {
+    display: none !important; /* Hide the weird blinking dot so it centers perfectly */
+}
+
+/* =========================================
+   UNIVERSAL HEADING & HEIGHT ALIGNMENT
+   (Applies to all normal layouts like BME680, standard sensors)
+   ========================================= */
+.sensor-cards:not(.sen66-layout) #thermometer-container,
+.sensor-cards:not(.sen66-layout) #thermometer-f-container,
+.sensor-cards:not(.sen66-layout) #humidity-card,
+.sensor-cards:not(.sen66-layout) #pressure-card,
+.sensor-cards:not(.sen66-layout) #light-card,
+.sensor-cards:not(.sen66-layout) #rain-gauge-card,
+.sensor-cards:not(.sen66-layout) #wind-direction-card,
+.sensor-cards:not(.sen66-layout) #wind-speed-card,
+.sensor-cards:not(.sen66-layout) #wind-flow-card {
+    justify-content: flex-start !important;
+    padding-top: 25px !important;
+    padding-bottom: 25px !important;
+    max-height: none !important;
+    height: 100% !important;
+}
+
+.sensor-cards:not(.sen66-layout) #thermometer-container h4,
+.sensor-cards:not(.sen66-layout) #thermometer-f-container h4,
+.sensor-cards:not(.sen66-layout) #humidity-card h4,
+.sensor-cards:not(.sen66-layout) #pressure-card h4,
+.sensor-cards:not(.sen66-layout) #light-card h4,
+.sensor-cards:not(.sen66-layout) #rain-gauge-card h4,
+.sensor-cards:not(.sen66-layout) #rain-gauge-card .card-header,
+.sensor-cards:not(.sen66-layout) #wind-direction-card .card-header,
+.sensor-cards:not(.sen66-layout) #wind-speed-card .card-header,
+.sensor-cards:not(.sen66-layout) #wind-flow-card .card-header {
+    margin-top: 0 !important;
+    margin-bottom: 15px !important;
+    padding: 0 !important;
+    line-height: 1.2 !important;
+    height: 30px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
 }
