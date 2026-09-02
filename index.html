@@ -1028,7 +1028,85 @@
 
 
 
-        <!-- Hall Sensor Card -->
+        
+  <!-- ============================================================
+       SOIL SENSOR 360 ORBIT VISUALIZATION
+       ============================================================ -->
+  <div id="soil-orbit-card" style="display:none; width: 100%; min-height: 700px; position: relative; background: var(--sensor-bg); overflow: visible; align-items: center; justify-content: center; flex-direction: column;">
+    <div class="orbit-header" style="text-align: center; margin-top: 20px; margin-bottom: 50px; z-index: 10;">
+      <h2 style="color: #fff; display: flex; align-items: center; justify-content: center; gap: 10px; font-family: 'Rajdhani', sans-serif; font-size: 2rem; text-transform: uppercase;">
+        <i class="fas fa-seedling"></i> SOIL HEALTH 360&deg; Orbit
+      </h2>
+      <p style="color: #64748b; font-size: 1rem;">Real-Time Agricultural Core with 8 Floating Physical Parameter Symbols</p>
+    </div>
+    
+    <div class="orbit-container" style="position: relative; width: 100%; height: 600px; display: flex; justify-content: center; align-items: center;">
+      <!-- Dashed Orbit Ring -->
+      <div class="orbit-ring"></div>
+      
+      <!-- Central Core -->
+      <div class="orbit-core">
+        <div class="orbit-core-glow" style="background: radial-gradient(circle, rgba(16,185,129,0.5) 0%, rgba(16,185,129,0) 70%);"></div>
+        <div class="core-inner" style="border-color: #10b981; box-shadow: 0 0 30px rgba(16,185,129,0.4), inset 0 0 20px rgba(16,185,129,0.2);">
+          <div class="core-label">SOIL STATUS</div>
+          <div class="core-value" id="orbit-soil-status" style="color: #10b981; font-size: 2.5rem;"><i class="fas fa-leaf"></i></div>
+          <div class="core-status" style="color: #10b981; border-color: rgba(16,185,129,0.3); background: rgba(16,185,129,0.1);"><i class="fas fa-check-circle"></i> ACTIVE</div>
+        </div>
+      </div>
+      
+      <!-- Nodes -->
+      <div class="orbit-node" style="--angle: -90deg; --rev-angle: 90deg;">
+        <div class="node-icon" style="color: #4ade80; border-color: rgba(74,222,128,0.3); box-shadow: 0 0 15px rgba(74,222,128,0.2);"><i class="fas fa-leaf"></i></div>
+        <div class="node-pill" style="background: rgba(74,222,128,0.15); color: #4ade80;">NITROGEN</div>
+        <div class="node-value" id="orbit-soil-n-val">-- mg/kg</div>
+      </div>
+      
+      <div class="orbit-node" style="--angle: -45deg; --rev-angle: 45deg;">
+        <div class="node-icon" style="color: #fb923c; border-color: rgba(251,146,60,0.3); box-shadow: 0 0 15px rgba(251,146,60,0.2);"><i class="fas fa-seedling"></i></div>
+        <div class="node-pill" style="background: rgba(251,146,60,0.15); color: #fb923c;">PHOSPHORUS</div>
+        <div class="node-value" id="orbit-soil-p-val">-- mg/kg</div>
+      </div>
+      
+      <div class="orbit-node" style="--angle: 0deg; --rev-angle: 0deg;">
+        <div class="node-icon" style="color: #c084fc; border-color: rgba(192,132,252,0.3); box-shadow: 0 0 15px rgba(192,132,252,0.2);"><i class="fas fa-shield-alt"></i></div>
+        <div class="node-pill" style="background: rgba(192,132,252,0.15); color: #c084fc;">POTASSIUM</div>
+        <div class="node-value" id="orbit-soil-k-val">-- mg/kg</div>
+      </div>
+      
+      <div class="orbit-node" style="--angle: 45deg; --rev-angle: -45deg;">
+        <div class="node-icon" style="color: #38bdf8; border-color: rgba(56,189,248,0.3); box-shadow: 0 0 15px rgba(56,189,248,0.2);"><i class="fas fa-tint"></i></div>
+        <div class="node-pill" style="background: rgba(56,189,248,0.15); color: #38bdf8;">MOISTURE</div>
+        <div class="node-value" id="orbit-soil-moist-val">-- %</div>
+      </div>
+      
+      <div class="orbit-node" style="--angle: 90deg; --rev-angle: -90deg;">
+        <div class="node-icon" style="color: #f87171; border-color: rgba(248,113,113,0.3); box-shadow: 0 0 15px rgba(248,113,113,0.2);"><i class="fas fa-thermometer-half"></i></div>
+        <div class="node-pill" style="background: rgba(248,113,113,0.15); color: #f87171;">TEMP</div>
+        <div class="node-value" id="orbit-soil-temp-val">-- &deg;C</div>
+      </div>
+      
+      <div class="orbit-node" style="--angle: 135deg; --rev-angle: -135deg;">
+        <div class="node-icon" style="color: #facc15; border-color: rgba(250,204,21,0.3); box-shadow: 0 0 15px rgba(250,204,21,0.2);"><i class="fas fa-bolt"></i></div>
+        <div class="node-pill" style="background: rgba(250,204,21,0.15); color: #facc15;">E. COND</div>
+        <div class="node-value" id="orbit-soil-ec-val">-- mS/cm</div>
+      </div>
+      
+      <div class="orbit-node" style="--angle: 180deg; --rev-angle: -180deg;">
+        <div class="node-icon" style="color: #2dd4bf; border-color: rgba(45,212,191,0.3); box-shadow: 0 0 15px rgba(45,212,191,0.2);"><i class="fas fa-vial"></i></div>
+        <div class="node-pill" style="background: rgba(45,212,191,0.15); color: #2dd4bf;">pH LEVEL</div>
+        <div class="node-value" id="orbit-soil-ph-val">--</div>
+      </div>
+      
+      <div class="orbit-node" style="--angle: 225deg; --rev-angle: -225deg;">
+        <div class="node-icon" style="color: #818cf8; border-color: rgba(129,140,248,0.3); box-shadow: 0 0 15px rgba(129,140,248,0.2);"><i class="fas fa-water"></i></div>
+        <div class="node-pill" style="background: rgba(129,140,248,0.15); color: #818cf8;">SALINITY</div>
+        <div class="node-value" id="orbit-soil-sal-val">--</div>
+      </div>
+    
+    </div>
+  </div>
+
+  <!-- Hall Sensor Card -->
 <div id="hall-card" class="card-container">
   <h4><i class="fas fa-magnet"></i> Hall Sensor</h4>
   <div id="hall-value" class="sensor-value" style="margin-bottom: 16px; font-size: 1.5rem; font-weight: 600; letter-spacing: -1px;">Waiting for data…</div>
