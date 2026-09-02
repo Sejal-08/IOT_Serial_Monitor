@@ -970,265 +970,85 @@
   </div>
 </div>
 
-<!-- ============================================================
-     SOIL SENSOR - 8 ANIMATED PARAMETER CARDS
-     ============================================================ -->
-<!-- ── Nitrogen (N) ── -->
-<div id="soil-n-card" class="card-container sen66-param-card" style="display:none;">
-  <h4><i class="fas fa-leaf" style="color: #4ade80;"></i> Nitrogen (N)</h4>
-  <div class="sen66-param-value" id="soil-n-val">0 mg/kg</div>
-  
-  <div class="soil-anim-wrap">
-    <svg viewBox="0 0 100 100" width="120" height="120">
-      <defs>
-        <clipPath id="leaf-clip">
-          <!-- Leaf shape -->
-          <path d="M50 5 Q80 20 90 50 Q80 80 50 95 Q20 80 10 50 Q20 20 50 5 Z"/>
-        </clipPath>
-      </defs>
-      <!-- Background outline -->
-      <path d="M50 5 Q80 20 90 50 Q80 80 50 95 Q20 80 10 50 Q20 20 50 5 Z" fill="none" stroke="#94a3b8" stroke-opacity="0.3" stroke-width="2"/>
+
+  <!-- ============================================================
+       SOIL SENSOR 360 ORBIT VISUALIZATION
+       ============================================================ -->
+  <div id="soil-orbit-card" style="display:none; width: 100%; min-height: 700px; position: relative; background: var(--sensor-bg); overflow: visible; align-items: center; justify-content: center; flex-direction: column;">
+    <div class="orbit-header" style="text-align: center; margin-top: 20px; margin-bottom: 50px; z-index: 10;">
+      <h2 style="color: #fff; display: flex; align-items: center; justify-content: center; gap: 10px; font-family: 'Rajdhani', sans-serif; font-size: 2rem; text-transform: uppercase;">
+        <i class="fas fa-seedling"></i> SOIL HEALTH 360° Orbit
+      </h2>
+      <p style="color: #64748b; font-size: 1rem;">Real-Time Agricultural Core with 8 Floating Physical Parameter Symbols</p>
+    </div>
+    
+    <div class="orbit-container" style="position: relative; width: 100%; height: 600px; display: flex; justify-content: center; align-items: center;">
+      <!-- Dashed Orbit Ring -->
+      <div class="orbit-ring"></div>
       
-      <!-- Fill rect that grows -->
-      <rect id="soil-n-fill" x="0" y="100" width="100" height="0" fill="#4ade80" clip-path="url(#leaf-clip)">
-        <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" repeatCount="indefinite"/>
-      </rect>
-    </svg>
+      <!-- Central Core -->
+      <div class="orbit-core">
+        <div class="orbit-core-glow" style="background: radial-gradient(circle, rgba(16,185,129,0.5) 0%, rgba(16,185,129,0) 70%);"></div>
+        <div class="core-inner" style="border-color: #10b981; box-shadow: 0 0 30px rgba(16,185,129,0.4), inset 0 0 20px rgba(16,185,129,0.2);">
+          <div class="core-label">SOIL STATUS</div>
+          <div class="core-value" id="orbit-soil-status" style="color: #10b981; font-size: 2.5rem;"><i class="fas fa-leaf"></i></div>
+          <div class="core-status" style="color: #10b981; border-color: rgba(16,185,129,0.3); background: rgba(16,185,129,0.1);"><i class="fas fa-check-circle"></i> ACTIVE</div>
+        </div>
+      </div>
+      
+      <!-- Nodes -->
+      <div class="orbit-node" style="--angle: -90deg; --rev-angle: 90deg;">
+        <div class="node-icon" style="color: #4ade80; border-color: rgba(74,222,128,0.3); box-shadow: 0 0 15px rgba(74,222,128,0.2);"><i class="fas fa-leaf"></i></div>
+        <div class="node-pill" style="background: rgba(74,222,128,0.15); color: #4ade80;">NITROGEN</div>
+        <div class="node-value" id="orbit-soil-n-val">-- mg/kg</div>
+      </div>
+      
+      <div class="orbit-node" style="--angle: -45deg; --rev-angle: 45deg;">
+        <div class="node-icon" style="color: #fb923c; border-color: rgba(251,146,60,0.3); box-shadow: 0 0 15px rgba(251,146,60,0.2);"><i class="fas fa-seedling"></i></div>
+        <div class="node-pill" style="background: rgba(251,146,60,0.15); color: #fb923c;">PHOSPHORUS</div>
+        <div class="node-value" id="orbit-soil-p-val">-- mg/kg</div>
+      </div>
+      
+      <div class="orbit-node" style="--angle: 0deg; --rev-angle: 0deg;">
+        <div class="node-icon" style="color: #c084fc; border-color: rgba(192,132,252,0.3); box-shadow: 0 0 15px rgba(192,132,252,0.2);"><i class="fas fa-shield-alt"></i></div>
+        <div class="node-pill" style="background: rgba(192,132,252,0.15); color: #c084fc;">POTASSIUM</div>
+        <div class="node-value" id="orbit-soil-k-val">-- mg/kg</div>
+      </div>
+      
+      <div class="orbit-node" style="--angle: 45deg; --rev-angle: -45deg;">
+        <div class="node-icon" style="color: #38bdf8; border-color: rgba(56,189,248,0.3); box-shadow: 0 0 15px rgba(56,189,248,0.2);"><i class="fas fa-tint"></i></div>
+        <div class="node-pill" style="background: rgba(56,189,248,0.15); color: #38bdf8;">MOISTURE</div>
+        <div class="node-value" id="orbit-soil-moist-val">-- %</div>
+      </div>
+      
+      <div class="orbit-node" style="--angle: 90deg; --rev-angle: -90deg;">
+        <div class="node-icon" style="color: #f87171; border-color: rgba(248,113,113,0.3); box-shadow: 0 0 15px rgba(248,113,113,0.2);"><i class="fas fa-thermometer-half"></i></div>
+        <div class="node-pill" style="background: rgba(248,113,113,0.15); color: #f87171;">TEMP</div>
+        <div class="node-value" id="orbit-soil-temp-val">-- °C</div>
+      </div>
+      
+      <div class="orbit-node" style="--angle: 135deg; --rev-angle: -135deg;">
+        <div class="node-icon" style="color: #facc15; border-color: rgba(250,204,21,0.3); box-shadow: 0 0 15px rgba(250,204,21,0.2);"><i class="fas fa-bolt"></i></div>
+        <div class="node-pill" style="background: rgba(250,204,21,0.15); color: #facc15;">E. COND</div>
+        <div class="node-value" id="orbit-soil-ec-val">-- mS/cm</div>
+      </div>
+      
+      <div class="orbit-node" style="--angle: 180deg; --rev-angle: -180deg;">
+        <div class="node-icon" style="color: #2dd4bf; border-color: rgba(45,212,191,0.3); box-shadow: 0 0 15px rgba(45,212,191,0.2);"><i class="fas fa-vial"></i></div>
+        <div class="node-pill" style="background: rgba(45,212,191,0.15); color: #2dd4bf;">pH LEVEL</div>
+        <div class="node-value" id="orbit-soil-ph-val">--</div>
+      </div>
+      
+      <div class="orbit-node" style="--angle: 225deg; --rev-angle: -225deg;">
+        <div class="node-icon" style="color: #818cf8; border-color: rgba(129,140,248,0.3); box-shadow: 0 0 15px rgba(129,140,248,0.2);"><i class="fas fa-water"></i></div>
+        <div class="node-pill" style="background: rgba(129,140,248,0.15); color: #818cf8;">SALINITY</div>
+        <div class="node-value" id="orbit-soil-sal-val">--</div>
+      </div>
+    
+    </div>
   </div>
-</div>
 
-<!-- ── Phosphorus (P) ── -->
-<div id="soil-p-card" class="card-container sen66-param-card" style="display:none;">
-  <h4><i class="fas fa-seedling" style="color: #fb923c;"></i> Phosphorus (P)</h4>
-  <div class="sen66-param-value" id="soil-p-val">0 mg/kg</div>
-  
-  <div class="soil-anim-wrap">
-    <svg viewBox="0 0 100 100" width="120" height="120">
-      <defs>
-        <radialGradient id="rootGlow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stop-color="#fb923c" stop-opacity="1"/>
-          <stop offset="100%" stop-color="#c2410c" stop-opacity="0"/>
-        </radialGradient>
-      </defs>
-      <!-- Stem -->
-      <path d="M50 0 V30" stroke="#fb923c" stroke-width="4" stroke-linecap="round"/>
-      
-      <!-- Roots group -->
-      <g id="soil-p-roots" stroke="#fb923c" stroke-width="3" stroke-linecap="round" fill="none">
-        <path d="M50 30 Q40 50 30 70 M35 60 Q25 70 20 80"/>
-        <path d="M50 30 Q60 55 70 75 M65 65 Q75 75 80 85"/>
-        <path d="M50 30 V80 M50 60 Q45 70 40 85 M50 50 Q55 70 60 85"/>
-      </g>
-      
-      <!-- Glowing nodes that pulse -->
-      <g id="soil-p-nodes" fill="#fff" opacity="0.8">
-        <circle cx="30" cy="70" r="3"><animate attributeName="opacity" values="0.3;1;0.3" dur="1.5s" repeatCount="indefinite"/></circle>
-        <circle cx="20" cy="80" r="2"><animate attributeName="opacity" values="0.3;1;0.3" dur="1.2s" repeatCount="indefinite" begin="0.3s"/></circle>
-        <circle cx="70" cy="75" r="3"><animate attributeName="opacity" values="0.3;1;0.3" dur="1.7s" repeatCount="indefinite" begin="0.5s"/></circle>
-        <circle cx="80" cy="85" r="2"><animate attributeName="opacity" values="0.3;1;0.3" dur="1.3s" repeatCount="indefinite" begin="0.1s"/></circle>
-        <circle cx="50" cy="80" r="4"><animate attributeName="opacity" values="0.3;1;0.3" dur="2s" repeatCount="indefinite" begin="0.7s"/></circle>
-      </g>
-    </svg>
-  </div>
-</div>
-
-<!-- ── Potassium (K) ── -->
-<div id="soil-k-card" class="card-container sen66-param-card" style="display:none;">
-  <h4><i class="fas fa-shield-alt" style="color: #c084fc;"></i> Potassium (K)</h4>
-  <div class="sen66-param-value" id="soil-k-val">0 mg/kg</div>
-  
-  <div class="soil-anim-wrap">
-    <svg viewBox="0 0 100 100" width="120" height="120">
-      <!-- Shield outline -->
-      <path d="M50 10 L85 25 V50 C85 75 50 90 50 90 C50 90 15 75 15 50 V25 Z" fill="none" stroke="#94a3b8" stroke-opacity="0.3" stroke-width="3"/>
-      
-      <!-- Inner glowing shield that scales based on K -->
-      <g id="soil-k-shield-group">
-        <path d="M50 15 L75 28 V48 C75 68 50 80 50 80 C50 80 25 68 25 48 V28 Z" fill="#c084fc" opacity="0.8">
-          <animate attributeName="opacity" values="0.5;0.9;0.5" dur="2s" repeatCount="indefinite"/>
-        </path>
-      </g>
-      
-      <circle cx="50" cy="45" r="8" fill="#fff" opacity="0.9">
-        <animate attributeName="r" values="6;10;6" dur="2s" repeatCount="indefinite"/>
-      </circle>
-    </svg>
-  </div>
-</div>
-
-<!-- ── Moisture ── -->
-<div id="soil-moist-card" class="card-container sen66-param-card" style="display:none;">
-  <h4><i class="fas fa-tint" style="color: #38bdf8;"></i> Moisture</h4>
-  <div class="sen66-param-value" id="soil-moist-val">0 %</div>
-  
-  <svg id="soil-moist-wave-svg" width="100%" height="50%" viewBox="0 0 100 100" preserveAspectRatio="none" style="position: absolute; bottom: 0; left: 0; z-index: 0;">
-    <defs>
-      <linearGradient id="soilMoistWaveGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" style="stop-color:#38bdf8;stop-opacity:0.6"/>
-        <stop offset="100%" style="stop-color:#0284c7;stop-opacity:1"/>
-      </linearGradient>
-    </defs>
-    <path id="soil-moist-wave-path" d="M 0 80 Q 25 85 50 80 T 100 80 V 100 H 0 Z" fill="url(#soilMoistWaveGrad)"/>
-  </svg>
-</div>
-
-<!-- ── Temperature ── -->
-<div id="soil-temp-card" class="card-container sen66-param-card" style="display:none;">
-  <h4><i class="fas fa-thermometer-half" style="color: #f87171;"></i> Temperature</h4>
-  <div class="sen66-param-value" id="soil-temp-val">0 &deg;C</div>
-  <!-- Mini thermometer: tube + bulb matching the main thermometer style -->
-  <div class="soil-thermo-wrap">
-    <svg id="soil-thermo-svg" viewBox="0 0 160 320" width="100" height="260">
-      <defs>
-        <radialGradient id="soilThermoGlow" cx="50%" cy="100%" r="85%">
-          <stop offset="0%"   stop-color="#ffffc8"/>
-          <stop offset="60%"  stop-color="#ffa0a0"/>
-          <stop offset="100%" stop-color="#f87171"/>
-        </radialGradient>
-        <filter id="soilThermoBloom">
-          <feGaussianBlur stdDeviation="4" result="blur"/>
-          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-        </filter>
-      </defs>
-
-      <!-- Tube outline -->
-      <rect x="55" y="20" width="28" height="210" rx="14"
-            fill="none" stroke="#94a3b8" stroke-width="3.5"/>
-      <!-- Fill bar -->
-      <rect id="soil-thermo-fill" x="60" y="230" width="18" height="0" rx="9"
-            fill="url(#soilThermoGlow)"/>
-
-      <!-- Bulb outline -->
-      <circle cx="69" cy="263" r="22"
-              fill="none" stroke="#94a3b8" stroke-width="3.5"/>
-      <!-- Bulb fill -->
-      <circle id="soil-thermo-bulb" cx="69" cy="263" r="18"
-              fill="url(#soilThermoGlow)"
-              filter="url(#soilThermoBloom)"/>
-
-      <!-- Scale tick marks + labels -->
-      <g font-family="system-ui,sans-serif" font-size="13" fill="#a0d8ff" font-weight="700">
-        <!-- 50&deg;C -->
-        <line x1="83" y1="20"  x2="96" y2="20"  stroke="#94a3b8" stroke-width="2.5"/>
-        <text x="100" y="25">50&deg;C</text>
-        <!-- 40&deg;C -->
-        <line x1="83" y1="62"  x2="92" y2="62"  stroke="#94a3b8" stroke-width="1.8"/>
-        <text x="96"  y="67">40&deg;C</text>
-        <!-- 30&deg;C -->
-        <line x1="83" y1="104" x2="92" y2="104" stroke="#94a3b8" stroke-width="1.8"/>
-        <text x="96"  y="109">30&deg;C</text>
-        <!-- 20&deg;C -->
-        <line x1="83" y1="146" x2="92" y2="146" stroke="#94a3b8" stroke-width="1.8"/>
-        <text x="96"  y="151">20&deg;C</text>
-        <!-- 10&deg;C -->
-        <line x1="83" y1="188" x2="92" y2="188" stroke="#94a3b8" stroke-width="1.8"/>
-        <text x="96"  y="193">10&deg;C</text>
-        <!-- 0&deg;C -->
-        <line x1="83" y1="230" x2="96" y2="230" stroke="#94a3b8" stroke-width="2.5"/>
-        <text x="100" y="235">0&deg;C</text>
-      </g>
-    </svg>
-  </div>
-</div>
-
-<!-- ── EC ── -->
-<div id="soil-ec-card" class="card-container sen66-param-card" style="display:none;">
-  <h4><i class="fas fa-bolt" style="color: #facc15;"></i> EC</h4>
-  <div class="sen66-param-value" id="soil-ec-val">0 mS/cm</div>
-  
-  <div class="soil-anim-wrap">
-    <svg viewBox="0 0 100 100" width="120" height="120">
-      <defs>
-        <filter id="ecGlow" x="-20%" y="-20%" width="140%" height="140%">
-          <feGaussianBlur stdDeviation="3" result="blur"/>
-          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-        </filter>
-      </defs>
-      <!-- Base lightning path (dim) -->
-      <path d="M50 5 L30 45 H55 L45 95 L75 35 H45 Z" fill="#facc15" opacity="0.1" stroke="#facc15" stroke-width="1"/>
-      
-      <!-- Glowing active bolt -->
-      <path id="soil-ec-bolt" d="M50 5 L30 45 H55 L45 95 L75 35 H45 Z" fill="#facc15" filter="url(#ecGlow)">
-        <animate attributeName="opacity" values="0.3;1;0.3" dur="1s" repeatCount="indefinite"/>
-      </path>
-    </svg>
-  </div>
-</div>
-
-<!-- ── pH ── -->
-<div id="soil-ph-card" class="card-container sen66-param-card" style="display:none;">
-  <h4><i class="fas fa-vial" style="color: #2dd4bf;"></i> pH</h4>
-  <div class="sen66-param-value" id="soil-ph-val">0</div>
-  
-  <div class="soil-anim-wrap">
-    <svg viewBox="0 0 100 120" width="100" height="120">
-      <!-- Test tube outline -->
-      <path d="M35 10 V90 A15 15 0 0 0 65 90 V10" fill="none" stroke="#94a3b8" stroke-width="4"/>
-      <!-- Rim -->
-      <ellipse cx="50" cy="10" rx="18" ry="4" fill="none" stroke="#94a3b8" stroke-width="3"/>
-      
-      <!-- Liquid fill -->
-      <g clip-path="url(#tubeClip)">
-        <defs>
-          <clipPath id="tubeClip">
-            <path d="M37 20 V90 A13 13 0 0 0 63 90 V20 Z"/>
-          </clipPath>
-        </defs>
-        <!-- Dynamic colored liquid rect -->
-        <rect id="soil-ph-fill" x="37" y="50" width="26" height="60" fill="#2dd4bf">
-          <animate attributeName="opacity" values="0.8;1;0.8" dur="3s" repeatCount="indefinite"/>
-        </rect>
-        
-        <!-- Bubbles -->
-        <circle cx="45" cy="80" r="2" fill="#fff" opacity="0.6"><animate attributeName="cy" values="90;40" dur="2s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;0.8;0" dur="2s" repeatCount="indefinite"/></circle>
-        <circle cx="55" cy="90" r="1.5" fill="#fff" opacity="0.6"><animate attributeName="cy" values="95;45" dur="1.5s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;0.8;0" dur="1.5s" repeatCount="indefinite"/></circle>
-      </g>
-    </svg>
-  </div>
-</div>
-
-<!-- ── Salinity ── -->
-<div id="soil-sal-card" class="card-container sen66-param-card" style="display:none;">
-  <h4><i class="fas fa-water" style="color: #818cf8;"></i> Salinity</h4>
-  <div class="sen66-param-value" id="soil-sal-val">0</div>
-  
-  <div class="soil-anim-wrap">
-    <svg viewBox="0 0 100 100" width="120" height="120">
-      <defs>
-        <filter id="salGlow">
-          <feGaussianBlur stdDeviation="2" result="blur"/>
-          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-        </filter>
-      </defs>
-      
-      <!-- Salt Crystals cluster -->
-      <g id="soil-sal-crystals" stroke="#818cf8" stroke-width="1.5" stroke-linejoin="round" fill="rgba(129, 140, 248, 0.4)" filter="url(#salGlow)">
-        <!-- Crystal 1 -->
-        <polygon points="50,15 65,40 50,75 35,40">
-          <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite"/>
-        </polygon>
-        <polyline points="50,15 50,75"/>
-        <polyline points="35,40 65,40"/>
-        
-        <!-- Crystal 2 -->
-        <polygon points="70,45 80,60 70,85 60,60">
-          <animate attributeName="opacity" values="0.4;0.9;0.4" dur="2.5s" repeatCount="indefinite" begin="0.5s"/>
-        </polygon>
-        <polyline points="70,45 70,85"/>
-        <polyline points="60,60 80,60"/>
-        
-        <!-- Crystal 3 -->
-        <polygon points="30,50 40,65 30,80 20,65">
-          <animate attributeName="opacity" values="0.5;1;0.5" dur="1.8s" repeatCount="indefinite" begin="1s"/>
-        </polygon>
-        <polyline points="30,50 30,80"/>
-        <polyline points="20,65 40,65"/>
-      </g>
-    </svg>
-  </div>
-</div>
-
-        <!-- Hall Sensor Card -->
+          <!-- Hall Sensor Card -->
 <div id="hall-card" class="card-container">
   <h4><i class="fas fa-magnet"></i> Hall Sensor</h4>
   <div id="hall-value" class="sensor-value" style="margin-bottom: 16px; font-size: 1.5rem; font-weight: 600; letter-spacing: -1px;">Waiting for data…</div>

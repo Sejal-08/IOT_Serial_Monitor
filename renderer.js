@@ -420,14 +420,7 @@ function updateSensorUI() {
   const windSpeedBar = document.getElementById("wind-speed-bar");
   
   // Soil Sensor Cards
-  const soilNContainer = document.getElementById("soil-n-card");
-  const soilPContainer = document.getElementById("soil-p-card");
-  const soilKContainer = document.getElementById("soil-k-card");
-  const soilMoistContainer = document.getElementById("soil-moist-card");
-  const soilTempContainer = document.getElementById("soil-temp-card");
-  const soilECContainer = document.getElementById("soil-ec-card");
-  const soilPHContainer = document.getElementById("soil-ph-card");
-  const soilSalContainer = document.getElementById("soil-sal-card");
+  const soilOrbitCard = document.getElementById("soil-orbit-card");
 
   const thermometerFill = document.getElementById("thermometer-fill");
   const thermometerBulb = document.getElementById("thermometer-bulb");
@@ -590,8 +583,7 @@ const allCards = [
       
       document.getElementById("sen66-orbit-card"),
       // Soil Sensor cards
-      soilNContainer, soilPContainer, soilKContainer, soilMoistContainer, 
-      soilTempContainer, soilECContainer, soilPHContainer, soilSalContainer,
+      soilOrbitCard,
     ];
 
 allCards.forEach(card => {
@@ -787,16 +779,8 @@ if (protocol && selectedSensor) {
 
   // ── Soil Sensor ──
   if (selectedSensor === "Soil Sensor" && protocol === "RS485") {
-    if (sensorCards) sensorCards.classList.add('soil-layout');
-    
-    [soilNContainer, soilPContainer, soilKContainer, soilMoistContainer,
-     soilTempContainer, soilECContainer, soilPHContainer, soilSalContainer].forEach(card => {
-      if (card) {
-        card.style.display = "flex";
-        card.classList.add('sensor-card');
-      }
-    });
-  }
+      if (soilOrbitCard) soilOrbitCard.style.display = "flex";
+    }
 
 
     } // end if (protocol && selectedSensor)
@@ -2854,89 +2838,15 @@ function parseSensorData(data) {
         
         if (selectedSensor === "Soil Sensor") {
           const updateValue = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-          updateValue("soil-n-val", currentSoilN.toFixed(0) + " mg/kg");
-          updateValue("soil-p-val", currentSoilP.toFixed(0) + " mg/kg");
-          updateValue("soil-k-val", currentSoilK.toFixed(0) + " mg/kg");
-          updateValue("soil-moist-val", currentSoilMoist.toFixed(1) + " %");
-          updateValue("soil-temp-val", currentSoilTemp.toFixed(1) + " \u00B0C");
-          updateValue("soil-ec-val", currentSoilEC.toFixed(1) + " mS/cm");
-          updateValue("soil-ph-val", currentSoilPH.toFixed(1));
-          updateValue("soil-sal-val", currentSoilSal.toFixed(0));
-          // Animate mini soil thermometer (tube: y=20 at 50\u00B0C, y=230 at 0\u00B0C, height=210)
-          const soilThermoFill = document.getElementById("soil-thermo-fill");
-          const soilThermoBulb = document.getElementById("soil-thermo-bulb");
-          if (soilThermoFill && soilThermoBulb) {
-            const tFrac   = Math.min(Math.max(currentSoilTemp / 50, 0), 1);
-            const fillH   = Math.round(tFrac * 210);   // 0–210 px
-            const fillY   = 230 - fillH;               // rect grows upward
-            const tColor  = currentSoilTemp < 25 ? "#ffeb3b"
-                          : currentSoilTemp <= 35 ? "#ff9800" : "#f44336";
-            soilThermoFill.setAttribute("y",      fillY);
-            soilThermoFill.setAttribute("height", fillH);
-            soilThermoFill.setAttribute("fill",   tColor);
-            soilThermoBulb.setAttribute("fill",   tColor);
-          }
-          
-          // Animate Nitrogen (N) (leaf fill)
-          const nFill = document.getElementById("soil-n-fill");
-          if (nFill) {
-            const nFrac = Math.min(currentSoilN / 250, 1);
-            nFill.setAttribute("height", nFrac * 100);
-            nFill.setAttribute("y", 100 - (nFrac * 100));
-          }
-
-          // Animate Phosphorus (P) (root glow opacity)
-          const pRoots = document.getElementById("soil-p-roots");
-          const pNodes = document.getElementById("soil-p-nodes");
-          if (pRoots && pNodes) {
-            const pFrac = Math.min(currentSoilP / 250, 1);
-            pRoots.setAttribute("stroke-width", 2 + (pFrac * 3));
-            pNodes.style.opacity = 0.2 + (pFrac * 0.8);
-          }
-
-          // Animate Potassium (K) (shield scale/opacity)
-          const kShield = document.getElementById("soil-k-shield-group");
-          if (kShield) {
-            const kFrac = Math.min(currentSoilK / 250, 1);
-            kShield.style.opacity = 0.3 + (kFrac * 0.7);
-            kShield.style.transformOrigin = "50% 50%";
-            kShield.style.transform = `scale(${0.6 + (kFrac * 0.4)})`;
-          }
-
-          // Animate Moisture (wave)
-          const mWave = document.getElementById("soil-moist-wave-path");
-          if (mWave) {
-            const mFrac = Math.min(currentSoilMoist / 100, 1);
-            const mY = Math.min(100 - (mFrac * 100), 80);
-            mWave.setAttribute("d", `M 0 ${mY} Q 25 ${mY + 5} 50 ${mY} T 100 ${mY} V 100 H 0 Z`);
-          }
-
-          // Animate EC (lightning opacity)
-          const ecBolt = document.getElementById("soil-ec-bolt");
-          if (ecBolt) {
-            const ecFrac = Math.min(currentSoilEC / 2.0, 1);
-            ecBolt.style.opacity = 0.2 + (ecFrac * 0.8);
-          }
-
-          // Animate pH (liquid level and color)
-          const phFill = document.getElementById("soil-ph-fill");
-          if (phFill) {
-            const phFrac = Math.min(Math.max(currentSoilPH, 0) / 14, 1);
-            const phHeight = phFrac * 70; // max height is 70 inside tube
-            phFill.setAttribute("height", phHeight);
-            phFill.setAttribute("y", 90 - phHeight);
-            // Color: red (0) -> green (120) -> blue (240)
-            const hue = phFrac * 240;
-            phFill.setAttribute("fill", `hsl(${hue}, 70%, 50%)`);
-          }
-
-          // Animate Salinity (crystals opacity)
-          const salCrystals = document.getElementById("soil-sal-crystals");
-          if (salCrystals) {
-            const salFrac = Math.min(currentSoilSal / 500, 1);
-            salCrystals.style.opacity = 0.3 + (salFrac * 0.7);
-          }
-          updateSensorUI();
+          updateValue("orbit-soil-n-val", currentSoilN.toFixed(0) + " mg/kg");
+            updateValue("orbit-soil-p-val", currentSoilP.toFixed(0) + " mg/kg");
+            updateValue("orbit-soil-k-val", currentSoilK.toFixed(0) + " mg/kg");
+            updateValue("orbit-soil-moist-val", currentSoilMoist.toFixed(1) + " %");
+            updateValue("orbit-soil-temp-val", currentSoilTemp.toFixed(1) + " \u00B0C");
+            updateValue("orbit-soil-ec-val", currentSoilEC.toFixed(1) + " mS/cm");
+            updateValue("orbit-soil-ph-val", currentSoilPH.toFixed(1));
+            updateValue("orbit-soil-sal-val", currentSoilSal.toFixed(0));
+            updateSensorUI();
 
 
         }
