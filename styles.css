@@ -7202,3 +7202,18 @@ body.light-mode .bubble-full {
     background: rgba(37, 99, 235, 0.1) !important;
     border: 1px solid rgba(37, 99, 235, 0.2) !important;
 }
+
+/* Pressure Gauge Light Mode Overrides */
+body.light-mode .gauge-bg {
+    fill: #f8fafc !important;
+    stroke: #e2e8f0 !important;
+}
+body.light-mode .gauge-svg text {
+    fill: #475569 !important;
+}
+body.light-mode .gauge-svg line {
+    stroke: #94a3b8 !important;
+}
+body.light-mode .gauge-svg line[stroke="#64748b"] {
+    stroke: #cbd5e1 !important;
+}
