@@ -7056,3 +7056,109 @@ body.light-mode .node-pill { background: #e2e8f0; color: #334155; border-color: 
     max-height: 380px !important;
     height: 380px !important;
 }
+
+/* === HUMIDITY LIQUID ANIMATION === */
+.humidity-gauge-container {
+    position: relative;
+    width: 100%;
+    height: 240px; /* Fits well within the card */
+    display: flex;
+    background: #1b2028;
+    border-radius: 12px;
+    border: 1px solid #2c343e;
+    overflow: hidden;
+}
+.humidity-scale {
+    width: 35px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 10px 5px;
+    font-size: 10px;
+    color: #64748b;
+    z-index: 10;
+    border-right: 1px solid #2c343e;
+}
+.humidity-liquid-wrapper {
+    flex: 1;
+    position: relative;
+    background: linear-gradient(to bottom, #171a21, #1e2329);
+    overflow: hidden;
+}
+.humidity-water {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 0%;
+    background: #2563eb;
+    transition: height 1s ease-in-out;
+    z-index: 5;
+}
+.water-wave {
+    position: absolute;
+    left: 0;
+    width: 200%;
+    height: 20px;
+}
+.wave-front {
+    top: -19px;
+    animation: wave-move 3s linear infinite;
+}
+.wave-back {
+    top: -15px;
+    animation: wave-move 4s linear infinite reverse;
+}
+@keyframes wave-move {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+/* Bubbles */
+.bubble {
+    position: absolute;
+    bottom: -20px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    animation: float-up infinite ease-in;
+}
+.b1 { left: 15%; width: 12px; height: 12px; animation-duration: 3s; animation-delay: 0s; }
+.b2 { left: 35%; width: 8px; height: 8px; animation-duration: 4s; animation-delay: 1.5s; }
+.b3 { left: 65%; width: 16px; height: 16px; animation-duration: 5s; animation-delay: 0.5s; }
+.b4 { left: 85%; width: 10px; height: 10px; animation-duration: 3.5s; animation-delay: 2s; }
+.b5 { left: 25%; width: 6px; height: 6px; animation-duration: 4.5s; animation-delay: 0.2s; }
+.b6 { left: 50%; width: 14px; height: 14px; animation-duration: 3.8s; animation-delay: 1.2s; }
+.b7 { left: 75%; width: 9px; height: 9px; animation-duration: 4.2s; animation-delay: 0.8s; }
+.b8 { left: 10%; width: 18px; height: 18px; animation-duration: 5.5s; animation-delay: 2.5s; }
+
+@keyframes float-up {
+    0% { transform: translateY(0) scale(1); opacity: 1; }
+    100% { transform: translateY(-240px) scale(1.2); opacity: 0; }
+}
+
+@keyframes wave-move {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+.bubble-full {
+    position: absolute;
+    bottom: -30px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    animation: float-up-full infinite ease-in;
+    z-index: 2;
+    pointer-events: none;
+}
+
+@keyframes float-up-full {
+    0% { transform: translateY(0) scale(1); opacity: 1; }
+    100% { transform: translateY(-500px) scale(1.3); opacity: 0; }
+}
+
+#humidity-card {
+    background: linear-gradient(180deg, #171a21 0%, #101318 100%) !important;
+}
