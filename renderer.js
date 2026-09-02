@@ -641,9 +641,9 @@ if (protocol && selectedSensor) {
     if (sensorCards) sensorCards.classList.add('weather-combined-grid');
     // Show ALL 8 Weather Cards
     const weatherCards = [
-      thermometerContainer, humidityContainer, pressureContainer, lightContainer,
-      rainGaugeCard, windDirectionContainer, windSpeedContainer, wind3dModelContainer, windFlowContainer, windFlowContainer
-    ];
+        thermometerContainer, humidityContainer, pressureContainer, lightContainer,
+        rainGaugeCard, windDirectionContainer, windSpeedContainer, windFlowContainer
+      ];
     weatherCards.forEach(card => {
       if (card) {
         card.style.display = "flex";
@@ -908,16 +908,13 @@ if ((protocol === "I2C" || isWeatherMode) && (isWeatherMode || selectedSensor ==
 // === PRESSURE CARD UPDATE ===
 if ((protocol === "I2C" || isWeatherMode) && (isWeatherMode || selectedSensor === "BME680" || selectedSensor === "Weather Shield") && currentPressure !== null) {
   updatePressureCard(parseFloat(currentPressure));
-} else {
-  const pressureValue = document.getElementById('pressure-value');
-  const pressureBar = document.getElementById('pressure-bar');
- 
-  if (pressureValue) pressureValue.textContent = '0.00 hPa';
-  if (pressureBar) {
-    pressureBar.style.width = '0%';
-    pressureBar.style.backgroundColor = '#34d399';
+  } else {
+    const pressureValueInner = document.getElementById('pressure-value-inner');
+    const pressureNeedle = document.getElementById('pressure-needle');
+   
+    if (pressureValueInner) pressureValueInner.textContent = '0.00 hPa';
+    if (pressureNeedle) pressureNeedle.style.transform = 'rotate(300deg)';
   }
-}
 
 // === LIGHT INTENSITY ANIMATION WITH SUN/MOON TOGGLE + BETTER LOW-LIGHT GLOW ===
 if ((protocol === "I2C" || isWeatherMode) && (isWeatherMode || selectedSensor === "VEML7700" || selectedSensor === "Weather Shield") && currentLight !== null) {
@@ -2051,35 +2048,28 @@ function updateTOFAnimation(distance) {
 }
 function updatePressureCard(hpa) {
   const card = document.getElementById('pressure-card');
-  const topVal = document.getElementById('pressure-value');
   const midVal = document.getElementById('pressure-value-inner');
-  const fill = document.getElementById('gauge-fill');
+  const needle = document.getElementById('pressure-needle');
 
   if (card) card.style.display = 'flex';
 
   if (hpa === null || isNaN(hpa)) {
-    if (topVal) topVal.textContent = '– hPa';
-    if (midVal) midVal.textContent = '–';
-    if (fill) fill.style.strokeDasharray = '0 565.48';
+    if (midVal) midVal.textContent = '--- hPa';
+    if (needle) needle.style.transform = 'rotate(300deg)';
     return;
   }
 
-  // Use hPa directly for display
   const txt = hpa.toFixed(1);
+  if (midVal) midVal.textContent = `${txt} hPa`;
 
-  if (topVal) topVal.textContent = `${txt} hPa`;
-  if (midVal) midVal.textContent = txt;
+  let t = (hpa - 950) / 100;
+  if (t < -0.1) t = -0.1;
+  if (t > 1.1) t = 1.1;
 
-  // Update range for hPa (Standard range: 300 hPa to 1100 hPa)
-  const minP = 300;
-  const maxP = 1100;
+  const angle = 300 + (t * 300);
 
-  const t = Math.min(Math.max((hpa - minP) / (maxP - minP), 0), 1);
-
-  const circumference = 2 * Math.PI * 90;
-
-  if (fill) {
-    fill.style.strokeDasharray = `${t * circumference} ${(1 - t) * circumference}`;
+  if (needle) {
+    needle.style.transform = `rotate(${angle}deg)`;
   }
 
   if (card) {
