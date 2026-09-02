@@ -2369,7 +2369,7 @@ body:not(.dark-mode) #rain-gauge-card h4 {
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 180px;           /* was 100px → now EPIC */
+  height: 50px;
   background: transparent;
   overflow: hidden;
   z-index: 1;
@@ -2409,30 +2409,30 @@ body:not(.dark-mode) #rain-gauge-card h4 {
 }
 
 .seesaw {
-  width: 360px;            /* was 240px → now gigantic */
-  height: 240px;
+  width: 120px;
+  height: 80px;
   position: relative;
 }
 
 /* Ground base - beefy */
 .base {
   position: absolute;
-  bottom: -24px;
+  bottom: -8px;
   left: 50%;
   transform: translateX(-50%);
-  width: 360px;
-  height: 68px;
-  background: #000;
-  border-radius: 180px / 34px;
+  width: 120px;
+  height: 22px;
+  background: var(--rain-shape, #000);
+  border-radius: 60px / 11px;
   box-shadow: inset 0 6px 10px rgba(255,255,255,0.08),
               0 10px 20px rgba(0,0,0,0.8);
 }
 
 /* Massive poles */
 .pole {
-  width: 56px;
-  height: 170px;
-  background: #000;
+  width: 18px;
+  height: 56px;
+  background: var(--rain-shape, #000);
   position: absolute;
   bottom: 0;
   border-radius: 50% / 8%;
@@ -2447,9 +2447,9 @@ body:not(.dark-mode) #rain-gauge-card h4 {
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 28px;
-  height: 145px;
-  background: #000;
+  width: 10px;
+  height: 48px;
+  background: var(--rain-shape, #000);
   border-radius: 10px;
   box-shadow: inset 0 2px 6px rgba(255,255,255,0.1);
 }
@@ -2457,26 +2457,26 @@ body:not(.dark-mode) #rain-gauge-card h4 {
 .support::before {
   content: '';
   position: absolute;
-  bottom: -18px;
+  bottom: -9px;
   left: 50%;
   transform: translateX(-50%);
-  width: 68px;
-  height: 18px;
-  background: #000;
+  width: 22px;
+  height: 6px;
+  background: var(--rain-shape, #000);
   border-radius: 10px;
 }
 
 /* ENORMOUS roof with dramatic tilt */
 .roof {
   position: absolute;
-  bottom: 145px;
+  bottom: 48px;
   left: 50%;
   transform: translateX(-50%) rotate(0deg);
   width: 0;
   height: 0;
-  border-left: 120px solid transparent;   /* was 78px → now huge */
-  border-right: 120px solid transparent;
-  border-bottom: 80px solid #000;          /* massive roof */
+  border-left: 40px solid transparent;
+  border-right: 40px solid transparent;
+  border-bottom: 26px solid var(--rain-shape, #000);          /* massive roof */
   transform-origin: bottom center;
   transition: transform 1s cubic-bezier(0.25, 0.8, 0.25, 1.4);
   /* box-shadow: 0 8px 20px rgba(0,0,0,0.5); */
@@ -7216,4 +7216,9 @@ body.light-mode .gauge-svg line {
 }
 body.light-mode .gauge-svg line[stroke="#64748b"] {
     stroke: #cbd5e1 !important;
+}
+
+/* Rain Shape Light Mode Override */
+body.light-mode {
+    --rain-shape: #334155;
 }
