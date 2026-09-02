@@ -7196,7 +7196,7 @@ body.light-mode #humidity-card {
 }
 body.light-mode #humidity-value {
     text-shadow: none !important;
-    color: #1e40af !important;
+    color: var(--text-color, #4d5b76) !important;
 }
 body.light-mode .bubble-full {
     background: rgba(37, 99, 235, 0.1) !important;
