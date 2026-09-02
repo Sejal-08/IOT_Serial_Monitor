@@ -7162,3 +7162,8 @@ body.light-mode .node-pill { background: #e2e8f0; color: #334155; border-color: 
 #humidity-card {
     background: linear-gradient(180deg, #171a21 0%, #101318 100%) !important;
 }
+
+@keyframes wave-move-infinite {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-33.3333%); }
+}
