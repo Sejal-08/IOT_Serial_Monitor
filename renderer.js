@@ -913,7 +913,7 @@ if ((protocol === "I2C" || isWeatherMode) && (isWeatherMode || selectedSensor ==
     const pressureNeedle = document.getElementById('pressure-needle');
    
     if (pressureValueInner) pressureValueInner.textContent = '0.00 hPa';
-    if (pressureNeedle) pressureNeedle.style.transform = 'rotate(300deg)';
+    if (pressureNeedle) pressureNeedle.style.transform = 'rotate(270deg)';
   }
 
 // === LIGHT INTENSITY ANIMATION WITH SUN/MOON TOGGLE + BETTER LOW-LIGHT GLOW ===
