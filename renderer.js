@@ -875,31 +875,23 @@ if ((protocol === "I2C" || protocol === "RS485" || isWeatherMode) && (isWeatherM
 // === HUMIDITY WAVE UPDATE ===
 if ((protocol === "I2C" || isWeatherMode) && (isWeatherMode || selectedSensor === "BME680" || selectedSensor === "SHT40" || selectedSensor === "AHT20" || selectedSensor === "Weather Shield" || selectedSensor === "SEN66")) {
   if (currentHumidity !== null) {
-    const humidity = parseFloat(currentHumidity);
-    humidityValue.textContent = `${humidity.toFixed(2)}%`;
-   
-    // Calculate wave height based on humidity (0-100%)
-    const waveHeight = 100 - humidity; // 0% humidity = wave at bottom, 100% = wave at top
-   
-    // Update wave position
-    wavePath.setAttribute("d", `M 0 ${waveHeight} Q 25 ${waveHeight + 5} 50 ${waveHeight} T 100 ${waveHeight} V 100 H 0 Z`);
-   
-    // Update colors based on humidity
-    const t = Math.min(Math.max(humidity / 100, 0), 1);
-    const lowColor = { r: 61, g: 142, b: 180 };
-    const highColor = { r: 4, g: 116, b: 168 };
-    const r = Math.round(lowColor.r + (highColor.r - lowColor.r) * t);
-    const g = Math.round(lowColor.g + (highColor.g - lowColor.g) * t);
-    const b = Math.round(lowColor.b + (highColor.b - lowColor.b) * t);
-    const primaryColor = `rgb(${r}, ${g}, ${b})`;
-   
-    waveColor1.setAttribute("style", `stop-color: ${primaryColor}; stop-opacity: 0.5`);
-    waveColor2.setAttribute("style", `stop-color: ${primaryColor}; stop-opacity: 1`);
-  } else {
-    humidityValue.textContent = "0.00%";
-    // Default wave position (low humidity)
-    wavePath.setAttribute("d", "M 0 80 Q 25 85 50 80 T 100 80 V 100 H 0 Z");
-  }
+      const humidity = parseFloat(currentHumidity);
+      humidityValue.textContent = `${humidity.toFixed(2)}%`;
+     
+      let h = (humidity / 100) * 100;
+      if (h > 100) h = 100;
+      if (h < 0) h = 0;
+      const waterBody = document.getElementById('humidity-water');
+      if (waterBody) {
+          waterBody.style.height = h + '%';
+      }
+    } else {
+      humidityValue.textContent = "0.00%";
+      const waterBody = document.getElementById('humidity-water');
+      if (waterBody) {
+          waterBody.style.height = '0%';
+      }
+    }
 } else {
   humidityValue.textContent = "0.00%";
   // Default wave position when not connected
