@@ -1793,7 +1793,72 @@ function resetAllSensorDisplays() {
   // ── Accelerometer (LIS3DH) ───────────────────────
   ["x", "y", "z"].forEach(axis => {
     const el = document.getElementById(`lis3dh-${axis}-value`);
-    if (el) el.textContent = `${axis.toUpperCase()}: 0.00 m/s&sup2;</script>
+    if (el) el.innerHTML = `${axis.toUpperCase()}: 0.00 m/s&sup2;`;
+  });
+  const accelCube = document.getElementById("accel-cube");
+  if (accelCube) accelCube.style.transform = "rotateX(0deg) rotateY(0deg)";
+
+  // ── Hall, TLV493D, Wind, TOF, UV, IR ───────────────
+  const hallVal = document.getElementById("hall-value");
+  const hallArcPath = document.getElementById("hall-arc-path");
+  if (hallVal) hallVal.textContent = "0 mT";
+  if (hallArcPath) hallArcPath.setAttribute("stroke-width", "8");
+
+  ["x", "y", "z"].forEach(axis => {
+    const el = document.getElementById(`tlv493d-${axis}-value`);
+    if (el) el.textContent = `${axis.toUpperCase()}: 0.00 mT`;
+  });
+  const maxAxisIndicator = document.getElementById("max-axis-indicator");
+  const zAxisIndicator = document.getElementById("z-axis-indicator");
+  if (maxAxisIndicator) { maxAxisIndicator.setAttribute("cx", "50"); maxAxisIndicator.setAttribute("cy", "50"); }
+  if (zAxisIndicator) zAxisIndicator.style.fill = "#888";
+
+  const windDirVal = document.getElementById("wind-direction-value");
+  const windDirArrow = document.getElementById("wind-direction-arrow");
+  if (windDirVal) windDirVal.innerHTML = "0&deg;";
+  if (windDirArrow) windDirArrow.style.transform = "rotate(0deg)";
+
+  const windSpeedVal2 = document.getElementById("wind-speed-value");
+  const windSpeedBar2 = document.getElementById("wind-speed-bar");
+  const anemometerCups = document.getElementById("anemometer-cups");
+  if (windSpeedVal2) windSpeedVal2.textContent = "0.0 m/s";
+  if (windSpeedBar2) windSpeedBar2.style.width = "0%";
+  if (anemometerCups) anemometerCups.style.animation = "none";
+
+  const tofVal = document.getElementById("tof-value");
+  const tofPerson = document.getElementById("tof-person");
+  if (tofVal) tofVal.textContent = "0 cm";
+  if (tofPerson) tofPerson.setAttribute("transform", "translate(20, 0)");
+
+  const uvVal = document.getElementById("uv-value");
+  const uvBar = document.getElementById("uv-bar");
+  const uvSunCircle = document.getElementById("uv-sun-circle");
+  if (uvVal) uvVal.textContent = "UV: 0.00";
+  if (uvBar) { uvBar.style.width = "0%"; uvBar.style.background = "linear-gradient(90deg, #10b981, #f59e0b)"; }
+  if (uvSunCircle) uvSunCircle.style.opacity = "0.3";
+
+  const irVal = document.getElementById("ir-value");
+  const irBulbCircle = document.getElementById("ir-bulb-circle");
+  if (irVal) irVal.textContent = "Not Detected";
+  if (irBulbCircle) irBulbCircle.setAttribute("fill", "#ccc");
+
+  // Relay
+  const relayValue = document.getElementById("relay-value");
+  const relayArm = document.getElementById("relay-arm");
+  const relayBulb = document.getElementById("relay-bulb");
+  const relayGlow = document.getElementById("relay-bulb-glow");
+  if (relayValue) relayValue.textContent = "OFF";
+  if (relayArm) relayArm.setAttribute("x2", "80");
+  if (relayBulb) relayBulb.setAttribute("fill", "#d1d5db");
+  if (relayGlow) relayGlow.style.opacity = "0";
+
+  // Buzzer
+  const buzzerValue = document.getElementById("buzzer-value");
+  const buzzerWaves = document.getElementById("buzzer-waves");
+  if (buzzerValue) buzzerValue.textContent = "Inactive";
+  if (buzzerWaves) buzzerWaves.style.opacity = "0";
+}
+</script>
 
 <script>
   function toggleTheme() {
