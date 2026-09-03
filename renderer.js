@@ -814,10 +814,10 @@ if ((protocol === "I2C" || protocol === "RS485" || isWeatherMode) && (isWeatherM
   const fillY = 376 - fillHeight;
  
   // Update Celsius thermometer
-  thermometerFill.setAttribute("y", fillY);
-  thermometerFill.setAttribute("height", fillHeight);
-  thermometerFill.setAttribute("fill", fillColor);
-  thermometerBulb.setAttribute("fill", fillColor);
+  thermometerFill?.setAttribute("y", fillY);
+  thermometerFill?.setAttribute("height", fillHeight);
+  thermometerFill?.setAttribute("fill", fillColor);
+  thermometerBulb?.setAttribute("fill", fillColor);
   thermometerValue.textContent = `${temp.toFixed(2)}\u00B0C`;
  
   // Update Fahrenheit thermometer for STTS751 - FIXED VARIABLE NAMES
@@ -837,8 +837,8 @@ if ((protocol === "I2C" || protocol === "RS485" || isWeatherMode) && (isWeatherM
       const fillHeightF = Math.min(Math.max((tempF - minTempF) / (maxTempF - minTempF) * tubeHeightF, 0), tubeHeightF);
       const fillYF = 376 - fillHeightF;
      
-      thermometerFFill.setAttribute("y", fillYF);
-      thermometerFFill.setAttribute("height", fillHeightF);
+      thermometerFFill?.setAttribute("y", fillYF);
+      thermometerFFill?.setAttribute("height", fillHeightF);
      
       // Use same color logic for Fahrenheit
       let fillColorF;
@@ -850,26 +850,26 @@ if ((protocol === "I2C" || protocol === "RS485" || isWeatherMode) && (isWeatherM
         fillColorF = "#f44336";
       }
      
-      thermometerFFill.setAttribute("fill", fillColorF);
-      thermometerFBulb.setAttribute("fill", fillColorF);
+      thermometerFFill?.setAttribute("fill", fillColorF);
+      thermometerFBulb?.setAttribute("fill", fillColorF);
     }
   }
 } else {
   // Reset both thermometers to bottom position
-  thermometerFill.setAttribute("y", 376);
-  thermometerFill.setAttribute("height", 0);
-  thermometerFill.setAttribute("fill", "#ffeb3b");
-  thermometerBulb.setAttribute("fill", "#ffeb3b");
+  thermometerFill?.setAttribute("y", 376);
+  thermometerFill?.setAttribute("height", 0);
+  thermometerFill?.setAttribute("fill", "#ffeb3b");
+  thermometerBulb?.setAttribute("fill", "#ffeb3b");
   thermometerValue.textContent = "0.00\u00B0C";
  
   // Reset Fahrenheit thermometer too
   const thermometerFFill = document.getElementById("thermometer-f-fill");
   const thermometerFBulb = document.getElementById("thermometer-f-bulb");
   if (thermometerFFill && thermometerFBulb) {
-    thermometerFFill.setAttribute("y", 376);
-    thermometerFFill.setAttribute("height", 0);
-    thermometerFFill.setAttribute("fill", "#ffeb3b");
-    thermometerFBulb.setAttribute("fill", "#ffeb3b");
+    thermometerFFill?.setAttribute("y", 376);
+    thermometerFFill?.setAttribute("height", 0);
+    thermometerFFill?.setAttribute("fill", "#ffeb3b");
+    thermometerFBulb?.setAttribute("fill", "#ffeb3b");
   }
 }
 // === HUMIDITY WAVE UPDATE ===
@@ -895,7 +895,7 @@ if ((protocol === "I2C" || isWeatherMode) && (isWeatherMode || selectedSensor ==
 } else {
   humidityValue.textContent = "0.00%";
   // Default wave position when not connected
-  wavePath.setAttribute("d", "M 0 80 Q 25 85 50 80 T 100 80 V 100 H 0 Z");
+  wavePath?.setAttribute("d", "M 0 80 Q 25 85 50 80 T 100 80 V 100 H 0 Z");
 }
 // === PRESSURE CARD UPDATE ===
 if ((protocol === "I2C" || isWeatherMode) && (isWeatherMode || selectedSensor === "BME680" || selectedSensor === "Weather Shield") && currentPressure !== null) {
@@ -939,13 +939,13 @@ if ((protocol === "I2C" || isWeatherMode) && (isWeatherMode || selectedSensor ==
 
     if (sunGradient) {
       const stops = sunGradient.querySelectorAll("stop");
-      stops.forEach(stop => stop.setAttribute("stop-color", color));
+      stops.forEach(stop => stop?.setAttribute("stop-color", color));
     }
 
     // FIXED GLOW: Minimum blur of 4, scales up to 20
     if (glowFilter) {
       const blurAmount = 4 + (intensity * 16); // 4 (dim) → 20 (bright)
-      glowFilter.setAttribute("stdDeviation", blurAmount);
+      glowFilter?.setAttribute("stdDeviation", blurAmount);
     }
   }
 } else {
@@ -959,7 +959,7 @@ if ((protocol === "I2C" || isWeatherMode) && (isWeatherMode || selectedSensor ==
 
   // Reset glow to minimum
   const glowFilter = document.querySelector("#sunGlow feGaussianBlur");
-  if (glowFilter) glowFilter.setAttribute("stdDeviation", "4");
+  if (glowFilter) glowFilter?.setAttribute("stdDeviation", "4");
 }
 
 // === RAIN GAUGE — FIXED VERSION WITH INSTANT RESTART ===
@@ -1156,7 +1156,7 @@ if (selectedSensor === "VCNL4040") {  // ← Remove protocol check, it's redunda
   if (currentVCNLLux == null || isNaN(currentVCNLLux)) {
     console.log("[VCNL] No valid data → reset to 0");
     if (valueEl) valueEl.textContent = "0.0 lux";
-    if (arcEl) arcEl.setAttribute("d", "M 30 110 A 80 80 0 0 1 30 110");
+    if (arcEl) arcEl?.setAttribute("d", "M 30 110 A 80 80 0 0 1 30 110");
     if (sunGroup) sunGroup.style.opacity = "0.25";
     if (levelEl) levelEl.textContent = "No data";
     return;
@@ -1180,7 +1180,7 @@ if (selectedSensor === "VCNL4040") {  // ← Remove protocol check, it's redunda
   const largeArc = angle > 90 ? 1 : 0;
 
   if (arcEl) {
-    arcEl.setAttribute("d", `M 30 110 A 80 80 0 ${largeArc} 1 ${x} ${y}`);
+    arcEl?.setAttribute("d", `M 30 110 A 80 80 0 ${largeArc} 1 ${x} ${y}`);
     console.log("[VCNL] Arc updated to angle:", angle);
   }
 
@@ -1199,7 +1199,7 @@ if (selectedSensor === "VCNL4040") {  // ← Remove protocol check, it's redunda
   if (sunGroup) {
     sunGroup.style.opacity = intensity;
     sunGroup.style.filter = `brightness(${1 + intensity * 1.8}) drop-shadow(0 0 ${20 + intensity * 40}px #fef08a)`;
-    sunGroup.setAttribute("transform", "translate(140,140)"); // force center every update
+    sunGroup?.setAttribute("transform", "translate(140,140)"); // force center every update
     console.log("[VCNL] Sun updated → opacity:", intensity);
   }
 }
@@ -1235,14 +1235,14 @@ if (protocol === "GPIO" && selectedSensor === "Relay") {
     relayCoil.style.opacity = "1";
 
     // Pull iron core down (electromagnet attraction)
-    relayCore.setAttribute("y", "140");
-    relayCore.setAttribute("height", "120");
+    relayCore?.setAttribute("y", "140");
+    relayCore?.setAttribute("height", "120");
 
     // Compress spring
-    relaySpring.setAttribute("d", "M160 140 Q160 130 160 120 Q160 110 160 100");
+    relaySpring?.setAttribute("d", "M160 140 Q160 130 160 120 Q160 110 160 100");
 
     // Move arm to NO (Normally Open) contact - rotate upward
-    relayArm.setAttribute("transform", "translate(300,140) rotate(-40)");
+    relayArm?.setAttribute("transform", "translate(300,140) rotate(-40)");
 
     // Show electrical spark at contact point
     relaySpark.style.opacity = "1";
@@ -1255,8 +1255,8 @@ if (protocol === "GPIO" && selectedSensor === "Relay") {
       bulbGlow.style.opacity = "1";
     }
     if (bulbFilament) {
-      bulbFilament.setAttribute("stroke", "#FFD700");
-      bulbFilament.setAttribute("stroke-width", "3");
+      bulbFilament?.setAttribute("stroke", "#FFD700");
+      bulbFilament?.setAttribute("stroke-width", "3");
     }
     if (lightRays) {
       lightRays.style.opacity = "1";
@@ -1298,22 +1298,22 @@ if (protocol === "GPIO" && selectedSensor === "Relay") {
     relayCoil.style.opacity = "0.7";
 
     // Release iron core - spring pushes it back up
-    relayCore.setAttribute("y", "180");
-    relayCore.setAttribute("height", "80");
+    relayCore?.setAttribute("y", "180");
+    relayCore?.setAttribute("height", "80");
 
     // Relax spring to normal position
-    relaySpring.setAttribute("d", "M160 180 Q160 160 160 140 Q160 120 160 100");
+    relaySpring?.setAttribute("d", "M160 180 Q160 160 160 140 Q160 120 160 100");
 
     // Return arm to NC (Normally Closed) contact - horizontal position
-    relayArm.setAttribute("transform", "translate(300,140) rotate(0)");
+    relayArm?.setAttribute("transform", "translate(300,140) rotate(0)");
 
     // Deactivate bulb - no light
     if (bulbGlow) {
       bulbGlow.style.opacity = "0";
     }
     if (bulbFilament) {
-      bulbFilament.setAttribute("stroke", "#FF9800");
-      bulbFilament.setAttribute("stroke-width", "2.5");
+      bulbFilament?.setAttribute("stroke", "#FF9800");
+      bulbFilament?.setAttribute("stroke-width", "2.5");
     }
     if (lightRays) {
       lightRays.style.opacity = "0";
@@ -1524,32 +1524,32 @@ if (protocol === "Analog" && selectedSensor === "Hall Sensor") {
         }
       }
 
-      if (uvSunCircle) uvSunCircle.setAttribute("r", uv >= 3 ? 22 : 18);
-      if (uvGlow) uvGlow.setAttribute("stdDeviation", uv >= 3 ? 5 : 3);
+      if (uvSunCircle) uvSunCircle?.setAttribute("r", uv >= 3 ? 22 : 18);
+      if (uvGlow) uvGlow?.setAttribute("stdDeviation", uv >= 3 ? 5 : 3);
       if (uvSunGradient && uvSunGradient.children.length >= 3) {
-        uvSunGradient.children[0].setAttribute("style", `stop-color:${uvColor}; stop-opacity:1`);
-        uvSunGradient.children[1].setAttribute("style", `stop-color:${uvColor}; stop-opacity:0.8`);
-        uvSunGradient.children[2].setAttribute("style", `stop-color:${uvColor}; stop-opacity:0.4`);
+        uvSunGradient.children[0]?.setAttribute("style", `stop-color:${uvColor}; stop-opacity:1`);
+        uvSunGradient.children[1]?.setAttribute("style", `stop-color:${uvColor}; stop-opacity:0.8`);
+        uvSunGradient.children[2]?.setAttribute("style", `stop-color:${uvColor}; stop-opacity:0.4`);
       }
 
       if (uvRays) {
         const rays = uvRays.querySelectorAll(".uv-ray");
         rays.forEach(ray => {
-          ray.setAttribute("stroke", uvColor);
+          ray?.setAttribute("stroke", uvColor);
           ray.style.opacity = uv >= 3 ? 1 : 0;
           if (uv >= 3) {
             const animOpacity = ray.querySelector('animate[attributeName="opacity"]');
             const animX2 = ray.querySelector('animate[attributeName="x2"]');
             const animY2 = ray.querySelector('animate[attributeName="y2"]');
             if (animOpacity) {
-              animOpacity.setAttribute("values", uv >= 8 ? "0;1;0" : "0;0.8;0");
-              animOpacity.setAttribute("dur", uv >= 11 ? "1.5s" : "2s");
+              animOpacity?.setAttribute("values", uv >= 8 ? "0;1;0" : "0;0.8;0");
+              animOpacity?.setAttribute("dur", uv >= 11 ? "1.5s" : "2s");
             }
             if (animX2) {
-              animX2.setAttribute("values", uv >= 11 ? `${parseFloat(animX2.getAttribute("values").split(";")[0])*1.2};${parseFloat(animX2.getAttribute("values").split(";")[1])*1.2};${parseFloat(animX2.getAttribute("values").split(";")[0])*1.2}` : animX2.getAttribute("values"));
+              animX2?.setAttribute("values", uv >= 11 ? `${parseFloat(animX2.getAttribute("values").split(";")[0])*1.2};${parseFloat(animX2.getAttribute("values").split(";")[1])*1.2};${parseFloat(animX2.getAttribute("values").split(";")[0])*1.2}` : animX2.getAttribute("values"));
             }
             if (animY2) {
-              animY2.setAttribute("values", uv >= 11 ? `${parseFloat(animY2.getAttribute("values").split(";")[0])*1.2};${parseFloat(animY2.getAttribute("values").split(";")[1])*1.2};${parseFloat(animY2.getAttribute("values").split(";")[0])*1.2}` : animY2.getAttribute("values"));
+              animY2?.setAttribute("values", uv >= 11 ? `${parseFloat(animY2.getAttribute("values").split(";")[0])*1.2};${parseFloat(animY2.getAttribute("values").split(";")[1])*1.2};${parseFloat(animY2.getAttribute("values").split(";")[0])*1.2}` : animY2.getAttribute("values"));
             }
           }
         });
@@ -1562,17 +1562,17 @@ if (protocol === "Analog" && selectedSensor === "Hall Sensor") {
         uvBar.style.width = "0%";
         uvBar.style.backgroundColor = "#6b8af7";
       }
-      if (uvSunCircle) uvSunCircle.setAttribute("r", 18);
-      if (uvGlow) uvGlow.setAttribute("stdDeviation", 3);
+      if (uvSunCircle) uvSunCircle?.setAttribute("r", 18);
+      if (uvGlow) uvGlow?.setAttribute("stdDeviation", 3);
       if (uvSunGradient && uvSunGradient.children.length >= 3) {
-        uvSunGradient.children[0].setAttribute("style", "stop-color:#ffeb3b; stop-opacity:1");
-        uvSunGradient.children[1].setAttribute("style", "stop-color:#ff9800; stop-opacity:0.8");
-        uvSunGradient.children[2].setAttribute("style", "stop-color:#ff6b00; stop-opacity:0.4");
+        uvSunGradient.children[0]?.setAttribute("style", "stop-color:#ffeb3b; stop-opacity:1");
+        uvSunGradient.children[1]?.setAttribute("style", "stop-color:#ff9800; stop-opacity:0.8");
+        uvSunGradient.children[2]?.setAttribute("style", "stop-color:#ff6b00; stop-opacity:0.4");
       }
       if (uvRays) {
         const rays = uvRays.querySelectorAll(".uv-ray");
         rays.forEach(ray => {
-          ray.setAttribute("stroke", "#ffeb3b");
+          ray?.setAttribute("stroke", "#ffeb3b");
           ray.style.opacity = 0;
         });
       }
@@ -1633,16 +1633,16 @@ function generateHallLightningBolt() {
    
     // Lightning bolt shape
     const boltPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    boltPath.setAttribute("d", `M ${startX - 2} ${startY - 5} L ${startX - 1} ${startY} L ${startX - 3} ${startY} L ${startX + 2} ${startY + 5} L ${startX + 1} ${startY + 1} L ${startX + 3} ${startY + 1} Z`);
-    boltPath.setAttribute("fill", "#fbbf24");
-    boltPath.setAttribute("stroke", "#f59e0b");
-    boltPath.setAttribute("stroke-width", "0.5");
+    boltPath?.setAttribute("d", `M ${startX - 2} ${startY - 5} L ${startX - 1} ${startY} L ${startX - 3} ${startY} L ${startX + 2} ${startY + 5} L ${startX + 1} ${startY + 1} L ${startX + 3} ${startY + 1} Z`);
+    boltPath?.setAttribute("fill", "#fbbf24");
+    boltPath?.setAttribute("stroke", "#f59e0b");
+    boltPath?.setAttribute("stroke-width", "0.5");
    
     // Glow effect
     const glowPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    glowPath.setAttribute("d", `M ${startX - 2} ${startY - 5} L ${startX - 1} ${startY} L ${startX - 3} ${startY} L ${startX + 2} ${startY + 5} L ${startX + 1} ${startY + 1} L ${startX + 3} ${startY + 1} Z`);
-    glowPath.setAttribute("fill", "#fef3c7");
-    glowPath.setAttribute("opacity", "0.6");
+    glowPath?.setAttribute("d", `M ${startX - 2} ${startY - 5} L ${startX - 1} ${startY} L ${startX - 3} ${startY} L ${startX + 2} ${startY + 5} L ${startX + 1} ${startY + 1} L ${startX + 3} ${startY + 1} Z`);
+    glowPath?.setAttribute("fill", "#fef3c7");
+    glowPath?.setAttribute("opacity", "0.6");
    
     boltGroup.appendChild(boltPath);
     boltGroup.appendChild(glowPath);
@@ -1730,15 +1730,15 @@ if (protocol === "I2C" && selectedSensor === "TLV493D") {
     const tx = 70 + x * scale;
     const ty = 70 + y * scale; // Add y (not subtract) because in your image, Y: -175.71 should point DOWN
     // Update vector line
-    line.setAttribute("x2", tx);
-    line.setAttribute("y2", ty);
+    line?.setAttribute("x2", tx);
+    line?.setAttribute("y2", ty);
    
     // Calculate angle from X-axis (0\u00B0 = right, 90\u00B0 = down, 180\u00B0 = left, 270\u00B0 = up)
     const angleRad = Math.atan2(y, x); // Using y directly (no negative)
     const angleDeg = angleRad * 180 / Math.PI;
    
     // Position arrow head at the end of the line
-    head.setAttribute("transform", `translate(${tx},${ty}) rotate(${angleDeg})`);
+    head?.setAttribute("transform", `translate(${tx},${ty}) rotate(${angleDeg})`);
     // Determine direction and set colors
     if (absZ > absX && absZ > absY) {
       // Z dominant - blue theme
@@ -1780,9 +1780,9 @@ if (protocol === "I2C" && selectedSensor === "TLV493D") {
     if (xEl) xEl.textContent = "X: 0.00 mT";
     if (yEl) yEl.textContent = "Y: 0.00 mT";
     if (zEl) zEl.textContent = "Z: 0.00 mT";
-    line.setAttribute("x2", "70");
-    line.setAttribute("y2", "70");
-    head.setAttribute("transform", "translate(70,70) rotate(0)");
+    line?.setAttribute("x2", "70");
+    line?.setAttribute("y2", "70");
+    head?.setAttribute("transform", "translate(70,70) rotate(0)");
     line.style.stroke = "#6ee7ff";
     head.style.fill = "#6ee7ff";
     line.style.opacity = "0.5";
@@ -1992,9 +1992,9 @@ function updateTOFAnimation(distance) {
   /* ---------- invalid / out-of-range ---------- */
   if (distance <= 0 || distance > 850 || isNaN(distance)) {
     tofValue.textContent = '– cm';
-    tofPerson.setAttribute('transform', 'translate(20,0)');
-    tofDistanceLine.setAttribute('x2', '25');
-    tofDistanceLine.setAttribute('stroke', '#4a90e2');
+    tofPerson?.setAttribute('transform', 'translate(20,0)');
+    tofDistanceLine?.setAttribute('x2', '25');
+    tofDistanceLine?.setAttribute('stroke', '#4a90e2');
     tofValue.style.color  = '#4a90e2';
     tofWave.style.animation = 'none';
     tofWave.style.opacity = '0';
@@ -2015,8 +2015,8 @@ function updateTOFAnimation(distance) {
   
   console.log(`[TOF] distance=${distance}cm → personX=${personX.toFixed(1)}`);
 
-  tofPerson.setAttribute('transform', `translate(${personX},0)`);
-  tofDistanceLine.setAttribute('x2', personX + 5);
+  tofPerson?.setAttribute('transform', `translate(${personX},0)`);
+  tofDistanceLine?.setAttribute('x2', personX + 5);
 
   /* ---------- colour coding ---------- */
   let color = '#4a90e2';
@@ -2025,12 +2025,12 @@ function updateTOFAnimation(distance) {
   else if (distance < 500)  color = '#4CAF50';     // Green - medium
   // else stays blue for far distances
 
-  tofDistanceLine.setAttribute('stroke', color);
+  tofDistanceLine?.setAttribute('stroke', color);
   tofValue.style.color = color;
 
   /* ---------- proximity wave ---------- */
   if (distance < 300) {
-    tofWave.setAttribute('stroke', color);
+    tofWave?.setAttribute('stroke', color);
     tofWave.style.opacity = '1';
     tofWave.style.animation = 'waveExpand 1.5s ease-out infinite';
   } else {
