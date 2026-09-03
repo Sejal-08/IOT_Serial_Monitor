@@ -1228,18 +1228,10 @@ body:not(.dark-mode) #lis3dh-card h4 {
 }
 
 /* Slightly reduced 3D rotation */
-@keyframes lis3dhIdleRotate {
-  0%   { transform: rotateX(0deg) rotateY(0deg); }
-  20%  { transform: rotateX(25deg) rotateY(-35deg); }
-  50%  { transform: rotateX(45deg) rotateY(55deg); }
-  80%  { transform: rotateX(-25deg) rotateY(35deg); }
-  100% { transform: rotateX(0deg) rotateY(0deg); }
-}
+
 
 /* Very smooth + slow */
-#accel-cube-wrapper {
-  animation: lis3dhIdleRotate 50s ease-in-out infinite;
-}
+
 
 
 

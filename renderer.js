@@ -2662,7 +2662,7 @@ function parseSensorData(data) {
       }
 
       // LIS3DH
-      const lis3dhMatch = line.match(/(?:#?\d+\s*@\s*\d+\s*ms:\s*)?x\s*[=:]?\s*([\d.-]+)\s*[,|]?\s*y\s*[=:]?\s*([\d.-]+)\s*[,|]?\s*z\s*[=:]?\s*([\d.-]+)/i);
+      const lis3dhMatch = line.match(/x[^\d-]*([\d.-]+)[^y]*y[^\d-]*([\d.-]+)[^z]*z[^\d-]*([\d.-]+)/i);
       if (lis3dhMatch && protocol === "I2C") {
         const [, xStr, yStr, zStr] = lis3dhMatch;
         const accelX = parseFloat(xStr);
