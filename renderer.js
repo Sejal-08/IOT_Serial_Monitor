@@ -1865,7 +1865,7 @@ if ((protocol === "RS232" || protocol === "RS485" || isWeatherMode) && (isWeathe
     if (dirEl) dirEl.textContent = Math.round(dir);
 
     const needleEl = document.getElementById("compassNeedle");
-    if (needleEl) needleEl.style.transform = `rotate(${dir}deg)`;
+    if (needleEl) needleEl.setAttribute("transform", `rotate(${dir}, 100, 100)`);
 
     // FROM / TO labels
     const fromEl = document.getElementById("windFromDir");
