@@ -6635,6 +6635,13 @@ body.light-mode .node-pill { background: #e2e8f0; color: #334155; border-color: 
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
     }
 
+    /* SVG compass needle group rotation fix */
+    #compassNeedle {
+      transform-box: fill-box;
+      transform-origin: center center;
+      transition: transform 0.65s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
     /* Vertical Streamline Flow Graphic */
     .streamline-box {
       width: 180px;

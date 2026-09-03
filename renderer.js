@@ -1857,15 +1857,25 @@ if ((protocol === "RS232" || protocol === "RS485" || isWeatherMode) && (isWeathe
   // Update compass direction
   if (currentWindDirection !== null) {
     const dir = parseFloat(currentWindDirection);
+    const dirs16 = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+    const fromDir = dirs16[Math.round(dir / 22.5) % 16];           // where wind comes FROM
+    const toDir   = dirs16[(Math.round(dir / 22.5) + 8) % 16];     // where wind goes TO
+
     const dirEl = document.getElementById("dirVal");
     if (dirEl) dirEl.textContent = Math.round(dir);
+
     const needleEl = document.getElementById("compassNeedle");
     if (needleEl) needleEl.style.transform = `rotate(${dir}deg)`;
+
+    // FROM / TO labels
+    const fromEl = document.getElementById("windFromDir");
+    const toEl   = document.getElementById("windToDir");
+    if (fromEl) fromEl.textContent = fromDir;
+    if (toEl)   toEl.textContent   = toDir;
+
+    // Sub-label (small cardinal text)
     const headingEl = document.getElementById("dirCardinalText");
-    if (headingEl) {
-      const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
-      headingEl.textContent = dirs[Math.round(dir / 22.5) % 16];
-    }
+    if (headingEl) headingEl.textContent = `${Math.round(dir)}° ${fromDir}`;
   }
 
   const line1   = document.getElementById("wind-line-1");
