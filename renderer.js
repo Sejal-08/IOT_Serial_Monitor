@@ -1815,34 +1815,33 @@ if (protocol === "I2C" && selectedSensor === "TLV493D") {
 
 
 // === LIS3DH ACCELERATION VALUES + BALL UPDATE ===
-if (protocol === "I2C" && (selectedSensor === "LIS3DH" || selectedSensor === "LIS2DH")) {
-  const ball = document.getElementById("accel-ball");
-
-  if (currentAccelX !== null && currentAccelY !== null && currentAccelZ !== null) {
-    const accelX = parseFloat(currentAccelX);
-    const accelY = parseFloat(currentAccelY);
-    const accelZ = parseFloat(currentAccelZ);
-
-    if (lis3dhXValue) lis3dhXValue.textContent = `X: ${accelX.toFixed(2)} m/s²`;
-    if (lis3dhYValue) lis3dhYValue.textContent = `Y: ${accelY.toFixed(2)} m/s²`;
-    if (lis3dhZValue) lis3dhZValue.textContent = `Z: ${accelZ.toFixed(2)} m/s²`;
-
-    const scale = 75 / 12; // sensitivity - adjust if needed
-    const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
-    const ballX = clamp(accelX * scale, -67.5, 67.5);
-    const ballY = clamp(-accelY * scale, -67.5, 67.5); // invert Y for correct direction
-
-    if (ball) {
-      ball.style.transform = `translate(-50%, -50%) translate3d(${ballX}px, ${ballY}px, 0px)`;
+    if (protocol === "I2C" && (selectedSensor === "LIS3DH" || selectedSensor === "LIS2DH")) {
+      const cube = document.getElementById("accel-cube");
+    
+      if (currentAccelX !== null && currentAccelY !== null && currentAccelZ !== null) {
+        const accelX = parseFloat(currentAccelX);
+        const accelY = parseFloat(currentAccelY);
+        const accelZ = parseFloat(currentAccelZ);
+    
+        if (lis3dhXValue) lis3dhXValue.textContent = `X: ${accelX.toFixed(2)} m/s\u00B2`;
+        if (lis3dhYValue) lis3dhYValue.textContent = `Y: ${accelY.toFixed(2)} m/s\u00B2`;
+        if (lis3dhZValue) lis3dhZValue.textContent = `Z: ${accelZ.toFixed(2)} m/s\u00B2`;
+    
+        if (accelX === 0 && accelY === 0 && accelZ === 0) {
+          // Do not auto-rotate if all values are perfectly 0, let the user rotate manually!
+        } else {
+          const pitch = Math.atan2(accelY, Math.sqrt(accelX*accelX + accelZ*accelZ)) * (180 / Math.PI);
+          const roll = Math.atan2(-accelX, Math.sqrt(accelY*accelY + accelZ*accelZ)) * (180 / Math.PI);
+          if (cube) {
+            cube.style.transform = `rotateX(${pitch}deg) rotateY(${roll}deg)`;
+          }
+        }
+      } else {
+        if (lis3dhXValue) lis3dhXValue.textContent = "X: 0.00 m/s\u00B2";
+        if (lis3dhYValue) lis3dhYValue.textContent = "Y: 0.00 m/s\u00B2";
+        if (lis3dhZValue) lis3dhZValue.textContent = "Z: 0.00 m/s\u00B2";
+      }
     }
-  } else {
-    // No data yet - show zeros
-    if (lis3dhXValue) lis3dhXValue.textContent = "X: 0.00 m/s²";
-    if (lis3dhYValue) lis3dhYValue.textContent = "Y: 0.00 m/s²";
-    if (lis3dhZValue) lis3dhZValue.textContent = "Z: 0.00 m/s²";
-    if (ball) ball.style.transform = "translate(-50%, -50%) translate3d(0px, 0px, 0px)";
-  }
-}
 
        // Updated Wind Direction rotation code (now centered perfectly with new needle size)
         /* OLD WIND DIRECTION LOGIC REMOVED */
@@ -1962,9 +1961,9 @@ if (protocol === "I2C" && selectedSensor === "SEN66") {
     if (humidityValue) humidityValue.textContent = "";
     if (pressureValue) pressureValue.textContent = "";
     if (lightValue) lightValue.textContent = "";
-    if (lis3dhXValue) lis3dhXValue.textContent = "X: 0.00 m/s²";
-    if (lis3dhYValue) lis3dhYValue.textContent = "Y: 0.00 m/s²";
-    if (lis3dhZValue) lis3dhZValue.textContent = "Z: 0.00 m/s²";
+    if (lis3dhXValue) lis3dhXValue.textContent = "X: 0.00 m/s\u00B2";
+    if (lis3dhYValue) lis3dhYValue.textContent = "Y: 0.00 m/s\u00B2";
+    if (lis3dhZValue) lis3dhZValue.textContent = "Z: 0.00 m/s\u00B2";
     if (hallValue) hallValue.textContent = "";
     if (tlv493dXValue) tlv493dXValue.textContent = "X: 0.00 mT";
     if (tlv493dYValue) tlv493dYValue.textContent = "Y: 0.00 mT";
@@ -3212,39 +3211,42 @@ window.addEventListener("DOMContentLoaded", () => {
       selectSensor(event.target.value);
     });
   }
-  let isDragging = false;
-  let previousX = 0;
-  let previousY = 0;
-  let rotateX = 0;
-  let rotateY = 0;
-  const cubeWrapper = document.getElementById('accel-cube-wrapper');
-  const cube = document.getElementById('accel-cube');
-  if (cubeWrapper && cube) {
-    cubeWrapper.addEventListener('mousedown', (e) => {
-      isDragging = true;
-      previousX = e.clientX;
-      previousY = e.clientY;
-      cube.style.transition = 'none';
-    });
-    document.addEventListener('mousemove', (e) => {
-      if (isDragging) {
-        const deltaX = e.clientX - previousX;
-        const deltaY = e.clientY - previousY;
-        rotateY += deltaX * 0.5;
-        rotateX -= deltaY * 0.5;
-        cube.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-        previousX = e.clientX;
-        previousY = e.clientY;
-      }
-    });
-    document.addEventListener('mouseup', () => {
-      isDragging = false;
-      cube.style.transition = 'transform 0.3s ease';
-      updateSensorConnectionStatus();
-    });
-    cubeWrapper.addEventListener('dragstart', (e) => e.preventDefault());
-  }
-});
+    
+    // Manual Mouse Rotation for LIS3DH
+    let isDraggingLIS = false;
+    let previousMouseX = 0;
+    let previousMouseY = 0;
+    let lisRotateX = 0;
+    let lisRotateY = 0;
+    const accelCubeWrapper = document.getElementById('accel-cube-wrapper');
+    const accelCube = document.getElementById('accel-cube');
+
+    if (accelCubeWrapper && accelCube) {
+      accelCubeWrapper.addEventListener('mousedown', (e) => {
+        isDraggingLIS = true;
+        previousMouseX = e.clientX;
+        previousMouseY = e.clientY;
+        accelCube.style.transition = 'none';
+      });
+      document.addEventListener('mousemove', (e) => {
+        if (isDraggingLIS) {
+          const deltaX = e.clientX - previousMouseX;
+          const deltaY = e.clientY - previousMouseY;
+          lisRotateY += deltaX * 0.5;
+          lisRotateX -= deltaY * 0.5;
+          accelCube.style.transform = `rotateX(${lisRotateX}deg) rotateY(${lisRotateY}deg)`;
+          previousMouseX = e.clientX;
+          previousMouseY = e.clientY;
+        }
+      });
+      document.addEventListener('mouseup', () => {
+        isDraggingLIS = false;
+        if(accelCube) accelCube.style.transition = 'transform 0.15s ease-out';
+      });
+      accelCubeWrapper.addEventListener('dragstart', (e) => e.preventDefault());
+    }
+  });
+
 function updateSensorConnectionStatus() {
   const hasRealData = 
     currentTemperature !== null ||
@@ -3433,7 +3435,7 @@ function parseData(dataStr) {
         if (parts.length >= 5) {
           const dirVal = parseFloat(parts[1]);
           const spdVal = parseFloat(parts[3]);
-          const unit = parts[4]; // M = m/s, K = km/h, N = knots
+          const unit = parts[4]; // M = m/s\u00B2 K = km/h, N = knots
           if (!isNaN(spdVal)) {
             speed = unit === 'K' ? spdVal / 3.6 : (unit === 'N' ? spdVal * 0.514444 : spdVal);
           }
