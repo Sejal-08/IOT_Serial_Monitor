@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="styles.css">
   <style>
     body {
-      background-color: var(--bg-color);
+      background-color: var(--bg-color, #0b1120);
       background-image: 
         linear-gradient(rgba(0, 229, 255, 0.03) 1px, transparent 1px),
         linear-gradient(90deg, rgba(0, 229, 255, 0.03) 1px, transparent 1px);
@@ -21,169 +21,291 @@
     }
     .top-nav {
       position: fixed; top: 0; left: 0; width: 100%;
-      height: 60px; background: var(--nav-bg);
-      border-bottom: 1px solid var(--nav-border);
+      height: 60px; background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--nav-border, #1e293b);
       display: flex; align-items: center; justify-content: space-between;
       padding: 0 20px; z-index: 1000;
     }
     .back-btn {
-      color: var(--text-dim); text-decoration: none;
-      font-family: var(--font-mono); font-size: 0.9rem;
+      color: var(--text-dim, #94a3b8); text-decoration: none;
+      font-family: 'Share Tech Mono', monospace; font-size: 1.1rem;
       transition: color 0.3s;
     }
-    .back-btn:hover { color: var(--accent-cyan); }
-    
+    .back-btn:hover { color: var(--accent-cyan, #00e5ff); }
+    .theme-btn {
+      background: none; border: none; color: var(--text-dim, #94a3b8);
+      font-size: 1.2rem; cursor: pointer; transition: color 0.3s;
+    }
+    .theme-btn:hover { color: var(--accent-cyan, #00e5ff); }
+
     .menu-container {
-      margin: 65px auto 40px;
-      width: 100%;
+      margin-top: 80px;
+      padding: 20px 40px 60px;
+      flex-grow: 1;
       max-width: 1400px;
-      padding: 0 40px;
+      margin-left: auto;
+      margin-right: auto;
+      width: 100%;
     }
     .menu-header {
       text-align: center;
-      margin-bottom: 50px;
+      margin-bottom: 40px;
     }
     .menu-header h1 {
-      margin-top: 0;
-      font-family: var(--font-sans);
-      font-size: 2.8rem;
-      color: var(--text-bright);
-      text-transform: uppercase;
+      font-family: 'Rajdhani', sans-serif;
+      color: var(--text-bright, #e2e8f0);
+      font-size: 3rem;
       letter-spacing: 2px;
+      text-transform: uppercase;
+      text-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
+      margin-bottom: 20px;
     }
+
+    /* Search Bar */
+    .search-container {
+      max-width: 600px;
+      margin: 0 auto;
+      position: relative;
+    }
+    .search-container i {
+      position: absolute;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-dim, #94a3b8);
+      font-size: 1.2rem;
+    }
+    .search-bar {
+      width: 100%;
+      padding: 16px 20px 16px 50px;
+      border-radius: 30px;
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid var(--panel-border, #334155);
+      color: var(--text-bright, #f8fafc);
+      font-family: 'Inter', sans-serif;
+      font-size: 1.1rem;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+    .search-bar:focus {
+      outline: none;
+      border-color: var(--accent-cyan, #00e5ff);
+      box-shadow: 0 0 20px rgba(0, 229, 255, 0.2);
+      background: rgba(30, 41, 59, 0.9);
+    }
+
+    /* Grid */
     .sensor-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
       gap: 30px;
+      margin-top: 40px;
     }
+
+    /* Cyberpunk Card */
     .sensor-card-btn {
-      background: #18181b;
-      border-radius: 12px;
-      overflow: hidden;
+      background: rgba(30, 41, 59, 0.6);
+      border-radius: 16px;
       text-decoration: none;
       display: flex;
       flex-direction: column;
-      border: 1px solid #27272a;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      align-items: stretch;
-      padding: 0;
+      overflow: hidden;
+      border: 1px solid var(--panel-border, #334155);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      backdrop-filter: blur(12px);
+      position: relative;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.3);
     }
     .sensor-card-btn:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 12px 25px rgba(0,0,0,0.5);
-      border-color: #3f3f46;
+      transform: translateY(-8px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 229, 255, 0.15);
+      border-color: var(--accent-cyan, #00e5ff);
     }
+
+    /* Protocol Badge */
+    .protocol-badge {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.8rem;
+      font-weight: 700;
+      z-index: 10;
+      letter-spacing: 1px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+    .protocol-i2c { background: rgba(0, 229, 255, 0.15); color: #00e5ff; border: 1px solid #00e5ff; }
+    .protocol-rs485 { background: rgba(167, 139, 250, 0.15); color: #a78bfa; border: 1px solid #a78bfa; }
+    .protocol-adc { background: rgba(251, 191, 36, 0.15); color: #fbbf24; border: 1px solid #fbbf24; }
+    .protocol-analog { background: rgba(248, 113, 113, 0.15); color: #f87171; border: 1px solid #f87171; }
+
+    /* Image Container */
     .card-img-container {
-      background: #8e959f;
-      height: 240px;
+      background: radial-gradient(circle at center, rgba(51, 65, 85, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+      height: 220px;
       display: flex;
       justify-content: center;
       align-items: center;
       position: relative;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      overflow: hidden;
+    }
+    .sensor-card-btn:hover .card-img-container img, 
+    .sensor-card-btn:hover .card-img-container i {
+      transform: scale(1.1);
     }
     .card-img-container img {
       width: auto;
-      height: 160px;
+      height: 150px;
       object-fit: contain;
-      filter: drop-shadow(0 10px 10px rgba(0,0,0,0.3));
+      filter: drop-shadow(0 15px 15px rgba(0,0,0,0.4));
+      transition: transform 0.5s ease;
+      z-index: 2;
     }
     .card-img-container i {
       font-size: 6rem;
-      color: #fff;
-      opacity: 0.9;
+      color: rgba(255,255,255,0.9);
+      transition: transform 0.5s ease;
+      z-index: 2;
     }
+    /* Grid background effect behind image */
+    .card-img-container::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 20px 20px;
+      z-index: 1;
+    }
+
+    /* Content */
     .card-content {
       padding: 24px;
       display: flex;
       flex-direction: column;
       flex-grow: 1;
+      position: relative;
     }
     .card-content h3 {
-      font-family: 'Inter', sans-serif;
-      color: #fff;
-      font-size: 1.25rem;
+      font-family: 'Rajdhani', sans-serif;
+      color: var(--text-bright, #fff);
+      font-size: 1.5rem;
       font-weight: 700;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       text-align: left;
+      letter-spacing: 1px;
     }
     .card-content p {
       font-family: 'Inter', sans-serif;
-      color: #a1a1aa;
-      font-size: 0.9rem;
-      line-height: 1.5;
+      color: var(--text-dim, #94a3b8);
+      font-size: 0.95rem;
+      line-height: 1.6;
       margin-bottom: 24px;
       text-align: left;
       flex-grow: 1;
     }
+
+    /* Cyberpunk Connect Button */
     .monitor-btn {
-      background: #27272a;
-      color: #e4e4e7;
-      font-family: 'Inter', sans-serif;
-      font-weight: 700;
-      font-size: 0.85rem;
-      border: 1px solid #3f3f46;
-      border-radius: 6px;
+      background: transparent;
+      color: var(--accent-cyan, #00e5ff);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 1rem;
+      border: 1px solid rgba(0, 229, 255, 0.3);
+      border-radius: 8px;
       padding: 12px 0;
       width: 100%;
       cursor: pointer;
       transition: all 0.3s ease;
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 2px;
+      position: relative;
+      overflow: hidden;
+    }
+    .monitor-btn::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(0, 229, 255, 0.2), transparent);
+      transition: left 0.5s ease;
     }
     .sensor-card-btn:hover .monitor-btn {
-      background: #93c5fd;
-      color: #1e1e24;
-      border-color: #93c5fd;
+      background: rgba(0, 229, 255, 0.1);
+      border-color: var(--accent-cyan, #00e5ff);
+      box-shadow: 0 0 15px rgba(0, 229, 255, 0.2) inset;
     }
-      /* Light Mode Overrides */
+    .sensor-card-btn:hover .monitor-btn::before {
+      left: 100%;
+    }
+
+    /* Light Mode Overrides */
+    body.light-mode {
+      background-image: 
+        linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+    }
+    body.light-mode .top-nav {
+      background: rgba(255, 255, 255, 0.9);
+      border-bottom-color: #e2e8f0;
+    }
+    body.light-mode .menu-header h1 {
+      color: #0f172a;
+      text-shadow: none;
+    }
+    body.light-mode .search-bar {
+      background: rgba(255, 255, 255, 0.8);
+      border-color: #cbd5e1;
+      color: #0f172a;
+    }
     body.light-mode .sensor-card-btn {
-      background: #ffffff;
-      border-color: #cdd6e5;
+      background: rgba(255, 255, 255, 0.7);
+      border-color: #cbd5e1;
       box-shadow: 0 4px 6px rgba(0,0,0,0.05);
     }
     body.light-mode .sensor-card-btn:hover {
-      box-shadow: 0 12px 25px rgba(0,0,0,0.1);
-      border-color: #0096ff;
-    }
-    body.light-mode .card-img-container {
-      background: #e2e8f0;
-    }
-    body.light-mode .card-img-container i {
-      color: #64748b;
-    }
-    body.light-mode .card-content h3 {
-      color: #1e293b;
-    }
-    body.light-mode .card-content p {
-      color: #475569;
-    }
-    body.light-mode .monitor-btn {
-      background: #f1f5f9;
-      color: #334155;
-      border-color: #cbd5e1;
-    }
-    body.light-mode .sensor-card-btn:hover .monitor-btn {
-      background: #3b82f6;
-      color: #ffffff;
+      box-shadow: 0 15px 30px rgba(0,0,0,0.1);
       border-color: #3b82f6;
     }
-    body.light-mode .menu-header h1 {
-      color: #1e293b;
+    body.light-mode .card-img-container {
+      background: radial-gradient(circle at center, #f8fafc 0%, #e2e8f0 100%);
+      border-bottom-color: #cbd5e1;
     }
-    
-    .theme-btn {
-      background: none; border: none; color: var(--text-dim);
-      font-size: 1.2rem; cursor: pointer; transition: color 0.3s;
+    body.light-mode .card-img-container i { color: #64748b; }
+    body.light-mode .card-img-container::before {
+      background-image: 
+        linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
     }
-    .theme-btn:hover { color: var(--accent-cyan); }
+    body.light-mode .card-content h3 { color: #0f172a; }
+    body.light-mode .card-content p { color: #475569; }
+    body.light-mode .monitor-btn {
+      color: #3b82f6;
+      border-color: rgba(59, 130, 246, 0.4);
+    }
+    body.light-mode .sensor-card-btn:hover .monitor-btn {
+      background: rgba(59, 130, 246, 0.1);
+      border-color: #3b82f6;
+      box-shadow: 0 0 10px rgba(59, 130, 246, 0.1) inset;
+    }
+    body.light-mode .protocol-i2c { border-color: #0ea5e9; color: #0ea5e9; }
+    body.light-mode .protocol-rs485 { border-color: #8b5cf6; color: #8b5cf6; }
+    body.light-mode .protocol-adc { border-color: #d97706; color: #d97706; }
+    body.light-mode .protocol-analog { border-color: #ef4444; color: #ef4444; }
   </style>
 </head>
 <body>
   <!-- Top Nav -->
   <div class="top-nav">
     <a href="login.html" class="back-btn"><i class="fas fa-arrow-left"></i> BACK</a>
-    <div style="font-family: var(--font-sans); font-weight: 700; color: var(--text-bright); letter-spacing: 1px;">
-      ARDUINO SENSORS
+    <div style="font-family: 'Rajdhani', sans-serif; font-weight: 700; color: var(--text-bright, #fff); letter-spacing: 2px; font-size: 1.2rem;">
+      ARDUINO DASHBOARD
     </div>
     <div style="width: 60px; text-align: right;">
       <button class="theme-btn" onclick="toggleTheme()"><i class="fas fa-sun"></i></button>
@@ -193,14 +315,19 @@
   <div class="menu-container">
     <div class="menu-header">
       <h1>Select Sensor</h1>
+      <div class="search-container">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchInput" class="search-bar" placeholder="Search sensors by name or protocol (e.g. I2C)..." onkeyup="filterSensors()">
+      </div>
     </div>
+    
     <div class="sensor-grid" id="sensor-grid">
       <!-- Generated by JS -->
     </div>
   </div>
 
   <script>
-        function toggleTheme() {
+    function toggleTheme() {
       document.body.classList.toggle('light-mode');
       const isLight = document.body.classList.contains('light-mode');
       localStorage.setItem('appTheme', isLight ? 'light' : 'dark');
@@ -232,58 +359,82 @@
     ];
 
     const grid = document.getElementById("sensor-grid");
-    sensors.forEach(s => {
-      const a = document.createElement("a");
-      a.className = "sensor-card-btn";
-      a.href = "javascript:void(0)";
-      a.onclick = () => {
-        localStorage.setItem("arduinoSensor", s.sensor);
-        localStorage.setItem("arduinoProtocol", s.protocol);
-        window.location.href = "arduino.html";
-      };
+    
+    function renderSensors(filterText = "") {
+      grid.innerHTML = "";
+      const lowerFilter = filterText.toLowerCase();
       
-      const imgContainer = document.createElement("div");
-      imgContainer.className = "card-img-container";
-      
-      if (s.img) {
-        const img = document.createElement("img");
-        img.src = s.img;
-        imgContainer.appendChild(img);
-      } else {
-        const i = document.createElement("i");
-        i.className = "fas " + s.icon;
-        imgContainer.appendChild(i);
+      const filtered = sensors.filter(s => 
+        s.name.toLowerCase().includes(lowerFilter) || 
+        s.protocol.toLowerCase().includes(lowerFilter) ||
+        s.desc.toLowerCase().includes(lowerFilter)
+      );
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '<p style="color: var(--text-dim, #94a3b8); text-align: center; grid-column: 1 / -1; font-size: 1.2rem; font-family: sans-serif;">No sensors found matching "' + filterText + '"</p>';
+        return;
       }
-      
-      const content = document.createElement("div");
-      content.className = "card-content";
-      
-      const h3 = document.createElement("h3");
-      h3.textContent = s.name;
-      
-      const p = document.createElement("p");
-      p.textContent = s.desc;
-      
-      const btn = document.createElement("button");
-      btn.className = "monitor-btn";
-      btn.textContent = "MONITOR SENSOR";
-      
-      content.appendChild(h3);
-      content.appendChild(p);
-      content.appendChild(btn);
-      
-      a.appendChild(imgContainer);
-      a.appendChild(content);
-      
-      grid.appendChild(a);
-    });
+
+      filtered.forEach(s => {
+        const a = document.createElement("a");
+        a.className = "sensor-card-btn";
+        a.href = "javascript:void(0)";
+        a.onclick = () => {
+          localStorage.setItem("arduinoSensor", s.sensor);
+          localStorage.setItem("arduinoProtocol", s.protocol);
+          window.location.href = "arduino.html";
+        };
+        
+        // Protocol Badge
+        const badge = document.createElement("div");
+        badge.className = "protocol-badge protocol-" + s.protocol.toLowerCase();
+        badge.textContent = s.protocol;
+        a.appendChild(badge);
+
+        const imgContainer = document.createElement("div");
+        imgContainer.className = "card-img-container";
+        
+        if (s.img) {
+          const img = document.createElement("img");
+          img.src = s.img;
+          imgContainer.appendChild(img);
+        } else {
+          const i = document.createElement("i");
+          i.className = "fas " + s.icon;
+          imgContainer.appendChild(i);
+        }
+        
+        const content = document.createElement("div");
+        content.className = "card-content";
+        
+        const h3 = document.createElement("h3");
+        h3.textContent = s.name;
+        
+        const p = document.createElement("p");
+        p.textContent = s.desc;
+        
+        const btn = document.createElement("button");
+        btn.className = "monitor-btn";
+        btn.innerHTML = 'CONNECT <i class="fas fa-arrow-right" style="margin-left: 8px;"></i>';
+        
+        content.appendChild(h3);
+        content.appendChild(p);
+        content.appendChild(btn);
+        
+        a.appendChild(imgContainer);
+        a.appendChild(content);
+        
+        grid.appendChild(a);
+      });
+    }
+
+    function filterSensors() {
+      const input = document.getElementById("searchInput").value;
+      renderSensors(input);
+    }
+
+    // Initial render
+    renderSensors();
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
