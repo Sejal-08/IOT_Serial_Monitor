@@ -1846,10 +1846,27 @@ if (protocol === "I2C" && selectedSensor === "TLV493D") {
        // Updated Wind Direction rotation code (now centered perfectly with new needle size)
         /* OLD WIND DIRECTION LOGIC REMOVED */
 
-// === WIND SPEED UPDATE ===
+// === WIND SPEED & DIRECTION UPDATE ===
 if ((protocol === "RS232" || protocol === "RS485" || isWeatherMode) && (isWeatherMode || selectedSensor === "Wind Sensor") && currentWindSpeed !== null) {
   const speed = parseFloat(currentWindSpeed);
-  if (windSpeedValue) windSpeedValue.textContent = `${speed.toFixed(1)} m/s`;
+  // Update speed display
+  const speedEl = document.getElementById("speedVal");
+  if (speedEl) speedEl.textContent = speed.toFixed(2);
+  if (windSpeedValue) windSpeedValue.textContent = `${speed.toFixed(2)} m/s`;
+
+  // Update compass direction
+  if (currentWindDirection !== null) {
+    const dir = parseFloat(currentWindDirection);
+    const dirEl = document.getElementById("dirVal");
+    if (dirEl) dirEl.textContent = Math.round(dir);
+    const needleEl = document.getElementById("compassNeedle");
+    if (needleEl) needleEl.style.transform = `rotate(${dir}deg)`;
+    const headingEl = document.getElementById("dirCardinalText");
+    if (headingEl) {
+      const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+      headingEl.textContent = dirs[Math.round(dir / 22.5) % 16];
+    }
+  }
 
   const line1   = document.getElementById("wind-line-1");
   const line2   = document.getElementById("wind-line-2");
@@ -2579,7 +2596,7 @@ function parseSensorData(data) {
       }
 
       // Wind Sensor
-      const windMatch = line.match(/Wind speed:\s*([\d.]+),\s*Wind direction:\s*([\d.]+)/);
+      const windMatch = line.match(/Wind speed:\s*([\d.]+).*?Wind direction:\s*([\d.]+)/i);
       if (windMatch && (protocol === "RS232" || protocol === "RS485" || isWeatherMode)) {
         const [, speed, direction] = windMatch;
         const targetProtocol = isWeatherMode ? "WEATHER" : protocol;
