@@ -577,122 +577,58 @@
     align-items: center;
   ">
     <svg width="280" height="280" viewBox="0 0 280 280" style="display: block;">
-      <defs>
-        <radialGradient id="sunCoreGradient">
-          <stop offset="0%" stop-color="#fffbeb"/>
-          <stop offset="40%" stop-color="#fef08a"/>
-          <stop offset="70%" stop-color="#fbbf24"/>
-          <stop offset="100%" stop-color="#f59e0b"/>
-        </radialGradient>
+        <defs>
+          <linearGradient id="bulbBase" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#475569" />
+            <stop offset="50%" stop-color="#94a3b8" />
+            <stop offset="100%" stop-color="#475569" />
+          </linearGradient>
 
-        <filter id="sunCorona" x="-60%" y="-60%" width="220%" height="220%">
-          <feGaussianBlur stdDeviation="18" result="blur1"/>
-          <feGaussianBlur stdDeviation="8" result="blur2" in="blur1"/>
-          <feMerge>
-            <feMergeNode in="blur2"/>
-            <feMergeNode in="blur1"/>
-            <feMergeNode in="SourceGraphic"/>
-          </feMerge>
-        </filter>
+          <filter id="bulbGlowFilter" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur id="bulb-blur" stdDeviation="5" result="blur" />
+            <feComponentTransfer>
+              <feFuncA type="linear" slope="1.5" />
+            </feComponentTransfer>
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
 
-        <filter id="sunBloom">
-          <feGaussianBlur stdDeviation="5" result="bloom"/>
-          <feComponentTransfer>
-            <feFuncA type="linear" slope="2.2"/>
-          </feComponentTransfer>
-          <feMerge>
-            <feMergeNode in="bloom"/>
-            <feMergeNode in="SourceGraphic"/>
-          </feMerge>
-        </filter>
+          <linearGradient id="rayGradient" x1="0%" y1="100%" x2="0%" y2="0%">
+            <stop offset="0%" stop-color="#fbbf24" stop-opacity="0" />
+            <stop offset="100%" stop-color="#fef08a" stop-opacity="1" />
+          </linearGradient>
+        </defs>
 
-        <filter id="particleGlow">
-          <feGaussianBlur stdDeviation="3" result="pglow"/>
-        </filter>
-
-        <!-- Add your gradient for arc here if not already defined globally -->
-        <linearGradient id="luxGaugeGradient" x1="0%" y1="100%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="#1e293b"/>
-          <stop offset="40%" stop-color="#60a5fa"/>
-          <stop offset="70%" stop-color="#fbbf24"/>
-          <stop offset="100%" stop-color="#fef08a"/>
-        </linearGradient>
-      </defs>
-
-      <!-- Background ring – perfectly centered -->
-      <circle cx="140" cy="140" r="115" fill="none" stroke="#334155" stroke-width="22" opacity="0.35"/>
-
-      <!-- Progress arc – symmetric around center -->
-      <path id="vcnl-lux-arc"
-            d="M 60 140 A 80 80 0 0 1 220 140"
-            fill="none"
-            stroke="url(#luxGaugeGradient)"
-            stroke-width="28"
-            stroke-linecap="round"
-            stroke-dasharray="502.65 502.65"
-            stroke-dashoffset="502.65"/>
-
-      <!-- Sun & everything else – forced center with translate(140,140) -->
-      <g id="vcnl-sun-group" transform="translate(140,140)">
-        <!-- Core sun -->
-        <circle id="sun-core" cx="0" cy="0" r="42" fill="url(#sunCoreGradient)" filter="url(#sunBloom)"/>
-
-        <!-- Outer corona -->
-        <circle cx="0" cy="0" r="65" fill="none" stroke="#fbbf24" stroke-width="18" opacity="0.5" filter="url(#sunCorona)"/>
-
-        <!-- Pulsing inner highlight -->
-        <circle cx="0" cy="0" r="28" fill="#ffffff" opacity="0.35">
-          <animate attributeName="r" values="28;32;28" dur="5s" repeatCount="indefinite"/>
-          <animate attributeName="opacity" values="0.35;0.6;0.35" dur="5s" repeatCount="indefinite"/>
-        </circle>
-
-       <!-- 16 RAYS – every 22.5&deg;, longer & staggered -->
-        <g id="sun-rays">
-          <!-- Ray 0&deg; (North) -->
-          <line x1="0" y1="-80" x2="0" y2="-140" stroke="#fef08a" stroke-width="8" opacity="0">
-            <animate attributeName="opacity" values="0;1;0" dur="5.5s" repeatCount="indefinite"/>
-          </line>
-
-          <!-- Ray 45&deg; -->
-          <line x1="0" y1="-80" x2="0" y2="-140" stroke="#fbbf24" stroke-width="7" opacity="0" transform="rotate(45)">
-            <animate attributeName="opacity" values="0;1;0" dur="5.5s" begin="0.68s" repeatCount="indefinite"/>
-          </line>
-          
-          <!-- Ray 90&deg; (East) -->
-          <line x1="0" y1="-80" x2="0" y2="-140" stroke="#fcd34d" stroke-width="8" opacity="0" transform="rotate(90)">
-            <animate attributeName="opacity" values="0;1;0" dur="5.5s" begin="1.37s" repeatCount="indefinite"/>
-          </line>
-         
-          <!-- Ray 135&deg; -->
-          <line x1="0" y1="-80" x2="0" y2="-140" stroke="#fef08a" stroke-width="7" opacity="0" transform="rotate(135)">
-            <animate attributeName="opacity" values="0;1;0" dur="5.5s" begin="2.06s" repeatCount="indefinite"/>
-          </line>
-
-          <!-- Ray 180&deg; (South) -->
-          <line x1="0" y1="-80" x2="0" y2="-140" stroke="#fbbf24" stroke-width="8" opacity="0" transform="rotate(180)">
-            <animate attributeName="opacity" values="0;1;0" dur="5.5s" begin="2.74s" repeatCount="indefinite"/>
-          </line>
-
-          <!-- Ray 225&deg; -->
-          <line x1="0" y1="-80" x2="0" y2="-140" stroke="#fcd34d" stroke-width="7" opacity="0" transform="rotate(225)">
-            <animate attributeName="opacity" values="0;1;0" dur="5.5s" begin="3.43s" repeatCount="indefinite"/>
-          </line>
-
-          <!-- Ray 270&deg; (West) -->
-          <line x1="0" y1="-80" x2="0" y2="-140" stroke="#fef08a" stroke-width="8" opacity="0" transform="rotate(270)">
-            <animate attributeName="opacity" values="0;1;0" dur="5.5s" begin="4.11s" repeatCount="indefinite"/>
-          </line>
-
-          <!-- Ray 315&deg; -->
-          <line x1="0" y1="-80" x2="0" y2="-140" stroke="#fbbf24" stroke-width="7" opacity="0" transform="rotate(315)">
-            <animate attributeName="opacity" values="0;1;0" dur="5.5s" begin="4.80s" repeatCount="indefinite"/>
-          </line>
+        <g id="vcnl-bulb-rays" opacity="0" transform="translate(140, 120)">
+           <line x1="0" y1="-80" x2="0" y2="-130" stroke="url(#rayGradient)" stroke-width="5" stroke-linecap="round" />
+           <line x1="0" y1="-80" x2="0" y2="-130" stroke="url(#rayGradient)" stroke-width="5" stroke-linecap="round" transform="rotate(45)" />
+           <line x1="0" y1="-80" x2="0" y2="-130" stroke="url(#rayGradient)" stroke-width="5" stroke-linecap="round" transform="rotate(90)" />
+           <line x1="0" y1="-80" x2="0" y2="-130" stroke="url(#rayGradient)" stroke-width="5" stroke-linecap="round" transform="rotate(135)" />
+           <line x1="0" y1="-80" x2="0" y2="-130" stroke="url(#rayGradient)" stroke-width="5" stroke-linecap="round" transform="rotate(180)" />
+           <line x1="0" y1="-80" x2="0" y2="-130" stroke="url(#rayGradient)" stroke-width="5" stroke-linecap="round" transform="rotate(225)" />
+           <line x1="0" y1="-80" x2="0" y2="-130" stroke="url(#rayGradient)" stroke-width="5" stroke-linecap="round" transform="rotate(270)" />
+           <line x1="0" y1="-80" x2="0" y2="-130" stroke="url(#rayGradient)" stroke-width="5" stroke-linecap="round" transform="rotate(315)" />
+           <animateTransform attributeName="transform" type="rotate" from="0 140 120" to="360 140 120" dur="30s" repeatCount="indefinite" />
         </g>
 
-        <!-- Breathing pulse -->
-        <animateTransform attributeName="transform" type="scale" values="1;1.05;1" dur="8s" repeatCount="indefinite"/>
-      </g>
-    </svg>
+        <path id="vcnl-bulb-glass"
+              d="M100 170 C60 170 60 70 140 70 C220 70 220 170 180 170 C170 180 165 200 165 200 L115 200 C115 200 110 180 100 170 Z"
+              fill="rgba(255, 255, 255, 0.03)"
+              stroke="#64748b" stroke-width="3"
+              filter="url(#bulbGlowFilter)"
+              style="transition: all 0.5s ease;" />
+
+        <path id="vcnl-bulb-filament"
+              d="M125 200 L125 150 L135 120 L145 120 L155 150 L155 200"
+              fill="none" stroke="#64748b" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
+              style="transition: all 0.5s ease;" />
+
+        <rect x="115" y="200" width="50" height="30" fill="url(#bulbBase)" rx="4" />
+        <path d="M115 205 L165 205 M115 215 L165 215 M115 225 L165 225" stroke="#334155" stroke-width="3" stroke-linecap="round" />
+        <path d="M125 230 Q140 245 155 230 Z" fill="#1e293b" />
+      </svg>
   </div>
 </div>
 

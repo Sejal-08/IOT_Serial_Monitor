@@ -1154,13 +1154,28 @@ if (selectedSensor === "VCNL4040") {  // ← Remove protocol check, it's redunda
 
   // Handle no data
   if (currentVCNLLux == null || isNaN(currentVCNLLux)) {
-    console.log("[VCNL] No valid data → reset to 0");
-    if (valueEl) valueEl.textContent = "0.0 lux";
-    if (arcEl) arcEl?.setAttribute("d", "M 30 110 A 80 80 0 0 1 30 110");
-    if (sunGroup) sunGroup.style.opacity = "0.25";
-    if (levelEl) levelEl.textContent = "No data";
-    return;
-  }
+      console.log("[VCNL] No valid data -> reset to 0");
+      if (valueEl) valueEl.textContent = "0.0 lux";
+      if (levelEl) levelEl.textContent = "No data";
+      
+      const bulbGlass = document.getElementById("vcnl-bulb-glass");
+      const bulbFilament = document.getElementById("vcnl-bulb-filament");
+      const bulbBlur = document.getElementById("bulb-blur");
+      const bulbRays = document.getElementById("vcnl-bulb-rays");
+      
+      if (bulbGlass) {
+        bulbGlass?.setAttribute("fill", "rgba(255, 255, 255, 0.03)");
+        bulbGlass?.setAttribute("stroke", "#64748b");
+      }
+      if (bulbFilament) {
+        bulbFilament?.setAttribute("stroke", "#64748b");
+        bulbFilament?.setAttribute("stroke-width", "3");
+      }
+      if (bulbBlur) bulbBlur?.setAttribute("stdDeviation", "5");
+      if (bulbRays) bulbRays?.setAttribute("opacity", "0");
+      
+      return;
+    }
 
   const lux = Number(currentVCNLLux);
   console.log("[VCNL] Rendering fresh value:", lux);
@@ -1170,39 +1185,44 @@ if (selectedSensor === "VCNL4040") {  // ← Remove protocol check, it's redunda
     valueEl.textContent = `${lux.toFixed(1)} lux`;
   }
 
-  // Update arc (progress)
-  const maxLux = 100000;
-  const progress = Math.min(lux / maxLux, 1);
-  const angle = progress * 180;
-  const radians = (angle * Math.PI) / 180;
-  const x = 110 + 80 * Math.sin(radians);
-  const y = 110 - 80 * Math.cos(radians);
-  const largeArc = angle > 90 ? 1 : 0;
+  // Bulb Elements
+    const bulbGlass = document.getElementById("vcnl-bulb-glass");
+    const bulbFilament = document.getElementById("vcnl-bulb-filament");
+    const bulbBlur = document.getElementById("bulb-blur");
+    const bulbRays = document.getElementById("vcnl-bulb-rays");
 
-  if (arcEl) {
-    arcEl?.setAttribute("d", `M 30 110 A 80 80 0 ${largeArc} 1 ${x} ${y}`);
-    console.log("[VCNL] Arc updated to angle:", angle);
+    // Calculate intensity 0.0 to 1.0 (Caps at 2000 lux for full visual glow)
+    let intensity = Math.min(lux / 2000, 1);
+    
+    if (bulbGlass) {
+      const alpha = 0.03 + (intensity * 0.9);
+      bulbGlass?.setAttribute("fill", `rgba(255, 250, 200, ${alpha})`);
+      bulbGlass?.setAttribute("stroke", intensity > 0.1 ? "#fef08a" : "#64748b");
+    }
+
+    if (bulbFilament) {
+      bulbFilament?.setAttribute("stroke", intensity > 0.05 ? "#ffffff" : "#64748b");
+      bulbFilament?.setAttribute("stroke-width", intensity > 0.05 ? "4" : "3");
+    }
+
+    if (bulbBlur) {
+      bulbBlur?.setAttribute("stdDeviation", 5 + (intensity * 30));
+    }
+
+    if (bulbRays) {
+      bulbRays?.setAttribute("opacity", intensity);
+    }
+
+    // Level Text
+    let levelText = "Dark";
+    if (lux > 50000) { levelText = "Direct Sun"; }
+    else if (lux > 10000) { levelText = "Very Bright"; }
+    else if (lux > 2000)  { levelText = "Bright Day"; }
+    else if (lux > 200)   { levelText = "Office"; }
+    else if (lux > 20)    { levelText = "Dim Room"; }
+  
+    if (levelEl) levelEl.textContent = levelText;
   }
-
-  // Intensity & level
-  let levelText = "Dark";
-  let intensity = 0.25;
-
-  if (lux > 50000) { levelText = "Direct Sun"; intensity = 1.0; }
-  else if (lux > 10000) { levelText = "Very Bright"; intensity = 0.9; }
-  else if (lux > 2000)  { levelText = "Bright Day"; intensity = 0.75; }
-  else if (lux > 200)   { levelText = "Office"; intensity = 0.5; }
-  else if (lux > 20)    { levelText = "Dim Room"; intensity = 0.35; }
-
-  if (levelEl) levelEl.textContent = levelText;
-
-  if (sunGroup) {
-    sunGroup.style.opacity = intensity;
-    sunGroup.style.filter = `brightness(${1 + intensity * 1.8}) drop-shadow(0 0 ${20 + intensity * 40}px #fef08a)`;
-    sunGroup?.setAttribute("transform", "translate(140,140)"); // force center every update
-    console.log("[VCNL] Sun updated → opacity:", intensity);
-  }
-}
 
 // === RELAY ANIMATION ===
 if (protocol === "GPIO" && selectedSensor === "Relay") {
