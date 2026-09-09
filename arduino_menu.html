@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Select Sensor - Arduino</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="school_theme.css">
   <style>
     body {
       background-color: var(--bg-color, #0b1120);
@@ -247,6 +248,35 @@
       left: 100%;
     }
 
+    /* Educational Tooltip */
+    .edu-tooltip {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: rgba(138, 43, 226, 0.95);
+      color: #fff;
+      padding: 12px 15px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-family: 'Inter', sans-serif;
+      width: 85%;
+      text-align: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 100;
+      border: 1px solid #d8b4fe;
+      box-shadow: 0 10px 20px rgba(138, 43, 226, 0.5);
+      pointer-events: none;
+      backdrop-filter: blur(4px);
+    }
+    .sensor-card-btn:hover .edu-tooltip {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(-50%) translateY(0);
+    }
+
     /* Light Mode Overrides */
     body.light-mode {
       background-image: 
@@ -300,7 +330,131 @@
     body.light-mode .protocol-rs485 { border-color: #8b5cf6; color: #8b5cf6; }
     body.light-mode .protocol-adc { border-color: #d97706; color: #d97706; }
     body.light-mode .protocol-analog { border-color: #ef4444; color: #ef4444; }
-  </style>
+  
+    body.school-mode {
+        font-family: 'Nunito', sans-serif !important;
+        background-color: var(--bg-color) !important;
+        background-image: var(--bg-gradient) !important;
+      }
+      
+      .top-nav {
+        background: var(--card-bg) !important;
+        border-bottom: 2px solid var(--input-border) !important;
+      }
+      
+      .top-nav h1 {
+        font-family: 'Nunito', sans-serif !important;
+        font-weight: 800 !important;
+        color: var(--title-color) !important;
+        letter-spacing: normal !important;
+      }
+      
+      .back-btn, .theme-btn {
+        color: var(--text-muted) !important;
+        font-family: 'Nunito', sans-serif !important;
+        font-weight: 800 !important;
+      }
+      
+      .hero-section h2 {
+        font-family: 'Nunito', sans-serif !important;
+        font-weight: 900 !important;
+        color: var(--title-color) !important;
+        letter-spacing: normal !important;
+        text-shadow: none !important;
+      }
+      
+      .hero-section p {
+        font-family: 'Nunito', sans-serif !important;
+        color: var(--text-muted) !important;
+      }
+      
+      /* School Mode Cards */
+      .sensor-card-btn {
+        background: var(--card-bg) !important;
+        border-radius: var(--border-radius) !important;
+        border: none !important;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.03) !important;
+        overflow: hidden;
+      }
+      .sensor-card-btn:hover {
+        transform: translateY(-5px) !important;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.05) !important;
+      }
+      
+      .card-img-container {
+        background: var(--input-bg) !important;
+        border-bottom: 2px dashed var(--input-border) !important;
+      }
+      .card-img-container::before {
+        display: none !important;
+      }
+      .card-img-container i {
+        color: var(--text-muted) !important;
+      }
+      
+      .card-content h3 {
+        font-family: 'Nunito', sans-serif !important;
+        color: var(--title-color) !important;
+        font-weight: 800 !important;
+        letter-spacing: normal !important;
+      }
+      
+      .card-content p {
+        font-family: 'Nunito', sans-serif !important;
+        color: var(--text-muted) !important;
+      }
+      
+      .monitor-btn {
+        background: var(--primary-blue) !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 12px !important;
+        font-family: 'Nunito', sans-serif !important;
+        font-weight: 800 !important;
+        letter-spacing: normal !important;
+        text-transform: none !important;
+      }
+      .monitor-btn::before {
+        display: none !important;
+      }
+      
+      /* Tooltip Fix */
+      .edu-tooltip {
+        background: #fffbeb !important;
+        color: #b45309 !important;
+        border: 2px dashed #fcd34d !important;
+        font-family: 'Nunito', sans-serif !important;
+        font-weight: 700 !important;
+        border-radius: 12px !important;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1) !important;
+      }
+      body:not(.light-mode) .edu-tooltip {
+        background: #451a03 !important;
+        color: #fcd34d !important;
+        border-color: #b45309 !important;
+      }
+      
+      /* Protocols */
+      .protocol-badge {
+        font-family: 'Nunito', sans-serif !important;
+        font-weight: 800 !important;
+        letter-spacing: normal !important;
+        border-radius: 20px !important;
+        border: none !important;
+      }
+      .protocol-i2c { background: #dbeafe !important; color: #1e40af !important; }
+      .protocol-adc { background: #fce7f3 !important; color: #9d174d !important; }
+      .protocol-rs485 { background: #fef3c7 !important; color: #b45309 !important; }
+      .protocol-analog { background: #ffedd5 !important; color: #c2410c !important; }
+      .protocol-gpio { background: #dcfce7 !important; color: #166534 !important; }
+      
+      body:not(.light-mode) .protocol-i2c { background: #1e3a8a !important; color: #bfdbfe !important; }
+      body:not(.light-mode) .protocol-adc { background: #831843 !important; color: #fbcfe8 !important; }
+      body:not(.light-mode) .protocol-rs485 { background: #78350f !important; color: #fde68a !important; }
+      body:not(.light-mode) .protocol-analog { background: #7c2d12 !important; color: #fed7aa !important; }
+      body:not(.light-mode) .protocol-gpio { background: #14532d !important; color: #bbf7d0 !important; }
+
+    </style>
 </head>
 <body>
   <!-- Top Nav -->
@@ -342,20 +496,20 @@
     }
 
     const sensors = [
-      { name: "Soil Spectra", desc: "Soil sensing solution for agricultural parameter monitoring", protocol: "RS485", sensor: "Soil Sensor", icon: "fa-seedling", img: "images/soil.png" },
-      { name: "Rain Gauge", desc: "Tipping Bucket Rain Gauge for precise rainfall measurement", protocol: "ADC", sensor: "Rain Gauge", icon: "fa-cloud-rain", img: "images/gauge.png" },
-      { name: "Radiation Shield", desc: "Weather Shield for accurate outdoor environment sensing", protocol: "I2C", sensor: "Weather Shield", icon: "fa-shield-halved", img: "images/luxpressure.png" },
-      { name: "Ultrasonic Anemometer", desc: "Ultrasonic Anemometer for precise wind speed and wind direction", protocol: "RS485", sensor: "Wind Sensor", icon: "fa-wind", img: "images/ultrasonic.png" },
-      { name: "AHT20", desc: "High precision temperature and humidity sensor module", protocol: "I2C", sensor: "AHT20", icon: "fa-temperature-quarter", img: "images/AHT20.png" },
-      { name: "STTS751", desc: "High accuracy digital temperature sensor", protocol: "I2C", sensor: "STTS751", icon: "fa-temperature-half", img: "images/stts751.png" },
-      { name: "STS30", desc: "High accuracy digital temperature sensor", protocol: "I2C", sensor: "STS30", icon: "fa-temperature-three-quarters", img: "images/sts30.png" },
-      { name: "LIS3DH", desc: "3-axis digital output accelerometer for motion detection", protocol: "I2C", sensor: "LIS3DH", icon: "fa-cube", img: "images/lis3dh.png" },
-      { name: "LIS2DH", desc: "Ultra-low-power high-performance 3-axis accelerometer", protocol: "I2C", sensor: "LIS2DH", icon: "fa-cubes" },
-      { name: "VCNL4040", desc: "Fully integrated proximity and ambient light sensor", protocol: "I2C", sensor: "VCNL4040", icon: "fa-sun", img: "images/VCNL4040.png" },
-      { name: "VEML7700", desc: "High accuracy ambient light digital sensor", protocol: "I2C", sensor: "VEML7700", icon: "fa-lightbulb" },
-      { name: "Hall Effect", desc: "Magnetic field sensor for position and proximity", protocol: "Analog", sensor: "Hall Sensor", icon: "fa-magnet", img: "images/halleffect.png" },
-      { name: "IR", desc: "Infrared obstacle avoidance and motion detection sensor", protocol: "Analog", sensor: "IR Sensor", icon: "fa-broadcast-tower", img: "images/ir_sensor.png" },
-      { name: "SEN66", desc: "Advanced particulate matter and environmental node", protocol: "I2C", sensor: "SEN66", icon: "fa-smog", img: "images/SEN66.png" }
+      { name: "Soil Spectra", desc: "Soil sensing solution for agricultural parameter monitoring", protocol: "RS485", sensor: "Soil Sensor", icon: "fa-seedling", img: "images/soil.png", tooltip: "Find out if the plants need water!" },
+      { name: "Rain Gauge", desc: "Tipping Bucket Rain Gauge for precise rainfall measurement", protocol: "ADC", sensor: "Rain Gauge", icon: "fa-cloud-rain", img: "images/gauge.png", tooltip: "Measure how much rain is falling!" },
+      { name: "Radiation Shield", desc: "Weather Shield for accurate outdoor environment sensing", protocol: "I2C", sensor: "Weather Shield", icon: "fa-shield-halved", img: "images/luxpressure.png", tooltip: "Measure air temperature safely outside!" },
+      { name: "Ultrasonic Anemometer", desc: "Ultrasonic Anemometer for precise wind speed and wind direction", protocol: "RS485", sensor: "Wind Sensor", icon: "fa-wind", img: "images/ultrasonic.png", tooltip: "See how fast the wind is blowing!" },
+      { name: "AHT20", desc: "High precision temperature and humidity sensor module", protocol: "I2C", sensor: "AHT20", icon: "fa-temperature-quarter", img: "images/AHT20.png", tooltip: "Check if it's hot or humid in the room!" },
+      { name: "STTS751", desc: "High accuracy digital temperature sensor", protocol: "I2C", sensor: "STTS751", icon: "fa-temperature-half", img: "images/stts751.png", tooltip: "Measure temperature super accurately!" },
+      { name: "STS30", desc: "High accuracy digital temperature sensor", protocol: "I2C", sensor: "STS30", icon: "fa-temperature-three-quarters", img: "images/sts30.png", tooltip: "Check the exact room temperature!" },
+      { name: "LIS3DH", desc: "3-axis digital output accelerometer for motion detection", protocol: "I2C", sensor: "LIS3DH", icon: "fa-cube", img: "images/lis3dh.png", tooltip: "Detect motion, shakes, and tilting!" },
+      { name: "LIS2DH", desc: "Ultra-low-power high-performance 3-axis accelerometer", protocol: "I2C", sensor: "LIS2DH", icon: "fa-cubes", tooltip: "Sense movement using very little power!" },
+      { name: "VCNL4040", desc: "Fully integrated proximity and ambient light sensor", protocol: "I2C", sensor: "VCNL4040", icon: "fa-sun", img: "images/VCNL4040.png", tooltip: "Detect light levels and nearby objects!" },
+      { name: "VEML7700", desc: "High accuracy ambient light digital sensor", protocol: "I2C", sensor: "VEML7700", icon: "fa-lightbulb", tooltip: "Measure how bright the light is!" },
+      { name: "Hall Effect", desc: "Magnetic field sensor for position and proximity", protocol: "Analog", sensor: "Hall Sensor", icon: "fa-magnet", img: "images/halleffect.png", tooltip: "Detect magnets and metal objects!" },
+      { name: "IR", desc: "Infrared obstacle avoidance and motion detection sensor", protocol: "Analog", sensor: "IR Sensor", icon: "fa-broadcast-tower", img: "images/ir_sensor.png", tooltip: "See invisible light and avoid obstacles!" },
+      { name: "SEN66", desc: "Advanced particulate matter and environmental node", protocol: "I2C", sensor: "SEN66", icon: "fa-smog", img: "images/SEN66.png", tooltip: "Check if the air is clean or dusty!" }
     ];
 
     const grid = document.getElementById("sensor-grid");
@@ -384,6 +538,14 @@
           localStorage.setItem("arduinoProtocol", s.protocol);
           window.location.href = "arduino.html";
         };
+        
+        // Tooltip
+        if (s.tooltip) {
+          const tt = document.createElement("div");
+          tt.className = "edu-tooltip";
+          tt.innerHTML = '<i class="fas fa-lightbulb" style="color: #FFD700;"></i> ' + s.tooltip;
+          a.appendChild(tt);
+        }
         
         // Protocol Badge
         const badge = document.createElement("div");

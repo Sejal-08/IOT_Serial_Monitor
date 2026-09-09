@@ -3,6 +3,8 @@
 <head>
   <title>Arduino Serial Monitor</title>
   <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="school_theme.css">
   
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -16,7 +18,7 @@
     }
   </style>
 </head>
-<body class="dark-mode">
+<body class="school-mode">
   <script>
   // Check if user has selected a device
   window.addEventListener('DOMContentLoaded', () => {
@@ -102,95 +104,99 @@
 </div>
 
   <div class="main-container">
-    <div class="left-panel">
-      <!-- SERIAL PORT -->
-      <section class="control-section cyber-section">
-        <h3><i class="fas fa-desktop"></i> SERIAL PORT</h3>
-        
-        <div class="cyber-form-group">
-          <label class="cyber-label">PORT</label>
-          <div class="cyber-input-group">
-            <select id="ports" class="input-field cyber-input"></select>
-            <button class="action-button cyber-btn" onclick="listPorts()"><i class="fas fa-list"></i> LIST PORTS</button>
+    
+  
+
+
+  <!-- Hidden legacy elements to keep renderer.js happy -->
+  <div style="display: none;">
+    <select id="sensor-select" onchange="updateSensorUI()">
+      <option value="" disabled selected>Select a Sensor Protocol</option>
+      <option value="I2C">I2C</option>
+      <option value="ADC">ADC</option>
+      <option value="RS485">RS485</option>
+      <option value="RS232">RS232</option>\n      <option value="Analog">Analog</option>\n      <option value="GPIO">GPIO</option>
+      <option value="WEATHER">Weather Parameter</option>
+    </select>
+    <select id="sensor-dropdown" onchange="selectSensor(this.value)">
+      <option value="" disabled selected>No protocol selected</option>
+    </select>
+  </div>
+
+<div class="left-panel">
+      <div class="school-card">
+        <div class="card-title">
+          <i class="fas fa-plug" ></i> Connect your board
+        </div>
+        <div class="input-group">
+          <label class="input-label">Port</label>
+          <div class="flex-row" style="display:flex; gap:10px;">
+            <select id="ports" class="input-field" style="flex:1;"></select>
+            <button class="action-btn icon-only" onclick="listPorts()" style="width: 45px; padding:0; background:#94a3b8;"><i class="fas fa-search" ></i></button>
           </div>
         </div>
-
-        <div class="cyber-form-group">
-          <label class="cyber-label">BAUD RATE</label>
-          <select id="baud-rate" class="input-field cyber-input">
+        <div class="input-group" style="margin-top:15px;">
+          <label class="input-label">Baud rate</label>
+          <select id="baud-rate" class="input-field" style="width:100%;">
             <option value="9600">9600</option>
-            <option value="19200">19200</option>
-            <option value="38400">38400</option>
-            <option value="57600">57600</option>
             <option value="115200" selected>115200</option>
-            <option value="230400">230400</option>
           </select>
         </div>
-
-        <div class="cyber-button-group">
-          <button id="btn-connect-main" class="action-button cyber-btn btn-connect" onclick="connectPort()"><i class="fas fa-play"></i> CONNECT</button>
-          <button id="btn-disconnect-main" class="action-button cyber-btn btn-disconnect" onclick="disconnectPort()"><i class="fas fa-stop"></i> DISCONNECT</button>
-        </div>
-      </section>
-
-      <!-- INTERVAL CONFIG -->
-      <section class="control-section cyber-section">
-        <h3><i class="fas fa-clock"></i> INTERVAL CONFIG</h3>
-        
-        <div class="cyber-form-group">
-          <label class="cyber-label">INTERVAL (SECONDS)</label>
-          <div class="cyber-input-group">
-            <input type="number" id="interval" class="input-field cyber-input" placeholder="e.g. 5" min="1" oninput="updateIntervalDisplay()">
-            <button class="action-button cyber-btn" onclick="setDeviceInterval()"><i class="fas fa-caret-down"></i> SET</button>
-          </div>
+        <div style="display:flex; gap:10px; margin-top:15px;">
+          <button id="btn-connect-main" class="action-btn green" onclick="connectPort()" style="flex:1;">
+            <i class="fas fa-play" ></i> Connect
+          </button>
+          <button id="btn-disconnect-main" class="action-btn orange" onclick="disconnectPort()" style="display:none; flex:1;">
+            <i class="fas fa-stop" ></i> Disconnect
+          </button>
         </div>
         
-        <button id="restart-button" class="action-button cyber-btn btn-full" onclick="restartDevice()">
-          <i class="fas fa-sync-alt"></i> RESTART DEVICE
-        </button>
-      </section>
-
-            <!-- ACTIVE SENSOR DISPLAY -->
-      <section class="control-section cyber-section" id="active-sensor-section" style="margin-bottom: 4px;">
-        <h3><i class="fas fa-microchip"></i> ACTIVE SENSOR</h3>
-        <div style="background: #0f172a; padding: 15px; border-radius: 8px; border: 1px solid #334155; display: flex; align-items: center; gap: 15px;">
-          <div style="background: #1e293b; padding: 10px; border-radius: 8px;">
-            <i id="active-sensor-icon" class="fas fa-satellite-dish" style="font-size: 2rem; color: #60a5fa;"></i>
-          </div>
-          <div>
-            <div id="active-sensor-protocol" style="font-family: 'Share Tech Mono', monospace; color: #94a3b8; font-size: 0.8rem; margin-bottom: 4px;">PROTOCOL</div>
-            <div id="active-sensor-name" style="font-size: 1.4rem; font-weight: 700; color: #e0e7ff;">SENSOR NAME</div>
-          </div>
+        <div id="status-box" class="status-indicator disconnected">
+          <div class="status-dot"></div>
+          <span id="status-text">Not connected yet</span>
         </div>
-      </section>
-
-      <!-- HIDDEN DROPDOWNS FOR BACKWARD COMPATIBILITY -->
-      <div id="sensors-section" style="display: none;">
-        <select id="sensor-select" class="input-field cyber-input" onchange="updateSensorUI()">
-          <option value="" disabled selected>Select a Sensor Protocol</option>
-          <option value="I2C">I2C</option>
-          <option value="ADC">ADC</option>
-          <option value="RS485">RS485</option>
-          <option value="RS232">RS232</option>
-          <option value="Analog">Analog</option>
-          <option value="GPIO">GPIO</option>
-          <option value="WEATHER">Weather Parameter</option>
-        </select>
-        <select id="sensor-dropdown" class="input-field cyber-input" onchange="selectSensor(this.value)">
-          <option value="" disabled selected>No protocol selected</option>
-        </select>
       </div>
 
-      <!-- UART LOGS IN LEFT PANEL -->
-      <section class="control-section cyber-section" id="uart-logs-section" style="flex: 1; display: flex; flex-direction: column; min-height: 250px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(0, 229, 255, 0.1); padding-bottom: 8px;">
-          <h3 style="margin: 0; border: none; padding: 0;"><i class="fas fa-align-left"></i> UART LOGS</h3>
-          <button class="cyber-btn btn-disconnect" style="padding: 4px 8px; font-size: 0.7rem;" onclick="clearOutput()"><i class="fas fa-trash"></i> CLEAR</button>
+      <div class="school-card">
+        <div class="card-title">
+          <i class="fas fa-stopwatch" ></i> How often to check?
         </div>
-        <div id="output" class="cyber-uart-output" style="border: 1px solid var(--panel-border); border-radius: 4px;">
+        <div class="input-group">
+          <label class="input-label">Every how many seconds?</label>
+          <div class="flex-row" style="display:flex; gap:10px;">
+            <input type="number" id="interval" class="input-field" value="3" min="1" oninput="updateIntervalDisplay()" style="flex:1;">
+            <button class="action-btn orange" style="width: 80px;" onclick="setDeviceInterval()">Set</button>
+          </div>
+        </div>
+        <button id="restart-button" class="action-btn purple" onclick="restartDevice()" style="margin-top:15px; width:100%;">
+          <i class="fas fa-sync-alt" ></i> Restart device
+        </button>
+      </div>
+
+      <div class="school-card">
+        <div class="card-title">
+          <i class="fas fa-toolbox" ></i> Your sensor kit
+        </div>
+        <div class="sensor-kit-box">
+          <div class="sensor-kit-icon">
+            <i id="active-sensor-icon" class="fas fa-microchip" ></i>
+          </div>
+          <div class="sensor-kit-details">
+            <span id="active-sensor-protocol" class="sensor-protocol">PROTOCOL</span>
+            <span id="active-sensor-name" class="sensor-name">Sensor Name</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="school-card" style="padding: 15px;">
+        <div class="card-title" style="justify-content: space-between; margin-bottom: 10px; font-size:14px;">
+          <span><i class="fas fa-align-left" ></i> UART Logs</span>
+          <button class="pill-btn" style="padding: 4px 8px; font-size: 11px; cursor:pointer;" onclick="clearOutput()"><i class="fas fa-trash"></i> Clear</button>
+        </div>
+        <div id="output" class="cyber-uart-output" style="height:150px; overflow-y:auto; font-family:monospace; font-size:12px; padding:10px; border-radius:8px;">
           // Waiting for data stream...
         </div>
-      </section>
+      </div>
     </div>
 
     <div class="right-panel">
@@ -198,7 +204,18 @@
         
         <div class="cyber-grid-container" style="flex: 1;">
           <div class="cyber-grid-header">
-            <h3><i class="fas fa-chart-line"></i> SENSOR DATA VISUALIZATION</h3>
+            
+<div class="dashboard-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+  <div class="dashboard-title" style="font-size:20px; font-weight:800; display:flex; align-items:center; gap:10px;" class="dynamic-title">
+    <i class="fas fa-chart-bar" ></i> Live sensor readings
+  </div>
+  <div class="dashboard-badges">
+    <div class="badge-streak" id="streak-badge" style="padding:6px 15px; border-radius:20px; font-weight:800; font-size:13px; display:flex; align-items:center; gap:6px;" class="dynamic-streak">
+      <i class="fas fa-fire" style="color: #ef4444;"></i> Streak: <span id="school-score">0</span> readings
+    </div>
+  </div>
+</div>
+
             <div class="cyber-grid-actions">
               <div class="status-box disconnected" id="status-box">
                 <i class="fas fa-circle status-icon" id="status-dot"></i>
@@ -1605,6 +1622,7 @@
   </div>
 
   <script src="renderer.js"></script>
+  <script src="school_mode.js"></script>
   <script>
   let isLedOn = false;
 

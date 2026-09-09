@@ -1,0 +1,368 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+
+/* Default: Dark Mode */
+:root {
+  --bg-color: #0f172a;
+  --card-bg: #1e293b;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --primary-blue: #3b82f6;
+  --btn-green: #22c55e;
+  --btn-orange: #f59e0b;
+  --btn-purple: #8b5cf6;
+  --border-radius: 20px;
+  --input-bg: #334155;
+  --input-border: #475569;
+  --title-color: #e2e8f0;
+  --bg-gradient: radial-gradient(circle at 10% 20%, rgba(30,41,59,0.8) 0%, transparent 20%),
+                 radial-gradient(circle at 90% 10%, rgba(30,41,59,0.6) 0%, transparent 15%),
+                 radial-gradient(circle at 80% 80%, rgba(30,41,59,0.7) 0%, transparent 25%);
+}
+
+/* Light Mode Override */
+body.light-mode {
+  --bg-color: #e6f2ff;
+  --card-bg: #ffffff;
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --primary-blue: #3b82f6;
+  --btn-green: #22c55e;
+  --btn-orange: #f59e0b;
+  --btn-purple: #8b5cf6;
+  --input-bg: #f8fafc;
+  --input-border: #e2e8f0;
+  --title-color: #0f172a;
+  --bg-gradient: radial-gradient(circle at 10% 20%, rgba(255,255,255,0.8) 0%, transparent 20%),
+                 radial-gradient(circle at 90% 10%, rgba(255,255,255,0.6) 0%, transparent 15%),
+                 radial-gradient(circle at 80% 80%, rgba(255,255,255,0.7) 0%, transparent 25%);
+}
+
+body.school-mode {
+  background-color: var(--bg-color) !important;
+  color: var(--text-main) !important;
+  font-family: 'Nunito', sans-serif !important;
+  background-image: var(--bg-gradient) !important;
+}
+
+body.school-mode div, body.school-mode span, body.school-mode h1, body.school-mode h2, body.school-mode h3, body.school-mode h4, body.school-mode p, body.school-mode button, body.school-mode input, body.school-mode select, body.school-mode label {
+  font-family: 'Nunito', sans-serif;
+}
+body.school-mode i.fas, body.school-mode i.far, body.school-mode i.fab {
+  font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands" !important;
+}
+
+/* Nav */
+nav {
+  background: transparent !important;
+  border-bottom: none !important;
+  padding: 15px 30px !important;
+  display: flex !important;
+  justify-content: space-between !important;
+}
+.nav-links {
+  display: flex !important;
+  gap: 15px !important;
+  list-style: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+.nav-btn, .cyber-btn {
+  background: var(--card-bg) !important;
+  color: var(--text-main) !important;
+  border: none !important;
+  border-radius: 30px !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important;
+  font-weight: 700 !important;
+  padding: 10px 20px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  cursor: pointer !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  text-shadow: none !important;
+}
+.nav-btn:hover::before, .cyber-btn:hover::before { display: none !important; content: none !important; }
+.nav-btn i, .cyber-btn i { color: var(--primary-blue) !important; }
+
+/* Panels */
+.main-container {
+  gap: 25px !important;
+  padding: 0 30px 20px 30px !important;
+}
+.left-panel {
+  width: 350px !important;
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  gap: 20px !important;
+}
+.right-panel {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+}
+.right-panel .container {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+}
+
+/* Cards (Right Panel) */
+.cyber-grid-container {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+}
+.sensor-cards { gap: 20px !important; }
+.sensor-card, .sensor-cards > div {
+  background: var(--card-bg) !important;
+  border-radius: 25px !important;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.02) !important;
+  border: none !important;
+  padding: 20px !important;
+}
+.sensor-card h4 {
+  color: var(--title-color) !important;
+  font-weight: 800 !important;
+  border: none !important;
+  background: transparent !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+.sensor-card h4 i { color: var(--primary-blue) !important; }
+.sensor-value {
+  color: var(--title-color) !important;
+  font-weight: 900 !important;
+}
+
+/* New Left Panel Styles */
+.school-card {
+  background: var(--card-bg) !important;
+  border-radius: var(--border-radius) !important;
+  padding: 20px !important;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.03) !important;
+  border: none !important;
+  margin-bottom: 20px;
+}
+.card-title {
+  color: var(--title-color) !important;
+  font-weight: 800 !important;
+  font-size: 16px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin-bottom: 15px;
+}
+.input-label {
+  color: var(--text-muted) !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  margin-bottom: 6px;
+  display: block;
+}
+.input-field {
+  background: var(--input-bg) !important;
+  border: 2px solid var(--input-border) !important;
+  border-radius: 12px !important;
+  color: var(--text-main) !important;
+  font-weight: 600 !important;
+  padding: 10px 15px !important;
+  outline: none;
+  height: 42px;
+  box-sizing: border-box;
+}
+.action-btn {
+  border: none !important;
+  border-radius: 12px !important;
+  font-weight: 800 !important;
+  color: white !important;
+  padding: 10px 16px !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 8px !important;
+  cursor: pointer !important;
+  font-size: 14px !important;
+  height: 42px;
+  box-sizing: border-box;
+}
+.action-btn.green { background: var(--btn-green) !important; box-shadow: 0 4px 0 #15803d !important; }
+.action-btn.orange { background: var(--btn-orange) !important; box-shadow: 0 4px 0 #b45309 !important; }
+.action-btn.purple { background: var(--btn-purple) !important; box-shadow: 0 4px 0 #6d28d9 !important; }
+
+/* Status indicator */
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #ef4444;
+  background: #fef2f2;
+  padding: 4px 10px;
+  border-radius: 20px;
+  width: fit-content;
+  margin-top: 15px;
+}
+.status-indicator.connected { color: #22c55e; background: #f0fdf4; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+
+/* Kit box */
+.sensor-kit-box {
+  border: 2px dashed #fcd34d !important;
+  background: #fffbeb !important;
+  border-radius: 12px !important;
+  padding: 15px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 15px !important;
+}
+.sensor-kit-details { display: flex; flex-direction: column; }
+.sensor-protocol { font-size: 11px; font-weight: 800; color: #92400e; letter-spacing: 0.5px; }
+.sensor-name { font-size: 18px; font-weight: 800; color: #b45309; }
+
+#did-you-know-panel {
+  background: #fffbeb !important;
+  border: 2px dashed #fcd34d !important;
+  margin: 0 0 20px 0 !important;
+}
+
+/* Dynamic elements from inline styles */
+.action-btn i { color: white !important; }
+.card-title i { color: var(--text-muted) !important; }
+#active-sensor-icon { color: #f59e0b !important; }
+.dashboard-title i { color: var(--text-muted) !important; }
+.dynamic-title { color: var(--title-color) !important; }
+
+/* Streak Badge */
+body.light-mode .dynamic-streak {
+    background: #fef3c7 !important;
+    color: #b45309 !important;
+}
+body:not(.light-mode) .dynamic-streak {
+    background: #451a03 !important;
+    color: #fcd34d !important;
+}
+
+/* Sensor Kit Box */
+body.light-mode .sensor-kit-box {
+    background: #fffbeb !important;
+    border: 2px dashed #fcd34d !important;
+}
+body:not(.light-mode) .sensor-kit-box {
+    background: #1e293b !important;
+    border: 2px dashed #b45309 !important;
+}
+
+/* List Ports Button Icon */
+button[onclick="listPorts()"] {
+    background: var(--text-muted) !important;
+}
+
+/* Fun Fact Panel */
+body.light-mode #did-you-know-panel {
+    background: #fffbeb !important;
+    border: 2px dashed #fcd34d !important;
+    color: #92400e !important;
+}
+body.light-mode #did-you-know-panel h4 { color: #b45309 !important; }
+body.light-mode #dyk-text { color: #92400e !important; }
+
+body:not(.light-mode) #did-you-know-panel {
+    background: #1e293b !important;
+    border: 2px dashed #b45309 !important;
+    color: #fcd34d !important;
+}
+body:not(.light-mode) #did-you-know-panel h4 { color: #f59e0b !important; }
+body:not(.light-mode) #dyk-text { color: #fcd34d !important; }
+
+/* Status Text defaults to gray if not connected */
+#status-text { color: var(--text-muted); }
+
+/* Fix 1: Hide the Streak Badge as requested */
+#streak-badge {
+    display: none !important;
+}
+
+/* Fix 2: Compass SVG styling for Light Mode */
+body.light-mode #compassSVG circle[fill="url(#dialBg)"] {
+    fill: #f1f5f9 !important;
+    stroke: #cbd5e1 !important;
+}
+body.light-mode #compassSVG circle[r="80"] {
+    stroke: #e2e8f0 !important;
+}
+body.light-mode #compassSVG line {
+    stroke: #94a3b8 !important;
+}
+body.light-mode #compassSVG text {
+    fill: #334155 !important;
+    font-weight: 800 !important;
+}
+body.light-mode #compassSVG polygon[fill="url(#needleGrad)"] {
+    /* Keep needle red but brighter */
+}
+body.light-mode #dirCardinalText {
+    color: var(--primary-blue) !important;
+}
+body.light-mode #dirVal-container {
+    color: var(--title-color) !important;
+}
+
+/* Fix 3: Humidity Card Background in Dark Mode */
+/* Override the strict black gradient in styles.css */
+body:not(.light-mode) #humidity-card {
+    background: var(--card-bg) !important;
+}
+
+/* Fix Wind Flow footer text in Light Mode */
+body.light-mode #wind-direction-card .dir-footer span {
+    color: var(--text-muted) !important;
+}
+body.light-mode #wind-direction-card .dir-footer span#dirFrom {
+    color: var(--primary-blue) !important;
+}
+body.light-mode #wind-direction-card .dir-footer span#dirTo {
+    color: #ef4444 !important;
+}
+
+/* Status Indicator Dark Mode Fixes */
+body.light-mode .status-indicator {
+    background: #fef2f2 !important;
+}
+body:not(.light-mode) .status-indicator {
+    background: #450a0a !important; /* very dark red */
+}
+body.light-mode .status-indicator.connected {
+    background: #f0fdf4 !important;
+}
+body:not(.light-mode) .status-indicator.connected {
+    background: #052e16 !important; /* very dark green */
+}
+
+/* Fix Clear Button */
+.pill-btn {
+    background: var(--card-bg);
+    border: 2px solid var(--input-border);
+    border-radius: 20px;
+    color: var(--text-main);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+.pill-btn:hover {
+    background: var(--input-bg);
+}
+body:not(.light-mode) .pill-btn {
+    border-color: #475569;
+}
+
+/* Remove the grid background from the right panel */
+.cyber-grid-main {
+    background-image: none !important;
+    background-color: transparent !important;
+}

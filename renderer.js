@@ -138,18 +138,9 @@ function getCardinalFrom(deg) {
 }
 
 function updateWindFlowCard(deg) {
-  const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
-  const from = getCardinalFrom(deg);
-  const to = dirs[(dirs.indexOf(from) + 4) % 8];
-
-  document.getElementById('flow-from').textContent = from;
-  document.getElementById('flow-to').textContent   = to;
-  document.getElementById('flow-label').textContent = `WIND BLOWING FROM ${from}`;
-  document.getElementById('flow-degree').textContent = `${deg.toFixed(0)}\u00B0`;
-  document.getElementById('flow-desc').textContent   = `Moving toward ${to}`;
-
-  _wfFromDeg = deg;
-  _wfStart();
+  // Wind flow is now handled directly in parseData and updateSensorUI blocks.
+  // This function used to target old 'flow-from'/'flow-to' HTML elements which were removed.
+  // Keeping this function as a no-op to prevent 'Cannot set properties of null' errors.
 }
 
 // ── Wind Bubble Particle System ──
@@ -818,7 +809,7 @@ if ((protocol === "I2C" || protocol === "RS485" || isWeatherMode) && (isWeatherM
   thermometerFill?.setAttribute("height", fillHeight);
   thermometerFill?.setAttribute("fill", fillColor);
   thermometerBulb?.setAttribute("fill", fillColor);
-  thermometerValue.textContent = `${temp.toFixed(2)}\u00B0C`;
+  if (thermometerValue) thermometerValue.textContent = `${temp.toFixed(2)}\u00B0C`;
  
   // Update Fahrenheit thermometer for STTS751 - FIXED VARIABLE NAMES
   if (selectedSensor === "STTS751") {
@@ -860,7 +851,7 @@ if ((protocol === "I2C" || protocol === "RS485" || isWeatherMode) && (isWeatherM
   thermometerFill?.setAttribute("height", 0);
   thermometerFill?.setAttribute("fill", "#ffeb3b");
   thermometerBulb?.setAttribute("fill", "#ffeb3b");
-  thermometerValue.textContent = "0.00\u00B0C";
+  if (thermometerValue) thermometerValue.textContent = "0.00\u00B0C";
  
   // Reset Fahrenheit thermometer too
   const thermometerFFill = document.getElementById("thermometer-f-fill");
@@ -873,10 +864,10 @@ if ((protocol === "I2C" || protocol === "RS485" || isWeatherMode) && (isWeatherM
   }
 }
 // === HUMIDITY WAVE UPDATE ===
-if ((protocol === "I2C" || isWeatherMode) && (isWeatherMode || selectedSensor === "BME680" || selectedSensor === "SHT40" || selectedSensor === "AHT20" || selectedSensor === "Weather Shield" || selectedSensor === "SEN66")) {
-  if (currentHumidity !== null) {
+  if ((protocol === "I2C" || isWeatherMode) && (isWeatherMode || selectedSensor === "BME680" || selectedSensor === "SHT40" || selectedSensor === "AHT20" || selectedSensor === "Weather Shield" || selectedSensor === "SEN66")) {
+    if (currentHumidity !== null) {
       const humidity = parseFloat(currentHumidity);
-      humidityValue.textContent = `${humidity.toFixed(2)}%`;
+      if (humidityValue) humidityValue.textContent = `${humidity.toFixed(2)}%`;
      
       let h = (humidity / 100) * 100;
       if (h > 100) h = 100;
@@ -886,14 +877,14 @@ if ((protocol === "I2C" || isWeatherMode) && (isWeatherMode || selectedSensor ==
           waterBody.style.height = h + '%';
       }
     } else {
-      humidityValue.textContent = "0.00%";
+      if (humidityValue) humidityValue.textContent = "0.00%";
       const waterBody = document.getElementById('humidity-water');
       if (waterBody) {
           waterBody.style.height = '0%';
       }
     }
 } else {
-  humidityValue.textContent = "0.00%";
+  if (humidityValue) humidityValue.textContent = "0.00%";
   // Default wave position when not connected
   wavePath?.setAttribute("d", "M 0 80 Q 25 85 50 80 T 100 80 V 100 H 0 Z");
 }
