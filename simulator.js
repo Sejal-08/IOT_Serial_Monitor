@@ -48,7 +48,13 @@
     'Soil K':      { v:'currentSoilK',        min:0,    max:200,  step:1,   unit:'mg/kg', def: 0,  soilKey:'Potassium' },
     'Soil EC':     { v:'currentSoilEC',       min:0,    max:5,    step:0.1, unit:'mS/cm', def: 0, soilKey:'EC' },
     'Soil Sal':    { v:'currentSoilSal',      min:0,    max:5000, step:10,  unit:'',      def: 0, soilKey:'Salinity' },
-    'PM2.5':       { v:'currentSEN66_PM25',   min:0,    max:100,  step:1,   unit:'ug/m3', def: 0 }
+          'PM1.0':       { v:'currentSEN66_PM1',    min:0,    max:100,  step:1,   unit:'ug/m3', def: 0 },
+      'PM2.5':       { v:'currentSEN66_PM25',   min:0,    max:100,  step:1,   unit:'ug/m3', def: 0 },
+      'PM4.0':       { v:'currentSEN66_PM4',    min:0,    max:100,  step:1,   unit:'ug/m3', def: 0 },
+      'PM10':        { v:'currentSEN66_PM10',   min:0,    max:100,  step:1,   unit:'ug/m3', def: 0 },
+      'VOC':         { v:'currentSEN66_VOC',    min:0,    max:500,  step:1,   unit:'Idx',   def: 100 },
+      'NOx':         { v:'currentSEN66_NOx',    min:0,    max:500,  step:1,   unit:'Idx',   def: 0 },
+      'CO2':         { v:'currentSEN66_CO2',    min:400,  max:2000, step:10,  unit:'ppm',   def: 400 }
   };
 
   function getControls() {
@@ -69,7 +75,7 @@
       c.push('Soil N'); c.push('Soil P'); c.push('Soil K');
       c.push('Soil EC'); c.push('Soil Sal');
     }
-    if (s === 'SEN66') c.push('PM2.5');
+    if (s === 'SEN66') { c.push('PM1.0'); c.push('PM2.5'); c.push('PM4.0'); c.push('PM10'); c.push('VOC'); c.push('NOx'); c.push('CO2'); }
     if (c.length === 0 && s !== '') c.push('Temp');
     return c;
   }
@@ -122,7 +128,18 @@
             var re = document.getElementById('rain-value');
             if (re) re.textContent = val.toFixed(1) + ' mm';
           }
-          if (key === 'Wind') {
+          
+            
+            if (key === 'Temp') { if (window.sensorData && window.sensorData['I2C']) window.sensorData['I2C']['SEN66 Temperature'] = val.toFixed(2) + ' \u00B0C'; }
+            if (key === 'Humidity') { if (window.sensorData && window.sensorData['I2C']) window.sensorData['I2C']['SEN66 Humidity'] = val.toFixed(1) + ' %'; }
+            if (key === 'PM1.0') { if (window.sensorData && window.sensorData['I2C']) window.sensorData['I2C']['SEN66 PM1.0'] = val.toFixed(1) + ' ug/m3'; }
+            if (key === 'PM2.5') { if (window.sensorData && window.sensorData['I2C']) window.sensorData['I2C']['SEN66 PM2.5'] = val.toFixed(1) + ' ug/m3'; }
+            if (key === 'PM4.0') { if (window.sensorData && window.sensorData['I2C']) window.sensorData['I2C']['SEN66 PM4'] = val.toFixed(1) + ' ug/m3'; }
+            if (key === 'PM10') { if (window.sensorData && window.sensorData['I2C']) window.sensorData['I2C']['SEN66 PM10'] = val.toFixed(1) + ' ug/m3'; }
+            if (key === 'VOC') { if (window.sensorData && window.sensorData['I2C']) window.sensorData['I2C']['SEN66 VOC'] = val.toFixed(0); }
+            if (key === 'NOx') { if (window.sensorData && window.sensorData['I2C']) window.sensorData['I2C']['SEN66 NOx'] = val.toFixed(0); }
+            if (key === 'CO2') { if (window.sensorData && window.sensorData['I2C']) window.sensorData['I2C']['SEN66 CO2'] = val.toFixed(0) + ' ppm'; }
+            if (key === 'Wind') {
             if (window.sensorData) {
               if (window.sensorData['RS485']) window.sensorData['RS485']['Wind Speed'] = val.toFixed(1) + ' m/s';
             }
@@ -153,6 +170,7 @@
             }
           }
           if (typeof window.updateSensorUI === 'function') window.updateSensorUI();
+            if (typeof window.renderSensorData === 'function') window.renderSensorData();
         });
         div.appendChild(label);
         div.appendChild(input);
