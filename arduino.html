@@ -204,7 +204,7 @@
       <div id="robo-speech-bubble" class="robo-bubble hidden"></div>
       <div id="robo-container" title="Click me!">
         <div id="robo-accessory" class="robo-accessory">&#x1F4A4;</div>
-        <svg id="robo-svg" viewBox="0 0 120 180" xmlns="http://www.w3.org/2000/svg">
+        <svg id="robo-svg" viewBox="-10 -10 140 200" style="overflow: visible;" xmlns="http://www.w3.org/2000/svg">
           <line x1="60" y1="22" x2="60" y2="8" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/>
           <circle id="robo-antennaBall" cx="60" cy="7" r="5" fill="#3b82f6"/>
           <rect id="robo-head" x="28" y="22" width="64" height="52" rx="14" fill="#1e40af"/>
@@ -280,7 +280,8 @@
             </div>
 
             <!-- Existing Sensor Cards (Hidden initially or overlaid) -->
-            <div class="sensor-cards" id="sensor-cards-container" style="display: none; width: 100%; padding: 20px; overflow-y: auto; z-index: 20;">
+            <div class="dashboard-content-flex" id="dashboard-content-flex" style="display: flex; gap: 20px; align-items: flex-start; width: 100%;">
+<div class="sensor-cards" id="sensor-cards-container" style="display: none; width: 100%; padding: 20px; overflow-y: auto; z-index: 20;">
 <!-- TEMPERATURE (CELSIUS) – FINAL FIXED: NO CUT-OFF, PERFECT &deg;C -->
 <div id="thermometer-container" class="thermometer-container">
   <h4><i class="fas fa-temperature-half"></i> Temperature</h4>
@@ -1649,6 +1650,11 @@
     </div>
 </div>
           </div> <!-- End of sensor-cards-container -->
+        <div id="educational-sidebar" class="educational-sidebar" style="display: none; width: 340px; flex-shrink: 0; padding-bottom: 250px; margin-top: 20px;">
+            <!-- Card injected via JS -->
+        </div>
+    </div> <!-- End of dashboard-content-flex -->
+    
 
         </div> <!-- End of cyber-grid-main -->
         </div> <!-- End of cyber-grid-container -->
@@ -1659,6 +1665,7 @@
 
 
 
+    <script src="sensor_info.js"></script>
     <script src="renderer.js"></script>
   <script src="school_mode.js"></script>
   <script src="robot_mascot.js"></script>

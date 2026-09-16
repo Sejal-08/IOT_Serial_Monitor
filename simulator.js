@@ -11,7 +11,7 @@
     '</div>' +
     '<div id="sim-controls"></div>' +
   '</div>' +
-  '<button id="sim-toggle-btn" style="position:fixed; right: 90px; left: auto; top: auto; bottom: 50px; z-index:10000; background:#8b5cf6; color:white; border:none; box-shadow:0 4px 15px rgba(139,92,246,0.4); font-weight:bold; padding:10px 16px; border-radius:20px; cursor:pointer; display:flex; align-items:center; gap:8px; font-family:Nunito,sans-serif; font-size:14px;">' +
+  '<button id="sim-toggle-btn" style="position:fixed; right: 150px; left: auto; top: auto; bottom: 40px; z-index:10000; background:#8b5cf6; color:white; border:none; box-shadow:0 4px 15px rgba(139,92,246,0.4); font-weight:bold; padding:10px 16px; border-radius:20px; cursor:pointer; display:flex; align-items:center; gap:8px; font-family:Nunito,sans-serif; font-size:14px;">' +
     '<i class="fas fa-gamepad"></i> Simulator' +
   '</button>';
 

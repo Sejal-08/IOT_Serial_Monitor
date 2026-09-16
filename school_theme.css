@@ -102,7 +102,7 @@ nav {
 .right-panel .container {
   background: var(--bg-color) !important;
   border: none !important;
-  padding: 20px 280px 20px 20px !important;
+  padding: 20px !important;
 }
 
 /* Cards (Right Panel) */
@@ -407,13 +407,13 @@ body:not(.light-mode) .pill-btn {
 #robo-wrapper {
   position: fixed !important;
   top: auto !important;
-  bottom: 110px !important;
-  right: 90px !important;
+  bottom: 100px !important;
+  right: 150px !important;
   z-index: 99999 !important;
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
-  transform: scale(1.4) !important;
+  transform: scale(1.0) !important;
   transform-origin: bottom center !important;
 }
 #robo-container {

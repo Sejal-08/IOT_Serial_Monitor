@@ -1955,6 +1955,7 @@ if (protocol === "I2C" && selectedSensor === "SEN66") {
    // Stop particles if SEN66 is NOT selected
 }
     updateSensorVisualizationVisibility();
+  if (typeof populateEducationalSidebar === 'function') populateEducationalSidebar();
   } else {
     // No protocol selected
     sensorDropdown.innerHTML = '<option value="" disabled selected>No protocol selected</option>';
@@ -1994,6 +1995,7 @@ if (protocol === "I2C" && selectedSensor === "SEN66") {
      
    
     updateSensorVisualizationVisibility();
+  if (typeof populateEducationalSidebar === 'function') populateEducationalSidebar();
   }
 }
 function selectSensor(sensor) {
@@ -3943,3 +3945,72 @@ function init3DSensorModel() {
 
 
 
+
+
+
+
+function populateEducationalSidebar() {
+  const sidebar = document.getElementById("educational-sidebar");
+  if (!sidebar) return;
+  
+  console.log("populateEducationalSidebar check: selectedSensor=", selectedSensor);
+  console.log("sensorInfoData defined?", typeof sensorInfoData !== "undefined");
+  if (typeof sensorInfoData !== "undefined") {
+    console.log("sensorInfoData[selectedSensor]=", sensorInfoData[selectedSensor]);
+  }
+  if (!selectedSensor || typeof sensorInfoData === "undefined" || !sensorInfoData[selectedSensor]) {
+    sidebar.style.display = "none";
+    return;
+  }
+  
+  sidebar.style.display = "flex";
+  
+  const data = sensorInfoData[selectedSensor];
+  
+  // Build the features HTML
+  let featuresHTML = "";
+  data.features.forEach(f => {
+    featuresHTML += `
+      <div style="display: flex; align-items: center; gap: 12px; padding: 6px 0; border-bottom: 1px solid #f1f5f9;">
+        <div style="width: 28px; height: 28px; border-radius: 50%; background: #fef08a; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          <i class="${f.icon}" style="color: #1e293b; font-size: 16px;"></i>
+        </div>
+        <div style="color: #334155; font-size: 0.85rem; font-family: 'Nunito', sans-serif; font-weight: 600;">
+          ${f.text}
+        </div>
+      </div>
+    `;
+  });
+  
+  sidebar.innerHTML = `
+    <div style="background: #ffffff; border-radius: 12px; padding: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); width: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px; position: relative;">
+      
+      <!-- Title -->
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="position: relative; width: 32px; height: 32px;">
+          <!-- Background blob -->
+          <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #fef08a; border-radius: 12px 12px 0px 12px; transform: rotate(-10deg);"></div>
+          <!-- Icon -->
+          <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center;">
+            <i class="fas fa-file-alt" style="color: #1e293b; font-size: 16px; position: relative; z-index: 2;"></i>
+          </div>
+        </div>
+        <h3 style="margin: 0; color: #1e3a8a; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 1.1rem;">About ${selectedSensor}</h3>
+      </div>
+      
+      <!-- Description -->
+      <p style="margin: 0; color: #475569; font-family: 'Nunito', sans-serif; font-size: 0.82rem; line-height: 1.4;">
+        ${data.desc}
+      </p>
+      
+      <!-- Divider -->
+      <div style="width: 100%; height: 1px; background: #e2e8f0; margin-top: 8px;"></div>
+      
+      <!-- Features List -->
+      <div style="display: flex; flex-direction: column;">
+        ${featuresHTML}
+      </div>
+      
+    </div>
+  `;
+}

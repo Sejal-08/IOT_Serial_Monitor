@@ -19,7 +19,7 @@
     '#robo-container:hover { filter:drop-shadow(0 10px 28px rgba(59,130,246,.5)); }',
     '#robo-svg { width:120px; height:180px; }',
     '#robo-label { font-family:"Nunito",sans-serif; font-size:13px; font-weight:800; color:#64748b; text-align:center; pointer-events:none; }',
-    '.robo-bubble { position:absolute; bottom:265px; right:0; background:white; border:2px solid #3b82f6; border-radius:16px 16px 4px 16px; padding:10px 14px; font-family:"Nunito",sans-serif; font-size:13px; font-weight:700; color:#1e293b; max-width:220px; min-width:140px; box-shadow:0 4px 16px rgba(59,130,246,.2); line-height:1.4; text-align:center; transition:opacity .3s,transform .3s; z-index:10000; }',
+    '.robo-bubble { position:absolute; bottom:130px; left:110px; background:white; border:2px solid #3b82f6; border-radius:16px 16px 16px 4px; padding:10px 14px; font-family:"Nunito",sans-serif; font-size:13px; font-weight:700; color:#1e293b; max-width:150px; min-width:100px; box-shadow:0 4px 16px rgba(59,130,246,.2); line-height:1.4; text-align:center; transition:opacity .3s,transform .3s; z-index:10000; }',
     'body:not(.light-mode) .robo-bubble { background:#1e293b; color:#f1f5f9; border-color:#3b82f6; }',
     '.robo-bubble.hidden { opacity:0; transform:translateY(10px); pointer-events:none; }',
     '.robo-bubble.visible { opacity:1; transform:translateY(0); }',
