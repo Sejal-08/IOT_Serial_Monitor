@@ -3,50 +3,46 @@
 
 /* Default: Dark Mode */
 :root {
-  --bg-color: #0f172a;
-  --card-bg: #1e293b;
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --primary-blue: #3b82f6;
-  --btn-green: #22c55e;
-  --btn-orange: #f59e0b;
-  --btn-purple: #8b5cf6;
-  --border-radius: 20px;
-  --input-bg: #334155;
-  --input-border: #475569;
-  --title-color: #e2e8f0;
-  --bg-gradient: radial-gradient(circle at 10% 20%, rgba(30,41,59,0.8) 0%, transparent 20%),
-                 radial-gradient(circle at 90% 10%, rgba(30,41,59,0.6) 0%, transparent 15%),
-                 radial-gradient(circle at 80% 80%, rgba(30,41,59,0.7) 0%, transparent 25%);
+
+  --bg-color: #2D1B4E; /* Deep rich purple */
+  --card-bg: #1A103C; /* Darker purple for cards */
+  --text-main: #ffffff;
+  --text-muted: #B8A8D6;
+  --primary-blue: #00e5ff;
+  --btn-green: #39ff14;
+  --btn-orange: #ffea00;
+  --btn-purple: #ff00ff;
+  --border-radius: 32px;
+  --input-bg: #2D1B4E;
+  --input-border: #00e5ff; /* Cyan borders! */
+  --title-color: #ffea00; /* Yellow titles */
 }
 
 /* Light Mode Override */
 body.light-mode {
-  --bg-color: #e6f2ff;
-  --card-bg: #ffffff;
-  --text-main: #1e293b;
-  --text-muted: #64748b;
-  --primary-blue: #3b82f6;
-  --btn-green: #22c55e;
-  --btn-orange: #f59e0b;
-  --btn-purple: #8b5cf6;
-  --input-bg: #f8fafc;
-  --input-border: #e2e8f0;
-  --title-color: #0f172a;
-  --bg-gradient: radial-gradient(circle at 10% 20%, rgba(255,255,255,0.8) 0%, transparent 20%),
-                 radial-gradient(circle at 90% 10%, rgba(255,255,255,0.6) 0%, transparent 15%),
-                 radial-gradient(circle at 80% 80%, rgba(255,255,255,0.7) 0%, transparent 25%);
+
+  --bg-color: #FFF2CC;
+  --card-bg: #FFFFFF;
+  --text-main: #333333;
+  --text-muted: #888888;
+  --primary-blue: #3B82F6;
+  --btn-green: #4ADE80;
+  --btn-orange: #F59E0B;
+  --btn-purple: #C084FC;
+  --input-bg: #F3F4F6;
+  --input-border: #FCD34D;
+  --title-color: #F59E0B;
 }
 
 body.school-mode {
-  background-color: var(--bg-color) !important;
+  background: linear-gradient(135deg, #1A0B2E 0%, #2D1B4E 50%, #1A0B2E 100%) !important;
+  background-color: #2D1B4E !important;
   color: var(--text-main) !important;
   font-family: 'Nunito', sans-serif !important;
-  background-image: var(--bg-gradient) !important;
 }
 
 body.school-mode div, body.school-mode span, body.school-mode h1, body.school-mode h2, body.school-mode h3, body.school-mode h4, body.school-mode p, body.school-mode button, body.school-mode input, body.school-mode select, body.school-mode label {
-  font-family: 'Nunito', sans-serif;
+  font-family: 'Nunito', sans-serif !important;
 }
 body.school-mode i.fas, body.school-mode i.far, body.school-mode i.fab {
   font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands" !important;
@@ -54,7 +50,7 @@ body.school-mode i.fas, body.school-mode i.far, body.school-mode i.fab {
 
 /* Nav */
 nav {
-  background: transparent !important;
+  background: var(--bg-color) !important;
   border-bottom: none !important;
   padding: 15px 30px !important;
   display: flex !important;
@@ -93,41 +89,48 @@ nav {
 }
 .left-panel {
   width: 350px !important;
-  background: transparent !important;
+  background: var(--bg-color) !important;
   border: none !important;
   padding: 0 !important;
   gap: 20px !important;
 }
 .right-panel {
-  background: transparent !important;
+  background: var(--bg-color) !important;
   border: none !important;
   padding: 0 !important;
 }
 .right-panel .container {
-  background: transparent !important;
+  background: var(--bg-color) !important;
   border: none !important;
   padding: 0 !important;
 }
 
 /* Cards (Right Panel) */
 .cyber-grid-container {
-  background: transparent !important;
+  background: var(--bg-color) !important;
   border: none !important;
   padding: 0 !important;
 }
 .sensor-cards { gap: 20px !important; }
+
 .sensor-card, .sensor-cards > div {
   background: var(--card-bg) !important;
-  border-radius: 25px !important;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.02) !important;
-  border: none !important;
-  padding: 20px !important;
+  border-radius: 32px !important;
+  box-shadow: 0 8px 0 var(--input-border), 0 15px 20px rgba(0,0,0,0.1) !important;
+  border: 3px solid var(--input-border) !important;
+  padding: 24px !important;
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55) !important;
 }
+.sensor-card:hover, .sensor-cards > div:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 16px 0 var(--input-border), 0 20px 25px rgba(0,0,0,0.15) !important;
+}
+
 .sensor-card h4 {
   color: var(--title-color) !important;
   font-weight: 800 !important;
   border: none !important;
-  background: transparent !important;
+  background: var(--bg-color) !important;
   display: flex !important;
   align-items: center !important;
   gap: 10px !important;
@@ -139,14 +142,16 @@ nav {
 }
 
 /* New Left Panel Styles */
+
 .school-card {
   background: var(--card-bg) !important;
   border-radius: var(--border-radius) !important;
-  padding: 20px !important;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.03) !important;
-  border: none !important;
-  margin-bottom: 20px;
+  padding: 24px !important;
+  box-shadow: 0 6px 0 var(--input-border) !important;
+  border: 3px solid var(--input-border) !important;
+  margin-bottom: 24px !important;
 }
+
 .card-title {
   color: var(--title-color) !important;
   font-weight: 800 !important;
@@ -163,21 +168,30 @@ nav {
   margin-bottom: 6px;
   display: block;
 }
+
 .input-field {
   background: var(--input-bg) !important;
-  border: 2px solid var(--input-border) !important;
-  border-radius: 12px !important;
+  border: 3px solid var(--input-border) !important;
+  border-radius: 20px !important;
   color: var(--text-main) !important;
-  font-weight: 600 !important;
-  padding: 10px 15px !important;
+  font-weight: 800 !important;
+  padding: 10px 18px !important;
   outline: none;
-  height: 42px;
+  height: 48px !important;
   box-sizing: border-box;
+  font-size: 13px !important;
+  transition: all 0.2s;
 }
+.input-field:focus {
+  border-color: var(--primary-blue) !important;
+  box-shadow: 0 0 0 4px rgba(0, 210, 255, 0.3) !important;
+}
+
+
 .action-btn {
   border: none !important;
-  border-radius: 12px !important;
-  font-weight: 800 !important;
+  border-radius: 50px !important;
+  font-weight: 900 !important;
   color: white !important;
   padding: 10px 16px !important;
   display: flex !important;
@@ -185,10 +199,20 @@ nav {
   align-items: center !important;
   gap: 8px !important;
   cursor: pointer !important;
-  font-size: 14px !important;
-  height: 42px;
+  font-size: 13px !important;
+  height: 48px !important;
   box-sizing: border-box;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55) !important;
 }
+.action-btn:hover {
+  transform: scale(1.08) translateY(-2px);
+}
+.action-btn:active {
+  transform: scale(0.95);
+}
+
 .action-btn.green { background: var(--btn-green) !important; box-shadow: 0 4px 0 #15803d !important; }
 .action-btn.orange { background: var(--btn-orange) !important; box-shadow: 0 4px 0 #b45309 !important; }
 .action-btn.purple { background: var(--btn-purple) !important; box-shadow: 0 4px 0 #6d28d9 !important; }
@@ -212,7 +236,7 @@ nav {
 
 /* Kit box */
 .sensor-kit-box {
-  border: 2px dashed #fcd34d !important;
+  border: 4px dashed #fcd34d !important;
   background: #fffbeb !important;
   border-radius: 12px !important;
   padding: 15px !important;
@@ -226,7 +250,7 @@ nav {
 
 #did-you-know-panel {
   background: #fffbeb !important;
-  border: 2px dashed #fcd34d !important;
+  border: 4px dashed #fcd34d !important;
   margin: 0 0 20px 0 !important;
 }
 
@@ -250,11 +274,11 @@ body:not(.light-mode) .dynamic-streak {
 /* Sensor Kit Box */
 body.light-mode .sensor-kit-box {
     background: #fffbeb !important;
-    border: 2px dashed #fcd34d !important;
+    border: 4px dashed #fcd34d !important;
 }
 body:not(.light-mode) .sensor-kit-box {
     background: #1e293b !important;
-    border: 2px dashed #b45309 !important;
+    border: 4px dashed #b45309 !important;
 }
 
 /* List Ports Button Icon */
@@ -265,7 +289,7 @@ button[onclick="listPorts()"] {
 /* Fun Fact Panel */
 body.light-mode #did-you-know-panel {
     background: #fffbeb !important;
-    border: 2px dashed #fcd34d !important;
+    border: 4px dashed #fcd34d !important;
     color: #92400e !important;
 }
 body.light-mode #did-you-know-panel h4 { color: #b45309 !important; }
@@ -273,7 +297,7 @@ body.light-mode #dyk-text { color: #92400e !important; }
 
 body:not(.light-mode) #did-you-know-panel {
     background: #1e293b !important;
-    border: 2px dashed #b45309 !important;
+    border: 4px dashed #b45309 !important;
     color: #fcd34d !important;
 }
 body:not(.light-mode) #did-you-know-panel h4 { color: #f59e0b !important; }
@@ -371,7 +395,7 @@ body:not(.light-mode) .pill-btn {
 #robo-wrapper {
   position: fixed !important;
   bottom: 20px !important;
-  right: 80px !important;
+  right: 40px !important;
   z-index: 99999 !important;
   display: flex !important;
   flex-direction: column !important;
@@ -385,3 +409,9 @@ body:not(.light-mode) .pill-btn {
   visibility: visible !important;
   opacity: 1 !important;
 }
+
+body.light-mode {
+    background: #FFF2CC !important;
+    background-color: #FFF2CC !important;
+}
+html { background-color: #1A0B2E !important; min-height: 100vh; }

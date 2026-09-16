@@ -11,12 +11,12 @@
     '</div>' +
     '<div id="sim-controls"></div>' +
   '</div>' +
-  '<button id="sim-toggle-btn" style="position:fixed; bottom:30px; left:360px; z-index:10000; background:#8b5cf6; color:white; border:none; box-shadow:0 4px 15px rgba(139,92,246,0.4); font-weight:bold; padding:10px 16px; border-radius:20px; cursor:pointer; display:flex; align-items:center; gap:8px; font-family:Nunito,sans-serif; font-size:14px;">' +
+  '<button id="sim-toggle-btn" style="position:fixed; bottom:30px; left:400px; z-index:10000; background:#8b5cf6; color:white; border:none; box-shadow:0 4px 15px rgba(139,92,246,0.4); font-weight:bold; padding:10px 16px; border-radius:20px; cursor:pointer; display:flex; align-items:center; gap:8px; font-family:Nunito,sans-serif; font-size:14px;">' +
     '<i class="fas fa-gamepad"></i> Simulator' +
   '</button>';
 
   var SIM_CSS = [
-    '#sim-panel { position:fixed; bottom:70px; left:360px; width:280px; max-height:calc(100vh - 120px); background:var(--card-bg,#1e293b); border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,0.3); z-index:10000; border:2px solid var(--input-border,#334155); font-family:"Nunito",sans-serif; transition:transform .3s,opacity .3s; overflow:hidden; display:flex; flex-direction:column; }',
+    '#sim-panel { position:fixed; bottom:70px; left:400px; width:280px; max-height:calc(100vh - 120px); background:var(--card-bg,#1e293b); border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,0.3); z-index:10000; border:2px solid var(--input-border,#334155); font-family:"Nunito",sans-serif; transition:transform .3s,opacity .3s; overflow:hidden; display:flex; flex-direction:column; }',
     '#sim-panel.hidden { transform:translateY(20px); opacity:0; pointer-events:none; }',
     '.sim-header { background:#8b5cf6; color:white; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0; }',
     '.sim-header h3 { margin:0; font-size:15px; font-weight:800; }',
