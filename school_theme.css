@@ -111,7 +111,19 @@ nav {
   border: none !important;
   padding: 0 !important;
 }
-.sensor-cards { gap: 20px !important; }
+
+.sensor-cards {
+  gap: 20px !important;
+  max-width: 78% !important;
+  margin: 0 auto !important;
+  justify-content: center !important;
+}
+.weather-combined-grid, .weather-shield-grid {
+  max-width: 78% !important;
+  margin: 0 auto !important;
+  justify-content: center !important;
+}
+
 
 .sensor-card, .sensor-cards > div {
   background: var(--card-bg) !important;
@@ -394,15 +406,14 @@ body:not(.light-mode) .pill-btn {
 /* ROBO Robot Mascot - Force visible */
 #robo-wrapper {
   position: fixed !important;
-  bottom: 20px !important;
-  right: 40px !important;
+  bottom: 80px !important;
+  right: 90px !important;
   z-index: 99999 !important;
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
-  pointer-events: all !important;
-  visibility: visible !important;
-  opacity: 1 !important;
+  transform: scale(1.4) !important;
+  transform-origin: bottom center !important;
 }
 #robo-container {
   pointer-events: all !important;
@@ -415,3 +426,12 @@ body.light-mode {
     background-color: #FFF2CC !important;
 }
 html { background-color: #1A0B2E !important; min-height: 100vh; }
+
+#sim-panel {
+  background: rgba(26, 16, 60, 0.15) !important;
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+}
+body.light-mode #sim-panel {
+  background: rgba(255, 255, 255, 0.15) !important;
+}
