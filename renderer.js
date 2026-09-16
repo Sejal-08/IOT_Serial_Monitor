@@ -2937,7 +2937,6 @@ _resetSEN66();
     "Analog": { Hall_Sensor: false, IR_Sensor: false },
     "ADC": { "Rain Gauge": false },
   };
-  selectedSensor = null;
   updateSensorUI();
   updateSensorConnectionStatus();
 }
@@ -3300,12 +3299,12 @@ function updateSensorConnectionStatus() {
 
   // Update Connect/Disconnect buttons
   if (isConnected) {
-    statusText.textContent = 'CONNECTED';
+    document.querySelectorAll('#status-text').forEach(el => el.textContent = 'CONNECTED');
     document.body.classList.add('sensors-connected');
     document.body.classList.remove('sensors-disconnected');
     
-    statusBox.classList.add('connected');
-    statusBox.classList.remove('disconnected');
+    document.querySelectorAll('#status-box').forEach(el => el.classList.add('connected'));
+    document.querySelectorAll('#status-box').forEach(el => el.classList.remove('disconnected'));
     
     if (btnConnect) {
       btnConnect.classList.add('btn-dim');
@@ -3316,12 +3315,12 @@ function updateSensorConnectionStatus() {
       btnDisconnect.classList.remove('btn-dim');
     }
   } else {
-    statusText.textContent = 'NOT CONNECTED';
+    document.querySelectorAll('#status-text').forEach(el => el.textContent = 'NOT CONNECTED');
     document.body.classList.remove('sensors-connected');
     document.body.classList.add('sensors-disconnected');
     
-    statusBox.classList.add('disconnected');
-    statusBox.classList.remove('connected');
+    document.querySelectorAll('#status-box').forEach(el => el.classList.add('disconnected'));
+    document.querySelectorAll('#status-box').forEach(el => el.classList.remove('connected'));
     
     if (btnConnect) {
       btnConnect.classList.remove('btn-dim', 'btn-highlight');
@@ -3939,3 +3938,8 @@ function init3DSensorModel() {
       }
       requestAnimationFrame(animate);
     }
+
+
+
+
+

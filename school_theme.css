@@ -102,7 +102,7 @@ nav {
 .right-panel .container {
   background: var(--bg-color) !important;
   border: none !important;
-  padding: 0 !important;
+  padding: 20px 280px 20px 20px !important;
 }
 
 /* Cards (Right Panel) */
@@ -114,12 +114,12 @@ nav {
 
 .sensor-cards {
   gap: 20px !important;
-  max-width: 78% !important;
+  max-width: 850px !important;
   margin: 0 auto !important;
   justify-content: center !important;
 }
 .weather-combined-grid, .weather-shield-grid {
-  max-width: 78% !important;
+  max-width: 850px !important;
   margin: 0 auto !important;
   justify-content: center !important;
 }
@@ -406,7 +406,8 @@ body:not(.light-mode) .pill-btn {
 /* ROBO Robot Mascot - Force visible */
 #robo-wrapper {
   position: fixed !important;
-  bottom: 80px !important;
+  top: auto !important;
+  bottom: 110px !important;
   right: 90px !important;
   z-index: 99999 !important;
   display: flex !important;
@@ -452,4 +453,46 @@ body:not(.light-mode) .robo-bubble {
 .robo-bubble.visible {
   opacity: 1 !important;
   transform: translateY(0) scale(0.71) !important;
+}
+
+
+
+
+
+/* Make the massive spectra animation smaller to eliminate unnecessary scrolling */
+.orbit-container {
+  height: 420px !important;
+  transform: scale(0.75) !important;
+  margin-top: -20px !important;
+  margin-bottom: -20px !important;
+}
+
+
+/* Fix massive spacing inside the orbit cards */
+#soil-orbit-card, #sen66-orbit-card {
+  min-height: auto !important;
+  padding-bottom: 45px !important;
+}
+.orbit-header {
+  margin-top: 5px !important;
+  margin-bottom: 30px !important;
+}
+
+
+/* Shrink the height of the Rain Gauge card */
+#rain-gauge-card {
+  flex: 1 !important;
+  min-width: 300px !important;
+  max-width: 400px !important;
+  width: auto !important;
+  height: auto !important;
+  min-height: 400px !important; /* VCNL is roughly 400px tall with its SVG */
+  max-height: none !important;
+  --rain-scale: 1.0 !important;
+}
+
+/* Educational sidebar safe zone */
+#educational-sidebar {
+  padding-right: 10px !important;
+  overflow-y: auto;
 }

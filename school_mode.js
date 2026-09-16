@@ -141,14 +141,15 @@ function injectSchoolUI() {
     // Inject "Did You Know?" Panel
     const rightPanel = document.querySelector('.dashboard') || document.querySelector('.right-panel .container');
     if (rightPanel && !document.getElementById('did-you-know-panel')) {
+        
         const dyk = document.createElement('div');
         dyk.id = 'did-you-know-panel';
         dyk.style.background = '#fffbeb'; // Match sensor-kit-box background
         dyk.style.border = '2px dashed #fcd34d';
         dyk.style.borderRadius = '20px';
         dyk.style.padding = '15px';
-        dyk.style.marginBottom = '15px';
-        dyk.style.display = 'block'; // Show by default!
+        dyk.style.marginBottom = '-10px';
+        dyk.style.display = 'none'; // Show by default!
         dyk.style.color = '#b45309';
         dyk.style.fontFamily = "'Nunito', sans-serif";
         dyk.style.boxShadow = '0 4px 15px rgba(0,0,0,0.02)';
