@@ -16,7 +16,7 @@ const sensorImages = {
   "SEN66": "images/SEN66.png"
 };
 
-let selectedSensor = null;
+var selectedSensor = null;
 let hallLightningInterval = null;  
 let _wfParticles = [];
 let _wfAnimId    = null;
@@ -285,7 +285,7 @@ let sensorStatus = {
   "GPIO": { "Blinky": false, "Buzzer": false, "Relay": false, "HC-SR04": false, "TTP223": false },
   "WEATHER": { "WeatherParameters": true }
 };
-let sensorData = {
+var sensorData = {
   "I2C": {},
   "ADC": {},
   "RS232": {},
@@ -295,44 +295,44 @@ let sensorData = {
   "Analog": {},
   "GPIO": {}
 };
-let currentTemperature = null;
-let currentHumidity = null;
-let currentPressure = null;
-let currentLight = null;
-let currentVCNLLux = null;        // ← ADD THIS
-let currentVCNLProximity = null;  // ← ADD THIS (optional, if your firmware sends proximity)
-let currentAccelX = null;
-let currentAccelY = null;
-let currentAccelZ = null;
-let currentMagneticField = null;
-let currentMagneticX = null;
-let currentMagneticY = null;
-let currentMagneticZ = null;
-let currentDistance = null;
-let currentUV = null;
-let currentIR = null;
-let currentRelayState = null;
-let currentWindDirection = null;
-let currentWindSpeed = null;
+var currentTemperature = null;
+var currentHumidity = null;
+var currentPressure = null;
+var currentLight = null;
+var currentVCNLLux = null;        // ← ADD THIS
+var currentVCNLProximity = null;  // ← ADD THIS (optional, if your firmware sends proximity)
+var currentAccelX = null;
+var currentAccelY = null;
+var currentAccelZ = null;
+var currentMagneticField = null;
+var currentMagneticX = null;
+var currentMagneticY = null;
+var currentMagneticZ = null;
+var currentDistance = null;
+var currentUV = null;
+var currentIR = null;
+var currentRelayState = null;
+var currentWindDirection = null;
+var currentWindSpeed = null;
 // ── Soil Sensor globals ──
-let currentSoilN = null;
-let currentSoilP = null;
-let currentSoilK = null;
-let currentSoilMoist = null;
-let currentSoilTemp = null;
-let currentSoilEC = null;
-let currentSoilPH = null;
-let currentSoilSal = null;
+var currentSoilN = null;
+var currentSoilP = null;
+var currentSoilK = null;
+var currentSoilMoist = null;
+var currentSoilTemp = null;
+var currentSoilEC = null;
+var currentSoilPH = null;
+var currentSoilSal = null;
 // ── SEN66 globals ──
-let currentSEN66_PM1  = null;
-let currentSEN66_PM25 = null;
-let currentSEN66_PM4  = null;
-let currentSEN66_PM10 = null;
-let currentSEN66_Hum  = null;
-let currentSEN66_Temp = null;
-let currentSEN66_VOC  = null;
-let currentSEN66_NOx  = null;
-let currentSEN66_CO2  = null;
+var currentSEN66_PM1  = null;
+var currentSEN66_PM25 = null;
+var currentSEN66_PM4  = null;
+var currentSEN66_PM10 = null;
+var currentSEN66_Hum  = null;
+var currentSEN66_Temp = null;
+var currentSEN66_VOC  = null;
+var currentSEN66_NOx  = null;
+var currentSEN66_CO2  = null;
 
  
 // ── SEN66 particle canvas state ──
@@ -346,8 +346,8 @@ let prevPolar = 0;
 let prevMagnitude = 0;
 let prevScale = 1;
 let isConnected = false;
-let currentBaud = null;
-let currentPort = null;
+var currentBaud = null;
+var currentPort = null;
 
 // Auto-reconnection variables
 let autoReconnectActive = false;

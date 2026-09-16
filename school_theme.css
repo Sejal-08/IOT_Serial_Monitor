@@ -366,3 +366,22 @@ body:not(.light-mode) .pill-btn {
     background-image: none !important;
     background-color: transparent !important;
 }
+
+/* ROBO Robot Mascot - Force visible */
+#robo-wrapper {
+  position: fixed !important;
+  bottom: 20px !important;
+  right: 80px !important;
+  z-index: 99999 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  pointer-events: all !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+#robo-container {
+  pointer-events: all !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
