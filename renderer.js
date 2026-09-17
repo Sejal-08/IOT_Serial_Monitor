@@ -380,6 +380,7 @@ function appendLog(html, cssClass = 'log-default') {
 }
 // Update sensor UI
 function updateSensorUI() {
+  if(typeof window.checkChallengeCompletion === 'function') window.checkChallengeCompletion();
   console.log('updateSensorUI called - selectedSensor:', selectedSensor);
   console.log('Current data - Temp:', currentTemperature, 'Humidity:', currentHumidity, 'Pressure:', currentPressure);
  
@@ -1165,7 +1166,7 @@ if (selectedSensor === "VCNL4040") {  // ← Remove protocol check, it's redunda
       if (bulbBlur) bulbBlur?.setAttribute("stdDeviation", "5");
       if (bulbRays) bulbRays?.setAttribute("opacity", "0");
       
-      return;
+      
     }
 
   const lux = Number(currentVCNLLux);
@@ -3964,6 +3965,7 @@ function populateEducationalSidebar() {
   }
   
   sidebar.style.display = "flex";
+  sidebar.style.flexDirection = "column";
   
   const data = sensorInfoData[selectedSensor];
   
@@ -3971,11 +3973,11 @@ function populateEducationalSidebar() {
   let featuresHTML = "";
   data.features.forEach(f => {
     featuresHTML += `
-      <div style="display: flex; align-items: center; gap: 12px; padding: 6px 0; border-bottom: 1px solid #f1f5f9;">
-        <div style="width: 28px; height: 28px; border-radius: 50%; background: #fef08a; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-          <i class="${f.icon}" style="color: #1e293b; font-size: 16px;"></i>
+      <div class="edu-feature-item">
+        <div class="edu-feature-icon">
+          <i class="${f.icon}"></i>
         </div>
-        <div style="color: #334155; font-size: 0.85rem; font-family: 'Nunito', sans-serif; font-weight: 600;">
+        <div class="edu-feature-text">
           ${f.text}
         </div>
       </div>
@@ -3983,34 +3985,308 @@ function populateEducationalSidebar() {
   });
   
   sidebar.innerHTML = `
-    <div style="background: #ffffff; border-radius: 12px; padding: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); width: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px; position: relative;">
-      
-      <!-- Title -->
+    <!-- About Card -->
+    <div class="edu-card edu-card-about">
       <div style="display: flex; align-items: center; gap: 12px;">
         <div style="position: relative; width: 32px; height: 32px;">
-          <!-- Background blob -->
-          <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #fef08a; border-radius: 12px 12px 0px 12px; transform: rotate(-10deg);"></div>
-          <!-- Icon -->
+          <div class="edu-icon-bg"></div>
           <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center;">
-            <i class="fas fa-file-alt" style="color: #1e293b; font-size: 16px; position: relative; z-index: 2;"></i>
+            <i class="fas fa-file-alt edu-icon"></i>
           </div>
         </div>
-        <h3 style="margin: 0; color: #1e3a8a; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 1.1rem;">About ${selectedSensor}</h3>
+        <h3 class="edu-title">About ${selectedSensor}</h3>
       </div>
-      
-      <!-- Description -->
-      <p style="margin: 0; color: #475569; font-family: 'Nunito', sans-serif; font-size: 0.82rem; line-height: 1.4;">
-        ${data.desc}
-      </p>
-      
-      <!-- Divider -->
-      <div style="width: 100%; height: 1px; background: #e2e8f0; margin-top: 8px;"></div>
-      
-      <!-- Features List -->
+      <p class="edu-desc">${data.desc}</p>
+      <div class="edu-divider"></div>
       <div style="display: flex; flex-direction: column;">
         ${featuresHTML}
       </div>
-      
+    </div>
+
+    <!-- Experiment Card -->
+    <div class="edu-card edu-card-experiment edu-card-interactive" onclick="openEduModal('Experiment')">
+      <div class="edu-circle-icon edu-circle-purple">
+          <i class="fas fa-flask"></i>
+      </div>
+      <div style="flex-grow: 1;">
+          <h4 class="edu-sub-title edu-color-purple">Experiment</h4>
+          <p class="edu-desc">${data.experiment || "Try different conditions and see how the values change!"}</p>
+      </div>
+      <i class="fas fa-chevron-right edu-chevron"></i>
+    </div>
+
+    <!-- Challenge Card -->
+    <div class="edu-card edu-card-challenge edu-card-interactive" onclick="openEduModal('Challenge')">
+      <div class="edu-circle-icon edu-circle-green">
+          <i class="fas fa-trophy"></i>
+      </div>
+      <div style="flex-grow: 1;">
+          <h4 class="edu-sub-title edu-color-green">Challenge</h4>
+          <p class="edu-desc">${data.challenge || "Can you observe how the values change around you?"}</p>
+      </div>
+      <i class="fas fa-chevron-right edu-chevron"></i>
     </div>
   `;
 }
+
+
+
+// ==========================================
+// Educational Modal & Interactivity Logic
+// ==========================================
+
+
+window.openEduModal = function(type) {
+  const data = typeof sensorInfoData !== 'undefined' && sensorInfoData[selectedSensor];
+  if (!data) return;
+  
+  let title = "";
+  let icon = "";
+  let text = "";
+  let colorClass = "";
+  let btnText = "Got it!";
+  let roboMsg = "";
+  
+  if (type === 'Learn') {
+    title = `MINI LESSON!`;
+    icon = 'fa-lightbulb';
+    text = data.learn || "Understand how this sensor works and where it is used in the real world.";
+    colorClass = 'edu-color-yellow';
+    btnText = "Awesome! &#129504;";
+    roboMsg = "Your brain is growing! Excellent reading!";
+  } else if (type === 'Experiment') {
+    title = `EXPERIMENT TIME!`;
+    icon = 'fa-flask';
+    text = 'Use your <b>real physical sensor</b> to complete this experiment, or open the <b>Simulator</b> and play with the sliders to see what happens!';
+    colorClass = 'edu-color-purple';
+    btnText = "Start Mission! &#128640;";
+    roboMsg = "Mission started! Move those sliders!";
+  } else if (type === 'Challenge') {
+    title = `BOSS CHALLENGE!`;
+    icon = 'fa-crown';
+    text = data.challenge || "Can you observe how the values change around you?";
+    colorClass = 'edu-color-green';
+    btnText = "Accept Challenge! &#127918;";
+    roboMsg = "I am watching! Let us see if you can beat the challenge!";
+  }
+  
+  let modal = document.getElementById('eduModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'eduModal';
+    modal.className = 'modal-overlay';
+    modal.style.zIndex = '9999';
+    document.body.appendChild(modal);
+  }
+  
+  modal.innerHTML = `
+    <div class="modal-container edu-modal-anim" style="max-width: 420px; text-align: center; padding: 40px 30px; position: relative; border: 4px solid ${type === 'Learn' ? '#fde047' : type === 'Experiment' ? '#d8b4fe' : '#86efac'}; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+      
+      <button onclick="closeEduModal()" style="position: absolute; top: 15px; right: 15px; background: #f1f5f9; border: none; color: #64748b; cursor: pointer; font-size: 1.2rem; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+        <i class="fas fa-times"></i>
+      </button>
+
+      <div class="edu-circle-icon ${type === 'Learn' ? 'edu-circle-yellow' : type === 'Experiment' ? 'edu-circle-purple' : 'edu-circle-green'}" style="width: 90px; height: 90px; margin: 0 auto 20px auto; font-size: 40px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 4px solid white;">
+        <i class="fas ${icon}"></i>
+      </div>
+      
+      <h2 class="${colorClass}" style="margin-bottom: 15px; font-family: 'Nunito', sans-serif; font-size: 1.8rem; font-weight: 900; text-transform: uppercase; letter-spacing: 1px;">${title}</h2>
+      
+      <div style="background: #f8fafc; border-radius: 16px; padding: 20px; margin-bottom: 25px; border: 2px dashed #cbd5e1;">
+          <div style="font-size: 1.15rem; line-height: 1.6; color: #475569; margin: 0; font-weight: 700; font-family: 'Nunito', sans-serif;">
+              ${text}
+          </div>
+      </div>
+
+      <button class="action-button" onclick="closeEduModal('${type}', '${roboMsg}')" style="width: 100%; justify-content: center; font-size: 1.3rem; padding: 16px; border-radius: 16px; font-weight: 900; text-transform: uppercase; box-shadow: 0 6px 0 rgba(0,0,0,0.1); transform: translateY(-4px); transition: all 0.1s ease; cursor: pointer;">
+        ${btnText}
+      </button>
+    </div>
+  `;
+  
+  modal.style.display = 'flex';
+};
+
+window.challengeState = { active: false, sensor: null, startValues: {} };
+
+window.closeEduModal = function(type, roboMsg) {
+  const modal = document.getElementById('eduModal');
+  if (modal) modal.style.display = 'none';
+  
+  if (!type) return; 
+
+  function shootConfetti() {
+      const emojis = ['&#11088;','&#127775;','&#10024;','&#127881;','&#128640;'];
+      for(let i=0; i<30; i++) {
+          let conf = document.createElement('div');
+          conf.innerHTML = emojis[Math.floor(Math.random()*emojis.length)];
+          conf.style.position = 'fixed';
+          conf.style.left = Math.random() * 100 + 'vw';
+          conf.style.top = '-50px';
+          conf.style.fontSize = (Math.random() * 20 + 15) + 'px';
+          conf.style.zIndex = '999999';
+          conf.style.transition = 'all ' + (Math.random() * 1.5 + 1) + 's ease-in';
+          document.body.appendChild(conf);
+          
+          setTimeout(() => {
+              conf.style.top = '110vh';
+              conf.style.transform = 'rotate(' + (Math.random() * 720 - 360) + 'deg)';
+          }, 50);
+          
+          setTimeout(() => { conf.remove(); }, 2000);
+      }
+  }
+
+  if (type === 'Learn') {
+      shootConfetti();
+  }
+  
+  if (type === 'Challenge') {
+      // Start the challenge monitoring!
+      window.challengeState = {
+          active: true,
+          sensor: selectedSensor,
+          startValues: {
+              t: typeof currentTemperature !== 'undefined' ? currentTemperature : 0,
+              h: typeof currentHumidity !== 'undefined' ? currentHumidity : 0,
+              p: typeof currentPressure !== 'undefined' ? currentPressure : 0,
+              l: typeof currentLight !== 'undefined' ? currentLight : 0
+          }
+      };
+      
+      // Show an active challenge banner
+      let banner = document.getElementById('challengeBanner');
+      if (!banner) {
+          banner = document.createElement('div');
+          banner.id = 'challengeBanner';
+          banner.style.position = 'fixed';
+          banner.style.top = '20px';
+          banner.style.left = '50%';
+          banner.style.transform = 'translateX(-50%)';
+          banner.style.background = '#22c55e';
+          banner.style.color = 'white';
+          banner.style.padding = '10px 20px';
+          banner.style.borderRadius = '30px';
+          banner.style.fontWeight = 'bold';
+          banner.style.boxShadow = '0 4px 15px rgba(34,197,94,0.4)';
+          banner.style.zIndex = '9999';
+          banner.style.fontFamily = "'Nunito', sans-serif";
+          banner.innerHTML = '&#127918; Challenge Active: Waiting for sensor change...';
+          document.body.appendChild(banner);
+      } else {
+          banner.style.display = 'block';
+      }
+  }
+
+  const roboWrap = document.getElementById('robo-wrapper');
+  
+  // Only show ROBO for Experiment or Challenge! (Not Learn)
+  if (type === 'Experiment') {
+      if (roboWrap) roboWrap.classList.add('robo-visible');
+      
+      if (typeof roboBubble !== 'undefined' && roboMsg) {
+          roboBubble.textContent = roboMsg;
+          roboBubble.style.opacity = '1';
+          
+          const face = document.getElementById('robo-face-svg');
+          if (face) {
+              face.style.transform = 'translateY(-15px) scale(1.1)';
+              setTimeout(() => face.style.transform = 'translateY(0) scale(1)', 400);
+          }
+      }
+  } else {
+      if (typeof roboBubble !== 'undefined') roboBubble.style.opacity = '0';
+  }
+  
+  if (type === 'Experiment') {
+      const sim = document.getElementById('sim-panel');
+      if (sim) {
+          if (sim.classList.contains('hidden')) {
+              if (typeof window.openSimulator === 'function') {
+                  window.openSimulator();
+              }
+          }
+          
+          setTimeout(() => {
+              sim.style.boxShadow = "0 0 50px #d8b4fe, 0 0 20px #8b5cf6";
+              sim.style.transform = "scale(1.05)";
+              sim.style.border = "4px solid #a855f7";
+              sim.style.transition = "all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
+              setTimeout(() => {
+                  sim.style.boxShadow = "";
+                  sim.style.transform = "scale(1)";
+                  sim.style.border = "";
+              }, 2500);
+          }, 300);
+      }
+  }
+}
+
+window.checkChallengeCompletion = function() {
+    if (window.challengeState && window.challengeState.active && window.challengeState.sensor === selectedSensor) {
+        let changed = false;
+        
+        const ct = typeof currentTemperature !== 'undefined' ? currentTemperature : 0;
+        const ch = typeof currentHumidity !== 'undefined' ? currentHumidity : 0;
+        const cp = typeof currentPressure !== 'undefined' ? currentPressure : 0;
+        const cl = typeof currentLight !== 'undefined' ? currentLight : 0;
+        
+        if (Math.abs(ct - (window.challengeState.startValues.t || 0)) > 2.0) changed = true;
+        if (Math.abs(ch - (window.challengeState.startValues.h || 0)) > 5.0) changed = true;
+        if (Math.abs(cp - (window.challengeState.startValues.p || 0)) > 5.0) changed = true;
+        if (Math.abs(cl - (window.challengeState.startValues.l || 0)) > 50.0) changed = true;
+        
+        if (changed) {
+            window.challengeState.active = false;
+            let banner = document.getElementById('challengeBanner');
+            if (banner) banner.style.display = 'none';
+            
+            // Show Success Modal
+            let modal = document.getElementById('eduModal');
+            if (modal) {
+                modal.innerHTML = `
+                  <div class="modal-container edu-modal-anim" style="max-width: 420px; text-align: center; padding: 40px 30px; position: relative; border: 4px solid #fde047; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+                    <div class="edu-circle-icon edu-circle-yellow" style="width: 90px; height: 90px; margin: 0 auto 20px auto; font-size: 40px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 4px solid white;">
+                      <i class="fas fa-trophy" style="color: #ca8a04;"></i>
+                    </div>
+                    <h2 class="edu-color-yellow" style="margin-bottom: 15px; font-family: 'Nunito', sans-serif; font-size: 1.8rem; font-weight: 900; text-transform: uppercase;">MISSION ACCOMPLISHED!</h2>
+                    <div style="background: #f8fafc; border-radius: 16px; padding: 20px; margin-bottom: 25px; border: 2px dashed #cbd5e1;">
+                        <p style="font-size: 1.15rem; line-height: 1.6; color: #475569; margin: 0; font-weight: 700; font-family: 'Nunito', sans-serif;">
+                            You successfully triggered the sensor! Excellent work!
+                        </p>
+                    </div>
+                    <button class="action-button" onclick="document.getElementById('eduModal').style.display='none'" style="width: 100%; justify-content: center; font-size: 1.3rem; padding: 16px; border-radius: 16px; font-weight: 900; box-shadow: 0 6px 0 rgba(0,0,0,0.1); cursor: pointer;">
+                      CLAIM REWARD! &#127881;
+                    </button>
+                  </div>
+                `;
+                modal.style.display = 'flex';
+                
+                const roboWrap = document.getElementById('robo-wrapper');
+                if (roboWrap) roboWrap.classList.add('robo-visible');
+                if (typeof roboBubble !== 'undefined') {
+                    roboBubble.textContent = "WOW! You actually did it! I'm so proud!";
+                    roboBubble.style.opacity = '1';
+                }
+                
+                // Shoot confetti!
+                const emojis = ['&#11088;','&#127775;','&#10024;','&#127881;','&#128640;'];
+                for(let i=0; i<50; i++) {
+                    let conf = document.createElement('div');
+                    conf.innerHTML = emojis[Math.floor(Math.random()*emojis.length)];
+                    conf.style.position = 'fixed';
+                    conf.style.left = Math.random() * 100 + 'vw';
+                    conf.style.top = '-50px';
+                    conf.style.fontSize = (Math.random() * 20 + 15) + 'px';
+                    conf.style.zIndex = '999999';
+                    conf.style.transition = 'all ' + (Math.random() * 1.5 + 1) + 's ease-in';
+                    document.body.appendChild(conf);
+                    setTimeout(() => { conf.style.top = '110vh'; conf.style.transform = 'rotate(' + (Math.random() * 720 - 360) + 'deg)'; }, 50);
+                    setTimeout(() => { conf.remove(); }, 2000);
+                }
+            }
+        }
+    }
+}
+
+

@@ -11,9 +11,7 @@
     '</div>' +
     '<div id="sim-controls"></div>' +
   '</div>' +
-  '<button id="sim-toggle-btn" style="position:fixed; right: 150px; left: auto; top: auto; bottom: 40px; z-index:10000; background:#8b5cf6; color:white; border:none; box-shadow:0 4px 15px rgba(139,92,246,0.4); font-weight:bold; padding:10px 16px; border-radius:20px; cursor:pointer; display:flex; align-items:center; gap:8px; font-family:Nunito,sans-serif; font-size:14px;">' +
-    '<i class="fas fa-gamepad"></i> Simulator' +
-  '</button>';
+  '';
 
   var SIM_CSS = [
     '#sim-panel { position:fixed; right: 280px; top: auto; bottom: 120px; width:280px; max-height:calc(100vh - 120px); background:var(--card-bg,#1e293b); border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,0.3); z-index:10000; border:2px solid var(--input-border,#334155); font-family:"Nunito",sans-serif; transition:transform .3s,opacity .3s; overflow:hidden; display:flex; flex-direction:column; }',
@@ -28,13 +26,13 @@
   ].join('\n');
 
   var SENSOR_VARS = {
-    'Temp':        { v:'currentTemperature',  min:-10,  max:50,   step:1,   unit:'C',     def: 24 },
-    'Humidity':    { v:'currentHumidity',     min:0,    max:100,  step:1,   unit:'%',     def: 45 },
-    'Pressure':    { v:'currentPressure',     min:900,  max:1100, step:1,   unit:'hPa',   def: 1013 },
-    'Light':       { v:'currentLight',        min:0,    max:10000,step:10,  unit:'lux',   def: 300 },
+    'Temp':        { v:'currentTemperature',  min:-10,  max:50,   step:1,   unit:'C',     def: 0 },
+    'Humidity':    { v:'currentHumidity',     min:0,    max:100,  step:1,   unit:'%',     def: 0 },
+    'Pressure':    { v:'currentPressure',     min:0,    max:1100, step:1,   unit:'hPa',   def: 0 },
+    'Light':       { v:'currentLight',        min:0,    max:10000,step:10,  unit:'lux',   def: 0 },
     'Wind':        { v:'currentWindSpeed',    min:0,    max:30,   step:1,   unit:'m/s',   def: 0 },
     'Rain':        { v:'currentRainCount',    min:0,    max:50,   step:1,   unit:'mm',    def: 0 },
-    'Distance':    { v:'currentDistance',     min:0,    max:200,  step:1,   unit:'cm',    def: 50 },
+    'Distance':    { v:'currentDistance',     min:0,    max:200,  step:1,   unit:'cm',    def: 0 },
     'Magnet':      { v:'currentMagneticField',min:-1000,max:1000, step:10,  unit:'uT',    def: 0 },
     'IR':          { v:'currentIR',           min:0,    max:1023, step:10,  unit:'',      def: 0 },
     'Accel X':     { v:'currentAccelX',       min:-2,   max:2,    step:0.1, unit:'g',     def: 0 },
@@ -52,9 +50,9 @@
       'PM2.5':       { v:'currentSEN66_PM25',   min:0,    max:100,  step:1,   unit:'ug/m3', def: 0 },
       'PM4.0':       { v:'currentSEN66_PM4',    min:0,    max:100,  step:1,   unit:'ug/m3', def: 0 },
       'PM10':        { v:'currentSEN66_PM10',   min:0,    max:100,  step:1,   unit:'ug/m3', def: 0 },
-      'VOC':         { v:'currentSEN66_VOC',    min:0,    max:500,  step:1,   unit:'Idx',   def: 100 },
+      'VOC':         { v:'currentSEN66_VOC',    min:0,    max:500,  step:1,   unit:'Idx',   def: 0 },
       'NOx':         { v:'currentSEN66_NOx',    min:0,    max:500,  step:1,   unit:'Idx',   def: 0 },
-      'CO2':         { v:'currentSEN66_CO2',    min:400,  max:2000, step:10,  unit:'ppm',   def: 400 }
+      'CO2':         { v:'currentSEN66_CO2',    min:0,    max:2000, step:10,  unit:'ppm',   def: 0 }
   };
 
   function getControls() {
@@ -179,11 +177,69 @@
     }
   }
 
-  function toggleSim() {
+  window.openSimulator = function() {
+  if(!simOpen) toggleSim();
+};
+function toggleSim() {
     simOpen = !simOpen;
     var p = document.getElementById('sim-panel');
-    if (simOpen) { p.classList.remove('hidden'); buildControls(); }
-    else { p.classList.add('hidden'); }
+    if (simOpen) { 
+      p.classList.remove('hidden'); 
+      buildControls(); 
+    } else { 
+      p.classList.add('hidden'); 
+      // Hide ROBO when simulator is closed
+      var roboWrap = document.getElementById('robo-wrapper');
+      if (roboWrap) roboWrap.classList.remove('robo-visible');
+
+      // Reset all sensor values to 0 when simulator closes
+      if (typeof window !== 'undefined') {
+          for (let k in SENSOR_VARS) {
+              let varName = SENSOR_VARS[k].v;
+              if (window[varName] !== undefined) window[varName] = 0;
+              if (varName === 'currentLight' && typeof window.currentVCNLLux !== 'undefined') window.currentVCNLLux = 0;
+          }
+          if (window.sensorData) {
+              if (window.sensorData['ADC']) window.sensorData['ADC']['Rainfall'] = '0.0 mm';
+              if (window.sensorData['WEATHER']) window.sensorData['WEATHER']['Rainfall'] = '0.0 mm';
+              if (window.sensorData['RS485']) {
+                  window.sensorData['RS485']['Wind Speed'] = '0.0 m/s';
+                  window.sensorData['RS485']['Soil Sensor Moisture'] = '0.0 %';
+                  window.sensorData['RS485']['Soil Sensor Temperature'] = '0.0 C';
+                  window.sensorData['RS485']['Soil Sensor pH'] = '0.0';
+              }
+              if (window.sensorData['I2C']) {
+                  window.sensorData['I2C']['SEN66 Temperature'] = '0.0 ' + String.fromCharCode(176) + 'C';
+                  window.sensorData['I2C']['SEN66 Humidity'] = '0.0 %';
+              }
+          }
+          // Also explicitly reset UI text if present
+          let rv = document.getElementById('rain-value');
+          if (rv) rv.textContent = '0.0 mm';
+          let wv = document.getElementById('wind-speed-value');
+          if (wv) wv.textContent = '0.0';
+          
+          // Reset Soil Orbital UI
+          let soilNodes = {
+              'orbit-soil-n-val': '0 mg/kg',
+              'orbit-soil-p-val': '0 mg/kg',
+              'orbit-soil-k-val': '0 mg/kg',
+              'orbit-soil-moist-val': '0.0 %',
+              'orbit-soil-temp-val': '0.0 ' + String.fromCharCode(176) + 'C',
+              'orbit-soil-ec-val': '0.0 mS/cm',
+              'orbit-soil-ph-val': '0.0',
+              'orbit-soil-sal-val': '0'
+          };
+          for (let id in soilNodes) {
+              let el = document.getElementById(id);
+              if (el) el.textContent = soilNodes[id];
+          }
+          
+          if (typeof updateSensorUI === 'function') {
+              updateSensorUI();
+          }
+      }
+    }
   }
 
   function init() {
@@ -194,7 +250,7 @@
     var div = document.createElement('div');
     div.innerHTML = SIM_HTML;
     document.body.appendChild(div);
-    document.getElementById('sim-toggle-btn').addEventListener('click', toggleSim);
+    
     document.getElementById('sim-close-btn').addEventListener('click', toggleSim);
     setInterval(function() { if (simOpen) buildControls(); }, 1000);
   }

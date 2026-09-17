@@ -705,7 +705,7 @@ h3 {
   100% { background-position: 0% 0%; }
 }
 
-body.dark-mode .action-button {
+bodybody.dark-mode:not(.light-mode) .action-button {
   background-size: 200% 200%;
   animation: gradientPulse 8s ease infinite;
 }
@@ -1420,7 +1420,7 @@ body:not(.dark-mode) #pressure-card h4 {
   stroke: url(#gaugeGradientLight);
   transition: stroke-dasharray 0.6s ease-out;
 }
-body.dark-mode .gauge-fill{
+body.dark-mode:not(.light-mode) .gauge-fill{
   stroke: url(#gaugeGradientDark);
 }
 
@@ -1439,7 +1439,7 @@ body.dark-mode .gauge-fill{
   color: #333;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
-body.dark-mode .gauge-inner{
+body.dark-mode:not(.light-mode) .gauge-inner{
   background: linear-gradient(135deg, #0f172a, #1e293b, #334155);
   color: #fff;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
@@ -2905,7 +2905,7 @@ overflow: hidden;
 }
 
 /* Dark mode – brighter drops */
-body.dark-mode .raindrop {
+body.dark-mode:not(.light-mode) .raindrop {
   background: linear-gradient(180deg,
     rgba(160, 230, 255, 1) 0%,
     rgba(120, 200, 255, 0.98) 35%,
@@ -3370,18 +3370,18 @@ body.dark-mode .raindrop {
 }
 
 /* Dark mode scrollbar adjustments */
-body.dark-mode .uart-output-compact::-webkit-scrollbar-thumb,
-body.dark-mode #output::-webkit-scrollbar-thumb,
-body.dark-mode .left-panel::-webkit-scrollbar-thumb {
+body.dark-mode:not(.light-mode) .uart-output-compact::-webkit-scrollbar-thumb,
+body.dark-mode:not(.light-mode) #output::-webkit-scrollbar-thumb,
+body.dark-mode:not(.light-mode) .left-panel::-webkit-scrollbar-thumb {
   background: linear-gradient(180deg, #2a4370, #4b6cb7, #2a4370);
   box-shadow: 
     0 2px 8px rgba(42, 67, 112, 0.5),
     inset 0 1px 2px rgba(255, 255, 255, 0.15);
 }
 
-body.dark-mode .uart-output-compact::-webkit-scrollbar-thumb:hover,
-body.dark-mode #output::-webkit-scrollbar-thumb:hover,
-body.dark-mode .left-panel::-webkit-scrollbar-thumb:hover {
+body.dark-mode:not(.light-mode) .uart-output-compact::-webkit-scrollbar-thumb:hover,
+body.dark-mode:not(.light-mode) #output::-webkit-scrollbar-thumb:hover,
+body.dark-mode:not(.light-mode) .left-panel::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(180deg, #4b6cb7, #6b8af7, #4b6cb7);
   box-shadow: 
     0 4px 12px rgba(107, 138, 247, 0.4),
@@ -4067,25 +4067,25 @@ body:not(.dark-mode) #tlv493d-card h4 {
 }
 
 /* Dark Mode Support */
-.dark-mode .modal-container {
+body.dark-mode:not(.light-mode) .modal-container {
   background: #1e293b;
   border: 1px solid #334155;
 }
 
-.dark-mode .message-text h3 {
+body.dark-mode:not(.light-mode) .message-text h3 {
   color: #f1f5f9;
 }
 
-.dark-mode .message-text p {
+body.dark-mode:not(.light-mode) .message-text p {
   color: #94a3b8;
 }
 
-.dark-mode .btn-cancel {
+body.dark-mode:not(.light-mode) .btn-cancel {
   background: #334155;
   color: #cbd5e1;
 }
 
-.dark-mode .btn-cancel:hover {
+body.dark-mode:not(.light-mode) .btn-cancel:hover {
   background: #475569;
   color: #f1f5f9;
 }
@@ -7255,4 +7255,227 @@ body.light-mode {
     min-height: 0 !important;
     overflow-y: auto !important;
   }
+}
+
+/* =========================================================================
+   Educational Sidebar UI (Light & Dark Mode Support)
+   ========================================================================= */
+
+.educational-sidebar {
+    gap: 15px; /* Spacing between cards */
+}
+
+/* Base Card Style */
+.edu-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+body.dark-mode:not(.light-mode) .edu-card {
+    background: #1e293b;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    border: 1px solid #334155;
+}
+
+/* Card Specific Alignments */
+.edu-card-about {
+    flex-direction: column;
+    gap: 10px;
+}
+.edu-card-learn, .edu-card-experiment, .edu-card-challenge {
+    align-items: center;
+    gap: 15px;
+    padding: 14px 16px;
+}
+
+/* Typography */
+.edu-title {
+    margin: 0;
+    color: #1e3a8a;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 1.1rem;
+    transition: color 0.3s ease;
+}
+body.dark-mode:not(.light-mode) .edu-title {
+    color: #93c5fd;
+}
+
+.edu-sub-title {
+    margin: 0 0 2px 0;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 800;
+    transition: color 0.3s ease;
+}
+
+.edu-desc {
+    margin: 0;
+    color: #475569;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.8rem;
+    line-height: 1.35;
+    transition: color 0.3s ease;
+}
+body.dark-mode:not(.light-mode) .edu-desc {
+    color: #cbd5e1;
+}
+
+/* Color Coding for Sub-titles */
+.edu-color-yellow { color: #1e3a8a; } /* Using blue for contrast in light mode */
+body.dark-mode:not(.light-mode) .edu-color-yellow { color: #fde047; }
+
+.edu-color-purple { color: #6b21a8; }
+body.dark-mode:not(.light-mode) .edu-color-purple { color: #d8b4fe; }
+
+.edu-color-green { color: #166534; }
+body.dark-mode:not(.light-mode) .edu-color-green { color: #86efac; }
+
+/* Dividers */
+.edu-divider {
+    width: 100%;
+    height: 1px;
+    background: #e2e8f0;
+    margin-top: 8px;
+    transition: background 0.3s ease;
+}
+body.dark-mode:not(.light-mode) .edu-divider {
+    background: #334155;
+}
+
+/* Icons & Shapes */
+.edu-icon-bg {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: #fef08a;
+    border-radius: 12px 12px 0px 12px;
+    transform: rotate(-10deg);
+}
+
+.edu-icon {
+    color: #1e293b;
+    font-size: 16px;
+    position: relative;
+    z-index: 2;
+}
+
+.edu-circle-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.edu-circle-icon i {
+    color: #1e293b;
+    font-size: 16px;
+}
+
+/* Circle Colors */
+.edu-circle-yellow { background: #fef08a; }
+.edu-circle-purple { background: #e9d5ff; }
+.edu-circle-green { background: #bbf7d0; }
+
+/* In dark mode, we can keep the circles bright for contrast! */
+body.dark-mode:not(.light-mode) .edu-circle-yellow { background: #fde047; }
+body.dark-mode:not(.light-mode) .edu-circle-purple { background: #d8b4fe; }
+body.dark-mode:not(.light-mode) .edu-circle-green { background: #86efac; }
+
+/* Chevrons */
+.edu-chevron {
+    color: #94a3b8;
+    font-size: 12px;
+}
+body.dark-mode:not(.light-mode) .edu-chevron {
+    color: #475569;
+}
+
+/* Feature List Items (inside About Card) */
+.edu-feature-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: 1px solid #f1f5f9;
+    transition: border-color 0.3s ease;
+}
+.edu-feature-item:last-child {
+    border-bottom: none;
+}
+body.dark-mode:not(.light-mode) .edu-feature-item {
+    border-bottom: 1px solid #334155;
+}
+
+.edu-feature-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #fef08a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.edu-feature-icon i {
+    color: #1e293b;
+    font-size: 14px;
+}
+body.dark-mode:not(.light-mode) .edu-feature-icon {
+    background: #fde047;
+}
+
+.edu-feature-text {
+    color: #334155;
+    font-size: 0.85rem;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+body.dark-mode:not(.light-mode) .edu-feature-text {
+    color: #e2e8f0;
+}
+
+
+
+/* Interactive Card Effects */
+.edu-card-interactive {
+    cursor: pointer;
+}
+.edu-card-interactive:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+body.dark-mode:not(.light-mode) .edu-card-interactive:hover {
+    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+    border-color: #475569;
+}
+
+/* Modal Entry Animation */
+.edu-modal-anim {
+    animation: eduModalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+@keyframes eduModalPop {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* Fix Action Button inside Edu Modal for Dark Mode */
+body.dark-mode:not(.light-mode) .edu-modal-anim .action-button {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #e2e8f0;
+}
+body.dark-mode:not(.light-mode) .edu-modal-anim .action-button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #ffffff;
 }
