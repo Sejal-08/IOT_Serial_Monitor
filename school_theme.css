@@ -502,8 +502,10 @@ body:not(.light-mode) .robo-bubble {
   --rain-scale: 1.0 !important;
 }
 
-/* Educational sidebar safe zone */
-#educational-sidebar {
-  padding-right: 10px !important;
-  overflow-y: auto;
-}
+  /* Educational sidebar safe zone */
+  #educational-sidebar {
+    padding-right: 18px !important;
+    padding-left: 4px !important;
+    overflow-y: auto;
+    box-sizing: border-box;
+  }
