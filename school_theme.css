@@ -2,7 +2,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
 
 /* Default: Dark Mode */
-:root {
+body.school-mode, .school-theme-wrapper {
 
   --bg-color: #0f172a;
   --card-bg: #1e293b;
@@ -19,7 +19,7 @@
 }
 
 /* Light Mode Override */
-body.light-mode {
+body.light-mode.school-mode, body.light-mode .school-theme-wrapper {
 
   --bg-color: #FFF2CC;
   --card-bg: #FFFFFF;
@@ -94,38 +94,38 @@ nav {
   padding: 20px 24px 20px 20px !important;
   gap: 20px !important;
 }
-.right-panel {
+body.school-mode:not(.legacy-layout) .right-panel {
   background: var(--bg-color) !important;
   border: none !important;
   padding: 0 !important;
 }
-.right-panel .container {
+body.school-mode:not(.legacy-layout) .right-panel .container {
   background: var(--bg-color) !important;
   border: none !important;
   padding: 20px !important;
 }
 
 /* Cards (Right Panel) */
-.cyber-grid-container {
+body.school-mode:not(.legacy-layout) .cyber-grid-container {
   background: var(--bg-color) !important;
   border: none !important;
   padding: 0 !important;
 }
 
-.sensor-cards {
+body.school-mode:not(.legacy-layout) .sensor-cards {
   gap: 20px !important;
   max-width: 850px !important;
   margin: 0 auto !important;
   justify-content: center !important;
 }
-.weather-combined-grid, .weather-shield-grid {
+body.school-mode:not(.legacy-layout) .weather-combined-grid, body.school-mode:not(.legacy-layout) .weather-shield-grid {
   max-width: 850px !important;
   margin: 0 auto !important;
   justify-content: center !important;
 }
 
 
-.sensor-card, .sensor-cards > div {
+body.school-mode:not(.legacy-layout) .sensor-card, body.school-mode:not(.legacy-layout) .sensor-cards > div {
   background: var(--card-bg) !important;
   border-radius: 32px !important;
   box-shadow: 0 8px 0 var(--input-border), 0 15px 20px rgba(0,0,0,0.1) !important;
@@ -133,12 +133,12 @@ nav {
   padding: 24px !important;
   transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55) !important;
 }
-.sensor-card:hover, .sensor-cards > div:hover {
+body.school-mode:not(.legacy-layout) .sensor-card:hover, body.school-mode:not(.legacy-layout) .sensor-cards > div:hover {
   transform: translateY(-8px);
   box-shadow: 0 16px 0 var(--input-border), 0 20px 25px rgba(0,0,0,0.15) !important;
 }
 
-.sensor-card h4 {
+body.school-mode:not(.legacy-layout) .sensor-card h4 {
   color: var(--title-color) !important;
   font-weight: 800 !important;
   border: none !important;
@@ -147,7 +147,7 @@ nav {
   align-items: center !important;
   gap: 10px !important;
 }
-.sensor-card h4 i { color: var(--primary-blue) !important; }
+body.school-mode:not(.legacy-layout) .sensor-card h4 i { color: var(--primary-blue) !important; }
 .sensor-value {
   color: var(--title-color) !important;
   font-weight: 900 !important;
@@ -260,7 +260,7 @@ nav {
 .sensor-protocol { font-size: 11px; font-weight: 800; color: #92400e; letter-spacing: 0.5px; }
 .sensor-name { font-size: 18px; font-weight: 800; color: #b45309; }
 
-#did-you-know-panel {
+body.school-mode #did-you-know-panel {
   background: #fffbeb !important;
   border: 4px dashed #fcd34d !important;
   margin: 0 0 20px 0 !important;
@@ -299,20 +299,20 @@ button[onclick="listPorts()"] {
 }
 
 /* Fun Fact Panel */
-body.light-mode #did-you-know-panel {
+body.light-mode body.school-mode #did-you-know-panel {
     background: #fffbeb !important;
     border: 4px dashed #fcd34d !important;
     color: #92400e !important;
 }
-body.light-mode #did-you-know-panel h4 { color: #b45309 !important; }
+body.light-mode.school-mode #did-you-know-panel h4 { color: #b45309 !important; }
 body.light-mode #dyk-text { color: #92400e !important; }
 
-body:not(.light-mode) #did-you-know-panel {
+body:not(.light-mode) body.school-mode #did-you-know-panel {
     background: #1e293b !important;
     border: 4px dashed #b45309 !important;
     color: #fcd34d !important;
 }
-body:not(.light-mode) #did-you-know-panel h4 { color: #f59e0b !important; }
+body:not(.light-mode).school-mode #did-you-know-panel h4 { color: #f59e0b !important; }
 body:not(.light-mode) #dyk-text { color: #fcd34d !important; }
 
 /* Status Text defaults to gray if not connected */
@@ -350,7 +350,7 @@ body.light-mode #dirVal-container {
 
 /* Fix 3: Humidity Card Background in Dark Mode */
 /* Override the strict black gradient in styles.css */
-body:not(.light-mode) #humidity-card {
+body:not(.light-mode).school-mode #humidity-card {
     background: var(--card-bg) !important;
 }
 
@@ -398,7 +398,7 @@ body:not(.light-mode) .pill-btn {
 }
 
 /* Remove the grid background from the right panel */
-.cyber-grid-main {
+body.school-mode .cyber-grid-main {
     background-image: none !important;
     background-color: transparent !important;
 }
@@ -433,7 +433,7 @@ body:not(.light-mode) .pill-btn {
   opacity: 1 !important;
 }
 
-body.light-mode {
+body.light-mode.school-mode, body.light-mode .school-theme-wrapper {
     background: #FFF2CC !important;
     background-color: #FFF2CC !important;
 }
@@ -471,7 +471,7 @@ body:not(.light-mode) .robo-bubble {
 
 
 /* Make the massive spectra animation smaller to eliminate unnecessary scrolling */
-.orbit-container {
+body.school-mode:not(.legacy-layout) .orbit-container {
   height: 420px !important;
   transform: scale(0.75) !important;
   margin-top: -20px !important;
