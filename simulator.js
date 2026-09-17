@@ -28,13 +28,13 @@
   ].join('\n');
 
   var SENSOR_VARS = {
-    'Temp':        { v:'currentTemperature',  min:-10,  max:50,   step:1,   unit:'C',     def: 0 },
-    'Humidity':    { v:'currentHumidity',     min:0,    max:100,  step:1,   unit:'%',     def: 0 },
-    'Pressure':    { v:'currentPressure',     min:900,  max:1100, step:1,   unit:'hPa',   def: 0 },
-    'Light':       { v:'currentLight',        min:0,    max:10000,step:10,  unit:'lux',   def: 0 },
+    'Temp':        { v:'currentTemperature',  min:-10,  max:50,   step:1,   unit:'C',     def: 24 },
+    'Humidity':    { v:'currentHumidity',     min:0,    max:100,  step:1,   unit:'%',     def: 45 },
+    'Pressure':    { v:'currentPressure',     min:900,  max:1100, step:1,   unit:'hPa',   def: 1013 },
+    'Light':       { v:'currentLight',        min:0,    max:10000,step:10,  unit:'lux',   def: 300 },
     'Wind':        { v:'currentWindSpeed',    min:0,    max:30,   step:1,   unit:'m/s',   def: 0 },
     'Rain':        { v:'currentRainCount',    min:0,    max:50,   step:1,   unit:'mm',    def: 0 },
-    'Distance':    { v:'currentDistance',     min:0,    max:200,  step:1,   unit:'cm',    def: 0 },
+    'Distance':    { v:'currentDistance',     min:0,    max:200,  step:1,   unit:'cm',    def: 50 },
     'Magnet':      { v:'currentMagneticField',min:-1000,max:1000, step:10,  unit:'uT',    def: 0 },
     'IR':          { v:'currentIR',           min:0,    max:1023, step:10,  unit:'',      def: 0 },
     'Accel X':     { v:'currentAccelX',       min:-2,   max:2,    step:0.1, unit:'g',     def: 0 },

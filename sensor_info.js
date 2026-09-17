@@ -1,10 +1,10 @@
 const sensorInfoData = {
   "SHT40": {
-    desc: "SHT40 is a high-accuracy digital temperature and humidity sensor. It communicates using I²C and is widely used in real-world applications such as environment monitoring, agriculture, and smart devices.",
+    desc: "SHT40 is a high-accuracy digital temperature and humidity sensor. It communicates using I2C and is widely used in real-world applications such as environment monitoring, agriculture, and smart devices.",
     features: [
       { icon: "fas fa-bullseye", text: "High Accuracy" },
       { icon: "fas fa-leaf", text: "Low Power" },
-      { icon: "fas fa-microchip", text: "Digital Output (I²C)" }
+      { icon: "fas fa-microchip", text: "Digital Output (I2C)" }
     ]
   },
   "VCNL4040": {
@@ -12,7 +12,7 @@ const sensorInfoData = {
     features: [
       { icon: "fas fa-sun", text: "Ambient Light Sensing" },
       { icon: "fas fa-ruler", text: "Proximity Detection" },
-      { icon: "fas fa-microchip", text: "Digital Output (I²C)" }
+      { icon: "fas fa-microchip", text: "Digital Output (I2C)" }
     ]
   },
   "BME680": {
@@ -28,7 +28,7 @@ const sensorInfoData = {
     features: [
       { icon: "fas fa-tint", text: "Capacitive Humidity" },
       { icon: "fas fa-bolt", text: "Fast Response" },
-      { icon: "fas fa-microchip", text: "Digital Output (I²C)" }
+      { icon: "fas fa-microchip", text: "Digital Output (I2C)" }
     ]
   },
   "STS30": {
@@ -36,7 +36,7 @@ const sensorInfoData = {
     features: [
       { icon: "fas fa-temperature-high", text: "High Precision" },
       { icon: "fas fa-stopwatch", text: "Rapid Response Time" },
-      { icon: "fas fa-microchip", text: "Digital Output (I²C)" }
+      { icon: "fas fa-microchip", text: "Digital Output (I2C)" }
     ]
   },
   "STTS751": {
@@ -128,7 +128,7 @@ const sensorInfoData = {
     ]
   },
   "Wind Sensor": {
-    desc: "The Wind Sensor combo includes an anemometer (spinning cups for speed) and a wind vane (for direction). It is essential for tracking weather patterns.",
+    desc: "The Wind Sensor combo I2Cludes an anemometer (spinning cups for speed) and a wind vane (for direction). It is essential for tracking weather patterns.",
     features: [
       { icon: "fas fa-fan", text: "Anemometer (Speed)" },
       { icon: "fas fa-location-arrow", text: "Wind Vane (Direction)" },
@@ -144,9 +144,9 @@ const sensorInfoData = {
     ]
   },
   "Relay": {
-    desc: "A Relay is an electrically operated switch. It allows a tiny low-power signal from your Arduino to safely turn on high-power devices like lamps or motors.",
+    desc: "A Relay is an electrically operated swI2Ch. It allows a tiny low-power signal from your Arduino to safely turn on high-power devices like lamps or motors.",
     features: [
-      { icon: "fas fa-toggle-on", text: "Mechanical Switch" },
+      { icon: "fas fa-toggle-on", text: "Mechanical SwI2Ch" },
       { icon: "fas fa-plug", text: "High Power Control" },
       { icon: "fas fa-shield-alt", text: "Electrical Isolation" }
     ]
@@ -175,8 +175,8 @@ const sensorInfoData = {
       { icon: "fas fa-mobile", text: "Smartphone Tech" }
     ]
   },
-  "Reed Switch": {
-    desc: "A Reed Switch contains two tiny metal contacts in a glass tube that snap together when a magnetic field is nearby, completing the circuit.",
+  "Reed SwI2Ch": {
+    desc: "A Reed SwI2Ch contains two tiny metal contacts in a glass tube that snap together when a magnetic field is nearby, completing the cI2Cuit.",
     features: [
       { icon: "fas fa-magnet", text: "Magnetic Activation" },
       { icon: "fas fa-door-open", text: "Door/Window Alarms" },
